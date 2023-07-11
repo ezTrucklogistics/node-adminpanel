@@ -1,0 +1,669 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "all api documation commonApp nodeJs",
+        "version": "1.0.0",
+        "title": "Swagger CommonAppNodeJs",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "email": "tanvir@inheritx.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        }
+    },
+    "host": "localhost:3001",
+    "basePath": "/v1",
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/users/signUp": {
+            "post": {
+                "summary": "signUp a new user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "parameters": [{
+                    "in": "body",
+                    "name": "user",
+                    "description": "The user signUp, Device type:- 'ANDROID' : 1,'IOS' : 2,",
+                    "schema": {
+                        "type": "object",
+                        "required": [
+                            "email",
+                            "password"
+                        ],
+                        "properties": {
+                            "email": {
+                                "type": "string"
+                            },
+                            "password": {
+                                "type": "string"
+                            },
+                            "device_type": {
+                                "type": "number"
+                            },
+                            "device_token": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }],
+                "responses": {}
+            }
+        },
+        "/users/login": {
+            "post": {
+                "summary": "user/admin login, if Admin login add one more field 'user_type: 1'",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "parameters": [{
+                    "in": "body",
+                    "name": "user",
+                    "description": "The user login. if Admin login add one more field 'user_type: 1' Device type:- 'ANDROID' : 1,'IOS' : 2,",
+                    "schema": {
+                        "type": "object",
+                        "required": [
+                            "email",
+                            "password"
+                        ],
+                        "properties": {
+                            "email": {
+                                "type": "string"
+                            },
+                            "password": {
+                                "type": "string"
+                            },
+                            "device_type": {
+                                "type": "number"
+                            },
+                            "device_token": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }],
+                "responses": {}
+            }
+        },
+        "/users/user-social-login": {
+            "post": {
+                "summary": "user social login",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "parameters": [{
+                    "in": "body",
+                    "name": "user",
+                    "description": "Social_type of 'facebook': 1,'google': 2,'apple': 3, Device type:- 'ANDROID' : 1,'IOS' : 2,",
+                    "schema": {
+                        "type": "object",
+                        "required": [
+                            "social_id",
+                            "social_type"
+                        ],
+                        "properties": {
+                            "social_id": {
+                                "type": "string"
+                            },
+                            "social_type": {
+                                "type": "number"
+                            },
+                            "device_type": {
+                                "type": "number"
+                            },
+                            "device_token": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "full_name": {
+                                "type": "string"
+                            },
+                            "date_of_birth": {
+                                "type": "number"
+                            },
+                            "gender": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }],
+                "responses": {}
+            }
+        },
+        "/users/account-verify": {
+            "get": {
+                "summary": "user accountVerify",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "parameters": [{
+                        "name": "user_id",
+                        "in": "query",
+                        "description": "Enter userId",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "emailVerificationToken",
+                        "in": "query",
+                        "description": "emailVerificationToken",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/users/logout/": {
+            "get": {
+                "summary": "user logout",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "parameters": [{
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "an authorization header, Please add Bearer keyword before token",
+                    "required": "true",
+                    "type": "string"
+                }],
+                "responses": {}
+            }
+        },
+        "/users/change-password/": {
+            "post": {
+                "summary": "user change password",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "parameters": [{
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "an authorization header, Please add Bearer keyword before token",
+                        "required": "true",
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "user",
+                        "description": "The user login",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "old_password",
+                                "new_password",
+                                "confirm_password"
+                            ],
+                            "properties": {
+                                "old_password": {
+                                    "type": "string"
+                                },
+                                "new_password": {
+                                    "type": "string"
+                                },
+                                "confirm_password": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/users/forgot-password": {
+            "post": {
+                "summary": "user forgot password",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "parameters": [{
+                    "in": "body",
+                    "name": "user",
+                    "description": "The user login",
+                    "schema": {
+                        "type": "object",
+                        "required": [
+                            "email",
+                            "password"
+                        ],
+                        "properties": {
+                            "email": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }],
+                "responses": {}
+            }
+        },
+        "/users/resend-mail": {
+            "post": {
+                "summary": "resend mail",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "parameters": [{
+                    "in": "body",
+                    "name": "user",
+                    "description": "resend mail",
+                    "schema": {
+                        "type": "object",
+                        "required": [
+                            "email"
+                        ],
+                        "properties": {
+                            "email": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }],
+                "responses": {}
+            }
+        },
+        "/users/reset-password/": {
+            "post": {
+                "summary": "user reset password",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "parameters": [{
+                    "in": "body",
+                    "name": "user",
+                    "description": "User reset password",
+                    "schema": {
+                        "type": "object",
+                        "required": [
+                            "new_password",
+                            "confirm_password"
+                        ],
+                        "properties": {
+                            "reset_password_token": {
+                                "type": "string"
+                            },
+                            "new_password": {
+                                "type": "string"
+                            },
+                            "confirm_password": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }],
+                "responses": {}
+            }
+        },
+        "/users/": {
+            "get": {
+                "summary": "get user deatils",
+                "x-swagger-router-controller": "bar",
+                "operationId": "impossible",
+                "tags": [
+                    "users"
+                ],
+                "description": "",
+                "parameters": [{
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "an authorization header, Please add Bearer keyword before token",
+                    "required": "true",
+                    "type": "string"
+                }],
+                "responses": {}
+            },
+            "put": {
+                "summary": "update user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "description": "set user skills:- {skill_level:1}.. 'BEGGINER': 1,'INTERMEDIATE': 2,'ADVANCED': 3   \n set theme:- {theme_type: 1} 'WHITE:1, BLACK:2",
+                "parameters": [{
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "an authorization header, Please add Bearer keyword before token",
+                        "required": "true",
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "user",
+                        "description": "The user update",
+                        "schema": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {
+                                "full_name": {
+                                    "type": "string"
+                                },
+                                "user_name": {
+                                    "type": "string"
+                                },
+                                "date_of_birth": {
+                                    "type": "number"
+                                },
+                                "height": {
+                                    "type": "number"
+                                },
+                                "age": {
+                                    "type": "number"
+                                },
+                                "gender": {
+                                    "type": "string"
+                                },
+                                "weight": {
+                                    "type": "number"
+                                },
+                                "email": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/cms/cms-list": {
+            "get": {
+                "x-swagger-router-controller": "bar",
+                "description": "get CMS list",
+                "tags": [
+                    "CMS"
+                ],
+                "parameters": [],
+                "responses": {}
+            }
+        },
+        "/users/contactUs/": {
+            "post": {
+                "summary": "user can add query",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/contactUs"
+                ],
+                "parameters": [{
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "an authorization header, Please add Bearer keyword before token",
+                        "required": "true",
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "user",
+                        "description": "add contactUs query",
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "email",
+                                "username",
+                                "query"
+                            ],
+                            "properties": {
+                                "email": {
+                                    "type": "string"
+                                },
+                                "username": {
+                                    "type": "string"
+                                },
+                                "query": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/users/notification-settings": {
+            "get": {
+                "summary": "get user notification settings deatils",
+                "x-swagger-router-controller": "bar",
+                "tags": [
+                    "users"
+                ],
+                "description": "",
+                "parameters": [{
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "an authorization header, Please add Bearer keyword before token",
+                    "required": "true",
+                    "type": "string"
+                }],
+                "responses": {}
+            },
+            "put": {
+                "summary": "update user notification settings deatils",
+                "x-swagger-router-controller": "bar",
+                "tags": [
+                    "users"
+                ],
+                "description": "",
+                "parameters": [{
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "an authorization header, Please add Bearer keyword before token",
+                        "required": "true",
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "user notification settings",
+                        "description": "The user notification update",
+                        "schema": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {
+                                "daily_practice_remender": {
+                                    "type": "boolean"
+                                },
+                                "new_program_added": {
+                                    "type": "boolean"
+                                },
+                                "subscription_remainder": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/users/auth_tokens/{refresh_tokens}": {
+            "get": {
+                "summary": "get auth tokens",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "parameters": [{
+                    "name": "refresh_tokens",
+                    "in": "path",
+                    "description": "Enter refresh_tokens",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {}
+            }
+        },
+        "/country/countryList": {
+            "get": {
+                "x-swagger-router-controller": "bar",
+                "tags": [
+                    "country"
+                ],
+                "description": "get all country",
+                "parameters": [],
+                "responses": {}
+            }
+        },
+        "/country/states-of-country/{countryId}": {
+            "get": {
+                "x-swagger-router-controller": "bar",
+                "description": "get all state of particular county",
+                "tags": [
+                    "country"
+                ],
+                "parameters": [{
+                    "name": "countryId",
+                    "in": "path",
+                    "description": "Enter countryId",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {}
+            }
+        },
+        "/country/cities-of-state/{stateId}": {
+            "get": {
+                "x-swagger-router-controller": "bar",
+                "description": "get all city of particular state",
+                "tags": [
+                    "country"
+                ],
+                "parameters": [{
+                    "name": "stateId",
+                    "in": "path",
+                    "description": "Enter stateId",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {}
+            }
+        },
+        "/notification/get-all-notifications/": {
+            "get": {
+                "summary": "get all user notification",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "parameters": [{
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "an authorization header, Please add Bearer keyword before token",
+                    "required": "true",
+                    "type": "string"
+                }],
+                "responses": {}
+            }
+        },
+        "/notification/read-all-notifications/": {
+            "get": {
+                "summary": "read all notification",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "parameters": [{
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "an authorization header, Please add Bearer keyword before token",
+                    "required": "true",
+                    "type": "string"
+                }],
+                "responses": {}
+            }
+        },
+        "/notification/get-notification-count/": {
+            "get": {
+                "summary": "get all unread notification count",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "parameters": [{
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "an authorization header, Please add Bearer keyword before token",
+                    "required": "true",
+                    "type": "string"
+                }],
+                "responses": {}
+            }
+        },
+        "/actions/{actionId}": {
+            "get": {
+                "x-swagger-router-controller": "bar",
+                "description": "get action details",
+                "tags": [
+                    "action"
+                ],
+                "parameters": [{
+                    "name": "actionId",
+                    "in": "path",
+                    "description": "Enter actionId",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {}
+            }
+        },
+        "/actions/actionId-list/{drillId}": {
+            "get": {
+                "x-swagger-router-controller": "bar",
+                "description": "get action list particular drill",
+                "tags": [
+                    "action"
+                ],
+                "parameters": [{
+                    "name": "drillId",
+                    "in": "path",
+                    "description": "Enter drillId",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {}
+            }
+        }
+    }
+}
