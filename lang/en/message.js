@@ -14,7 +14,7 @@ module.exports = {
         passwordUpdate_success: 'Your password successfully changed.',
         profile_fetch_success: 'Profile fetch successfull.',
         profile_update_success: 'Profile updated successfully.',
-        email_not_found: 'Username/Email is not registered.',
+        mobile_number_not_found: 'mobile number is not registered.',
         forgotPassword_email_success: 'Please check your email to reset password.',
         resend_email_success: 'Resend mail send successfully.',
         forgotPassword_email_fail: 'Error while sending link.',
@@ -33,7 +33,7 @@ module.exports = {
         account_verify_fail: 'Your account verify link expire or invalid.',
         password_mismatch: 'New password and confirm password not matched.',
         invalid_username_password: "Invalid email or password.",
-        invalid_password: "Invalid password.",
+        invalid_mobile_number: "Invalid mobile Number.",
         user_data_retrieved_success : 'User data retrieved successfully.',
         user_activation : 'User activated successfully.',
         user_inactivation : 'User inactivated successfully.',
@@ -57,7 +57,7 @@ module.exports = {
         general_error_content: 'Something went wrong. Please try again later.',
         unauthorized_user: 'Unauthorized, please login.',
         invalid_user: 'You are not authorized to do this operation.',
-        invalid_login: 'You are not authorized.',
+        invalid_token: 'Not valid token.',
         blackList_mail: `Please enter a valid email, we don't allow dummy emails.`
     },
 

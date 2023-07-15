@@ -17,15 +17,10 @@ const swaggerAdminDocument = require('./swaggerAdmin.json');
 
 const indexRouter = require('./v1/routes/index');
 const usersRouter = require('./v1/routes/users');
-const notificationRouter = require('./v1/routes/notification')
-
 
 const indexAdminRouter = require('./admin/routes/index');
 const adminRouter = require('./admin/routes/admin');
 const versionRouter = require('./admin/routes/version');
-const emailTemplateRouter = require('./admin/routes/emailTemplate');
-const commonFunction = require('./helper/commonFunction.helper');
-
 var app = express();
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -64,16 +59,12 @@ app.use(cookieParser());
 
 app.use('/', indexRouter);
 app.use('/v1/users', usersRouter);
-app.use('/v1/notification', notificationRouter);
+
 
 app.use('/v1/', indexAdminRouter);
 app.use('/admin', adminRouter);
 app.use('/version', versionRouter);
-app.use('/emailTemplate', emailTemplateRouter);
 
-
-
-const script = require('./script/script')
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -91,6 +82,7 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
 
 
 module.exports = app;

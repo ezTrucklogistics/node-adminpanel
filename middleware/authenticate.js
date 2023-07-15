@@ -1,35 +1,34 @@
 const jwt = require('jsonwebtoken');
+const lang = require("../lang/en/message")
+const User = require('../models/user.model');
+const constants = require('../config/constants')
+const { JWT_SECRET } = require('../keys/keys');
+const { Constants } = require('adm-zip/util');
 
-var User = require('../models/user.model');
-var constants = require('../config/constants')
-const { sendResponse } = require('../services/common.service');
-const { JWT_SECRET } = require('../keys/keys')
+
 //authenticate user
 let authenticate = async (req, res, next) => {
-    try {
 
-        if (!req.header('Authorization')) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'GENERAL.unauthorized_user', {}, req.headers.lang);
+    try {
+        
+        if (!req.header('Authorization')) return res.status(constants.WEB_STATUS_CODE.UNAUTHORIZED).send({status:constants.STATUS_CODE.FAIL , message:lang.GENERAL.unauthorized_user})
 
         const token = req.header('Authorization').replace('Bearer ', '');
-        if (!token) sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'GENERAL.not_token', {}, req.headers.lang)
+        if (!token) return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , message:lang.GENERAL.invalid_token})
 
         const decoded = await jwt.verify(token, JWT_SECRET);
-        const user = await User.findOne({ _id: decoded._id, 'tokens': token }).lean();
-
-        if (!user) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'GENERAL.unauthorized_user', {}, req.headers.lang)
-        // if (user.verify_token == false) return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL , 'USER.not_verify_account', {}, req.headers.lang);
-        if (user.status == 0) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'USER.inactive_account', {}, req.headers.lang);
-        if (user.status == 2) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'USER.deactive_account', {}, req.headers.lang);
-        if (user.deleted_at != null) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'USER.delete_account', {}, req.headers.lang);
+        const user = await User.findOne({ _id: decoded._id })
+        if (!user) return res.status(constants.WEB_STATUS_CODE.UNAUTHORIZED).send({status:constants.STATUS_CODE.FAIL , message:lang.GENERAL.unauthorized_user})
     
         req.token = token;
         req.user = user;
 
         next();
+
     } catch (err) {
         console.log(err)
-        sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+        return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , message:lang.GENERAL.general_error_content})
     }
 }
 
-module.exports = authenticate;
+module.exports = {authenticate}

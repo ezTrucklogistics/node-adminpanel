@@ -3,7 +3,6 @@ var router = express.Router();
 
 const { verifyAccessToken } = require('../../middleware/admin.middleware')
 const {create_version_validator,get_version_validator} = require('../../validation/version.validator');
-const {validatorFunc} = require('../../helper/commonFunction.helper'); 
 
 const {
   createVersion,
@@ -11,8 +10,8 @@ const {
   getAppVersion
 } = require('../controllers/version.controller')
 
-router.post('/createVersion', verifyAccessToken, create_version_validator, validatorFunc , createVersion)
+router.post('/createVersion', verifyAccessToken, create_version_validator, createVersion)
 router.get('/getAllVersionData', verifyAccessToken, getAllVersionData)
-router.get('/getAppVersion',verifyAccessToken, get_version_validator,validatorFunc, getAppVersion)
+router.get('/getAppVersion',verifyAccessToken, get_version_validator, getAppVersion)
 
 module.exports = router;

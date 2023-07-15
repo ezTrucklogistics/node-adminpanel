@@ -1,5 +1,5 @@
 {
-  "name": "commonappnode",
+  "name": "eztruck",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -40,11 +40,7 @@
     "nodemon": "^3.0.1",
     "path": "^0.12.7",
     "request": "^2.88.2",
-    "swagger-ui-express": "^4.1.4"
-  },
-  "nodemonConfig": {
-    "ignore": [
-      "public/cms/*"
-    ]
+    "swagger-ui-express": "^4.1.4",
+    "twilio": "^4.13.0"
   }
 }

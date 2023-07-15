@@ -3,12 +3,12 @@ const momentTZ = require('moment-timezone');
 
 //set current timestamp
 exports.set_current_timestamp = function(){
-    return moment().format("X");
+    return moment().format("YYYY:MM:DD HH:MM");
 }
 
 //convert date to timestamp
 exports.getDateFormatFromTimeStamp = function(dt){
-    return moment.unix(dt).format("MM/DD/YYYY")    
+    return moment.unix(dt).format("MM:DD:YYYY")    
 }
 
 //add time to current timestamp

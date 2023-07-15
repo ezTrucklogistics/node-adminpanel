@@ -1,25 +1,29 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-// const _ = require('lodash');
-const constants = require('../config/constants');
 const dateFormat = require('../helper/dateformat.helper');
 
 
 const {
     JWT_SECRET
-} = require('../keys/keys')
+} = require('../keys/keys');
+const constants = require('../config/constants');
 
 var Schema = mongoose.Schema;
 
+
 //Define user schema
 var userSchema = new Schema({
+    
     email: {
         type: String,
         trim: true,
         lowercase: true,
     },
-    name: {
+    customer_Id :{
+        type:Number,
+        default:null
+    },
+    customer_name: {
         type: String,
         default: null
     },
@@ -32,24 +36,8 @@ var userSchema = new Schema({
         default: 2
     },
     status: {
-        type: Number,
-        default: constants.STATUS.ACTIVE
-    },
-    signup_status: {
-        type: Number,
-        default: 1 //
-    },
-    reset_password_token: {
         type: String,
-        default: null
-    },
-    reset_password_expires: {
-        type: String,
-        default: null
-    },
-    verify_token: {
-        type: Boolean,
-        default: false
+        default: constants.STATUS.DE_ACTIVE
     },
     device_token: {
         type: String,
@@ -59,40 +47,31 @@ var userSchema = new Schema({
         type: Number,
         default: null  // 'ANDROID' : 1,	'IOS' : 2,
     },
-    date_of_birth: {
-        type: Number,
-        default: null
-    },
-    tokens: {
-        type: String
+    OTP:{
+        type:Number,
+        default:null
     },
     refresh_tokens: {
-        type: String
+        type: String,
+        default:null
     },
-    refresh_tokens_expires: {
-        type: Number,
-        default: null
+    profile_img:{
+        type:String,
+        default:null
     },
-    tempTokens: {
-        type: String
+    authTokens: {
+        type: String,
+        default:null
     },
     created_at: {
-        type: Number,
+        type: String,
     },
     updated_at: {
-        type: Number,
+        type: String,
     },
     deleted_at: {
-        type: Number,
-        default: null,
-    },
-    social_id: {
         type: String,
-        default: null
-    },
-    social_type: {
-        type: Number,
-        default: null //	'facebook': 1,'google': 2,'apple': 3
+        default: null,
     },
 });
 
@@ -156,6 +135,7 @@ userSchema.methods.generateRefreshToken = async function () {
     await user.save()
     return refresh_tokens
 }
+
 
 //Define user model
 var User = mongoose.model('users', userSchema);
