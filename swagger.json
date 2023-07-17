@@ -13,7 +13,7 @@
             "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
         }
     },
-    "host": "localhost:3001",
+    "host": "localhost:4001",
     "basePath": "/v1",
     "produces": [
         "application/json"

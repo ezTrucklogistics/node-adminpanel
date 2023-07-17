@@ -37,7 +37,7 @@ var userSchema = new Schema({
     },
     status: {
         type: String,
-        default: constants.STATUS.DE_ACTIVE
+        default: constants.STATUS.Account_Deactive
     },
     device_token: {
         type: String,

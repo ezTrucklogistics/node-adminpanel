@@ -1,10 +1,7 @@
 //setting up keys and their values for development
 module.exports = {
-	// 'PORT': process.env.PORT || 8090,
-	// 'NODE_ENV': 'development',
-	'STATUS': {'INACTIVE': 0 , 'ACTIVE': 1, 'DE_ACTIVE': 2},
+	'STATUS': { 'Account_Active':'active',   'Account_Deactive': 'deactive'},
 	'WORKOUT_STATUS': {'INACTIVE': 0 , 'PUBLISHED': 1, 'DRAFT': 2}, 
-	// 'JWT_SECRET': 'bmp',
 	'PAGE_DATA_LIMIT': 10,
 	'FORGOT_PASSWORD_URL': 'https://dev.inheritxdev.net/hoopDNA/angular/dev/#/auth/resetpassword',
 	'DATA_LIMIT': 6,

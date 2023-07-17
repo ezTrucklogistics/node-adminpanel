@@ -16,7 +16,7 @@ const swaggerAdminDocument = require('./swaggerAdmin.json');
 
 
 const indexRouter = require('./v1/routes/index');
-const usersRouter = require('./v1/routes/users');
+const usersRouter = require('./v1/routes/users.rout');
 
 const indexAdminRouter = require('./admin/routes/index');
 const adminRouter = require('./admin/routes/admin');
