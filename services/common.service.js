@@ -8,12 +8,13 @@ exports.sendResponse = (res, statusCode, status, message, data, lang= 'en') => {
             
         appLanguageList = constants.APP_LANGUAGE;    
         const msg = ((appLanguageList.indexOf(lang) != -1)) ? require(`../lang/${lang}/message`) : require(`../lang/en/message`)
-    
+        
+        console.log(message)
         let obj = message.split(".");
         keyName = obj[0];
         subKey = obj[1];
-    
         const resMessage = msg[keyName][subKey];
+        console.log(resMessage)
     
         res.writeHead(statusCode, {'Content-Type': 'application/json'});
         res.write(JSON.stringify({

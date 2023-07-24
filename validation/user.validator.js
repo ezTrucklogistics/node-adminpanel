@@ -1,6 +1,7 @@
 const { body, validationResult , param  } = require("express-validator");
 const { USER_VALIDATION } = require("../lang/en/validationMessage");
 
+
 //validate user form detail
 const user_validator = [
 
@@ -40,7 +41,7 @@ const login_validator = [
     .withMessage(USER_VALIDATION.mobile_number_is_required)
     .isString()
     .withMessage(USER_VALIDATION.mobile_is_string)
-    .isLength({ max: 10 })
+    .isLength({ min: 10 })
     .withMessage(USER_VALIDATION.mobile_number_length)
     .isMobilePhone()
     .withMessage("Enter Valid Mobile number")
@@ -99,7 +100,7 @@ const Verify_otp_validator = [
     .withMessage(USER_VALIDATION.otp_required)
     .isString()
     .withMessage(USER_VALIDATION.otp_is_number)
-    .isLength({max:6})
+    .isLength({min:4})
     .withMessage(USER_VALIDATION.otp_length)
     .trim(),
 ];

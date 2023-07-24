@@ -52,5 +52,41 @@ module.exports = {
         version_number_formate: 'Please enter version number in 0.0.0 format.'
     },
 
+    'DRIVER_VALIDATION' : {
+
+          driver_name:'driver name is required.',
+          driver_name_is_string:'driver name  should be string.',
+          driver_email:'driver email is required.',
+          driver_email_is_string:'driver email  should be string.',
+          valid_email:'Enter valid email',
+          driver_mobile_number:'driver email is required.',
+          driver_mobile_number_is_string:'driver email  should be string.',
+          mobile_number_length :'mobile number length is min 8',
+          vehical_number_required:'vehical number is required.',
+          vehical_number_is_string:'vehical number should be string',
+          vehical_number_length :'mobile number length is min 10 and max 12',
+          valid_vehical_number:'Enter valid vehical number',
+          brand_required:'brand  is required.',
+          brand_number_is_string:'brand number should be string',
+          truck_type_required:'truck type is required.',
+          truck_type_is_string:'truck_type should be string',
+          account_number_required:'account number is required',
+          account_number_is_number:'account number should be number',
+          account_number_length:'account number min length is 11',
+          ifsc_code_required:'ifsc code is required',
+          ifsc_code_is_string:'ifsc code should be number and string',
+          ifsc_code_length:'ifsc code min length is 11',
+          ifsc_code_capital:'ifsc code is capital',
+          Aadhar_card_number_required:'Aadhar card number is required',
+          Aadhar_card_number_is_number:'Aadhar card number should be number',
+          Aadhar_card_number_length:'Aadhar card number min length is 12',
+          pan_card_numberr_equired:'pan card number is required',
+          pan_card_number_is_number:'pan card number should be number and string',
+          pan_card_number_length:'pan card number min length is 10',
+          driving_licence_equired:'driving licencenumber is required',
+          driving_licence_is_string:'driving licence number should be string',
+          driving_licence_length:'driving licence number min length is 15',
+    }
+
 
 }

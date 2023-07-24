@@ -12,7 +12,7 @@ const {
   refresh_token__validator,
 } = require("../../validation/user.validator");
 
-const { upload } = require("../../middleware/multer");
+
 
 const {
   signUp,
@@ -28,10 +28,11 @@ const {
   customer_file_export_into_pdf_file,
   
 } = require("../controllers/user.controller");
+const { upload } = require("../../middleware/multer");
 
 router.post(
   "/signUp",
-  upload.single("file"),
+  upload.single('file'),
   user_validator,
   validation_result,
   signUp

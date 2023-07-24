@@ -1,11 +1,7 @@
 //setting up keys and their values for development
 module.exports = {
-	'STATUS': { 'Account_Active':'active',   'Account_Deactive': 'deactive'},
-	'WORKOUT_STATUS': {'INACTIVE': 0 , 'PUBLISHED': 1, 'DRAFT': 2}, 
-	'PAGE_DATA_LIMIT': 10,
-	'FORGOT_PASSWORD_URL': 'https://dev.inheritxdev.net/hoopDNA/angular/dev/#/auth/resetpassword',
-	'DATA_LIMIT': 6,
-	'PAGE': 1,
+	'STATUS': { 'ACCOUNT_ACTIVE':'ACTIVE',   'ACCOUNT_DEACCTIVE': 'DEACTIVE'},
+	'BOOKING_STATUS': {'STATUS_CANCEL':'CANCEL' , 'STATUS_CONFIRM':'CONFIRM' , 'STATUS_PENDING':'PENDING'},
 	'DEFAULT_LANGUAGE': "en",
 	'APP_LANGUAGE': ['en', 'hn'],
 	'URL_EXPIRE_TIME': '2h',

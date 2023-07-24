@@ -2,39 +2,33 @@ const jwt = require("jsonwebtoken");
 const dateFormat = require("../../helper/dateformat.helper");
 const User = require("../../models/user.model");
 const ExcelJs = require("exceljs");
-const path = require('path')
 const fs = require("fs");
 const { isValid } = require("../../services/blackListMail");
-const pdfMake = require('pdfmake');
+const pdfMake = require("pdfmake");
 const {
   subscribeUserToTopic,
   unsubscribeUserFromTopic,
 } = require("../../helper/notifications.helper");
 
 const {
-  generate_customer_Id,
-  generate_otp,
+  generate_Id,
 } = require("../../middleware/common.function");
 const {
   getUser,
-  getUserDetails,
-  objectsave,
-  objectVerifyToken,
-  objectVerifyEmail,
   updateUser,
-  updateUserById,
   deleteUser,
   Usersave,
 } = require("../services/user.service");
 
 const constants = require("../../config/constants");
 const { JWT_SECRET } = require("../../keys/keys");
+const {sendResponse} = require("../../services/common.service")
 
-const { GENERAL, USER } = require("../../lang/en/message");
-const { stubFalse } = require("lodash");
 
 exports.signUp = async (req, res) => {
+
   try {
+    
     const reqBody = req.body;
 
     const { email, mobile_number, customer_name } = reqBody;
@@ -42,30 +36,26 @@ exports.signUp = async (req, res) => {
     const checkMail = await isValid(reqBody.email);
 
     if (checkMail == false)
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: GENERAL.blackList_mail,
-      });
+      return sendResponse(
+        res,
+        constants.WEB_STATUS_CODE.BAD_REQUEST,
+        constants.STATUS_CODE.FAIL,
+        "GENERAL.blackList_mail"
+      );
 
+    
     const existMobile = await User.findOne({ mobile_number });
 
     if (existMobile) {
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "Mobile number already exist",
-      });
+      return sendResponse(
+        res,
+        constants.WEB_STATUS_CODE.BAD_REQUEST,
+        constants.STATUS_CODE.FAIL,
+        "Mobile Number already exist"
+      );
     }
 
-    const existEmail = await User.findOne({ email });
-
-    if (existEmail) {
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "Email already exist",
-      });
-    }
-
-    reqBody.customer_Id = generate_customer_Id();
+    reqBody.customer_Id = generate_Id();
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
     reqBody.authTokens = await jwt.sign(
@@ -78,13 +68,12 @@ exports.signUp = async (req, res) => {
       }
     );
 
-    //
     reqBody.device_type = reqBody.device_type ? reqBody.device_type : null;
     reqBody.device_token = reqBody.device_token ? reqBody.device_token : null;
     let file = req.file;
     reqBody.profile_img = file.originalname;
-    const user = await Usersave(reqBody);
 
+    const user = await Usersave(reqBody);
     user.user_type = undefined;
     user.device_token = undefined;
     user.device_type = undefined;
@@ -95,19 +84,23 @@ exports.signUp = async (req, res) => {
     user.__v = undefined;
     user._id = undefined;
 
-    return res.status(constants.WEB_STATUS_CODE.CREATED).send({
-      status: constants.STATUS_CODE.SUCCESS,
-      message: USER.signUp_success,
-      user,
-    });
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'USER.signUp_success', user )
+    
+
   } catch (err) {
     console.log("Error(Signup)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
-      status: constants.STATUS_CODE.FAIL,
-      message: GENERAL.general_error_content,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
+
+
 
 exports.logout = async (req, res) => {
   try {
@@ -116,21 +109,31 @@ exports.logout = async (req, res) => {
 
     UserData.authTokens = null;
     UserData.refresh_tokens = null;
+    UserData.OTP = null
 
     await UserData.save();
-    return res.status(constants.WEB_STATUS_CODE.OK).send({
-      status: constants.STATUS_CODE.SUCCESS,
-      message: USER.logout_success,
-      data: UserData.mobile_number,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.OK,
+      constants.STATUS_CODE.SUCCESS,
+      "USER.logout_success",
+      UserData
+    );
+
   } catch (err) {
     console.log("Error(logout)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
-      status: constants.STATUS_CODE.FAIL,
-      message: GENERAL.general_error_content,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
+
+
 
 exports.login = async (req, res) => {
   try {
@@ -139,35 +142,24 @@ exports.login = async (req, res) => {
     console.log(user);
 
     if (user.user_type == 1)
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "Your are not user please enter user mobile !",
-      });
+      return sendResponse(
+        res,
+        constants.WEB_STATUS_CODE.BAD_REQUEST,
+        constants.STATUS_CODE.FAIL,
+        "Your are not a user"
+      );
+
     if (user == 1)
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: USER.mobile_number_not_found,
-      });
-    if (user.status == 0)
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: USER.inactive_account,
-      });
-    if (user.status == 2)
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: USER.deactive_account,
-      });
-    if (user.deleted_at != null)
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: USER.inactive_account,
-      });
+      return sendResponse(
+        res,
+        constants.WEB_STATUS_CODE.BAD_REQUEST,
+        constants.STATUS_CODE.FAIL,
+        "USER. mobile_number_not_found"
+      );
 
     let newToken = await user.generateAuthToken();
     let refreshToken = await user.generateRefreshToken();
 
-    user.OTP = generate_otp();
     user.authTokens = newToken;
     await user.save();
     user.user_type = undefined;
@@ -182,46 +174,62 @@ exports.login = async (req, res) => {
     user.customer_Id = undefined;
     user.__v = undefined;
     user._id = undefined;
-    return res.status(constants.WEB_STATUS_CODE.OK).send({
-      status: constants.STATUS_CODE.SUCCESS,
-      message: USER.login_success,
-      user,
-    });
+
+    return sendResponse( 
+      res,
+      constants.WEB_STATUS_CODE.OK,
+      constants.STATUS_CODE.SUCCESS,
+      "USER.login_success"
+    );
   } catch (err) {
     console.log("Error(Login)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
-      status: constants.STATUS_CODE.FAIL,
-      message: GENERAL.general_error_content,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
 exports.Otp_Verify = async (req, res) => {
+
   try {
+
     const { OTP } = req.body;
     console.log(OTP);
     const user = req.user;
     console.log(user);
-    if (OTP != user.OTP) {
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "otp not match",
-      });
-    }
+    if (OTP != user.OTP)
+      return sendResponse(
+        res,
+        constants.WEB_STATUS_CODE.BAD_REQUEST,
+        constants.STATUS_CODE.FAIL,
+        "OTP NOT MATCH"
+      );
+
     let newAuthToken = await user.generateAuthToken();
     user.authTokens = newAuthToken;
     user.OTP = "";
     await user.save();
-    return res.status(constants.WEB_STATUS_CODE.OK).send({
-      status: constants.STATUS_CODE.SUCCESS,
-      message: "otp verify scucessfully",
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.BAD_REQUEST,
+      constants.STATUS_CODE.FAIL,
+      "OTP VERIFY SUCESSFULLY"
+    );
   } catch (err) {
     console.log(err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
-      status: constants.STATUS_CODE.FAIL,
-      message: GENERAL.general_error_content,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
@@ -230,26 +238,35 @@ exports.generate_auth_tokens = async (req, res) => {
     const refresh_tokens = req.params.refresh_tokens;
 
     let user = await User.findOne({ refresh_tokens: refresh_tokens });
-
-    console.log("user....", user);
     let newToken = await user.generateAuthToken();
     user.authTokens = newToken;
     user.save();
-    return res.status(constants.WEB_STATUS_CODE.OK).send({
-      status: constants.STATUS_CODE.SUCCESS,
-      message: USER.get_user_auth_token,
-    });
+
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.BAD_REQUEST,
+      constants.STATUS_CODE.FAIL,
+      "USER.get_user_auth_token"
+    );
+
   } catch (err) {
     console.log(err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
-      status: constants.STATUS_CODE.FAIL,
-      message: GENERAL.general_error_content,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
+
 exports.get_all_customer = async (req, res) => {
+
   try {
+
     let customer = await User.find(
       {},
       {
@@ -263,97 +280,117 @@ exports.get_all_customer = async (req, res) => {
         __v: 0,
         _id: 0,
       }
-    )
-      .limit(30)
-      .skip(30);
+    ).limit(30).skip(30);
 
-    return res.status(constants.WEB_STATUS_CODE.OK).send({
-      status: constants.STATUS_CODE.SUCCESS,
-      message: "get all customer list",
-      customer,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.OK,
+      constants.STATUS_CODE.SUCCESS,
+      "SUCESSFULLY GET ALL CUSTOMER " , customer
+    );
+
   } catch (err) {
     console.log("Error(get_all_customer)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
-      status: constants.STATUS_CODE.FAIL,
-      message: GENERAL.general_error_content,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
+
 exports.update_customer_detalis = async (req, res) => {
+
   try {
+
     const reqBody = req.body;
     const { email, customer_name, mobile_number } = reqBody;
 
     const findUser = req.user._id;
 
-    if (!findUser)
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "user not found",
-      });
+    if (!findUser) return sendResponse(res,
+      constants.WEB_STATUS_CODE.BAD_REQUEST,
+      constants.STATUS_CODE.FAIL,
+      "USER NOT FOUND "
+    );
 
     let user = await User.findOneAndUpdate({ _id: findUser }, req.body, {
       new: true,
     });
 
     if (!user)
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "user data not found",
-      });
+    return sendResponse(res,
+      constants.WEB_STATUS_CODE.BAD_REQUEST,
+      constants.STATUS_CODE.FAIL,
+      "USER DATA NOT FOUND "
+    );
 
     user.updated_at = await dateFormat.set_current_timestamp();
-    return res.status(constants.WEB_STATUS_CODE.OK).send({
-      status: constants.STATUS_CODE.SUCCESS,
-      message: "sucessfully update user detalis",
-      user,
-    });
+    return sendResponse(res,
+      constants.WEB_STATUS_CODE.OK,
+      constants.STATUS_CODE.SUCCESS,
+      "USER DATA SUCESSFULLY UPDATE "
+    );
+
   } catch (err) {
     console.log("Error(update_customer_detalis)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
-      status: constants.STATUS_CODE.FAIL,
-      message: GENERAL.general_error_content,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
 exports.customer_account_actived = async (req, res) => {
+
   try {
-    const reqBody = req.body;
-    const { status } = reqBody;
+
 
     const findUser = req.user._id;
 
     if (!findUser)
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "user not found",
-      });
+       return sendResponse(res,
+      constants.WEB_STATUS_CODE.BAD_REQUEST,
+      constants.STATUS_CODE.FAIL,
+      "USER DATA NOT FOUND "
+    );;
 
-    let user = await User.findOneAndUpdate({ _id: findUser }, req.body, {
-      new: true,
-    });
+    let user = await await User.findOneAndUpdate({ _id: findUser }, {
+      $set:{status:constants.STATUS.ACCOUNT_ACTIVE}
+   },{new:true});
 
     if (!user)
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "user data not found",
-      });
+       return sendResponse(res,
+      constants.WEB_STATUS_CODE.BAD_REQUEST,
+      constants.STATUS_CODE.FAIL,
+      "USER DATA NOT FOUND "
+    );
 
     user.updated_at = await dateFormat.set_current_timestamp();
-    return res.status(constants.WEB_STATUS_CODE.OK).send({
-      status: constants.STATUS_CODE.SUCCESS,
-      message: "sucessfully actived customer account",
-      user,
-    });
+    return sendResponse(res,
+      constants.WEB_STATUS_CODE.OK,
+      constants.STATUS_CODE.SUCCESS,
+      "USER ACCOUNT SUCESSFULLY ACTIVED", user
+    );
+
   } catch (err) {
     console.log("Error(customer_account_actived)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
-      status: constants.STATUS_CODE.FAIL,
-      message: GENERAL.general_error_content,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
@@ -383,16 +420,21 @@ exports.export_customer_data_into_excel_file = async (req, res) => {
     });
     await workbook.xlsx.writeFile("customer.xlsx");
 
-    return res.status(constants.WEB_STATUS_CODE.OK).send({
-      status: constants.STATUS_CODE.SUCCESS,
-      msg: "new excelfile created",
-    });
+    return sendResponse(res,
+      constants.WEB_STATUS_CODE.BAD_REQUEST,
+      constants.STATUS_CODE.FAIL,
+      "CREATE A NEW EXCEL FILE "
+    );
   } catch (err) {
     console.log("Error( export_customer_data_into_excel_file)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
-      status: constants.STATUS_CODE.FAIL,
-      message: GENERAL.general_error_content,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
@@ -411,28 +453,32 @@ exports.customer_file_export_into_csv_file = async (req, res) => {
       if (error) {
         console.error("Error creating CSV file:", error);
       } else {
-        return res.status(constants.WEB_STATUS_CODE.OK).send({
-          status: constants.STATUS_CODE.SUCCESS,
-          msg: "new csvfile created",
-        });
+        return sendResponse(res,
+          constants.WEB_STATUS_CODE.BAD_REQUEST,
+          constants.STATUS_CODE.FAIL,
+          "CREATE A NEW CSV FILE"
+        );
       }
     });
   } catch (err) {
     console.log("Error(customer_file_export_into_csv_file)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
-      status: constants.STATUS_CODE.FAIL,
-      message: GENERAL.general_error_content,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
 
-exports.customer_file_export_into_pdf_file = async (req, res) => {
 
+exports.customer_file_export_into_pdf_file = async (req, res) => {
   try {
-    
-    const users = await User.find({ user_type: 2 })
-  
+    const users = await User.find({ user_type: 2 });
+
     const docDefinition = {
       content: [
         { text: "Customer Data", style: "header" },
@@ -470,29 +516,33 @@ exports.customer_file_export_into_pdf_file = async (req, res) => {
         header: {
           fontSize: 18,
           bold: true,
-          font: 'Roboto',
+          font: "Roboto",
         },
       },
       defaultStyle: {
-        font: 'Roboto', // Specify the default 'Roboto' font for the entire document
+        font: "Roboto", // Specify the default 'Roboto' font for the entire document
       },
     };
 
     const printer = new pdfMake();
     const pdfDoc = printer.createPdfKitDocument(docDefinition);
-    pdfDoc.pipe(fs.createWriteStream('file.pdf'));
+    pdfDoc.pipe(fs.createWriteStream("file.pdf"));
     pdfDoc.end();
-    return res.status(constants.WEB_STATUS_CODE.OK).send({
-      status: constants.STATUS_CODE.SUCCESS,
-      msg: "PDF file created successfully",
-    });
-
-
+    return sendResponse(res,
+      constants.WEB_STATUS_CODE.BAD_REQUEST,
+      constants.STATUS_CODE.FAIL,
+      "SUCESSFULLY CREATE A NEW PDF FILE"
+    );
   } catch (err) {
     console.log("Error(customer_file_export_into_csv_file)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
-      status: constants.STATUS_CODE.FAIL,
-      message: GENERAL.general_error_content,
-    });
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
+

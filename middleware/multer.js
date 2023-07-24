@@ -9,7 +9,8 @@ let storage = multer.diskStorage({
       cb(null, file.fieldname + '-' + Date.now())
     }
   })
-let upload = multer({ storage: storage })
+  
+exports.upload = multer({ storage: storage })
 
 
-module.exports = {upload}
+

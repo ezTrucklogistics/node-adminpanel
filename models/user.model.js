@@ -8,11 +8,11 @@ const {
 } = require('../keys/keys');
 const constants = require('../config/constants');
 
-var Schema = mongoose.Schema;
+const Schema = mongoose.Schema;
 
 
 //Define user schema
-var userSchema = new Schema({
+const userSchema = new Schema({
     
     email: {
         type: String,
@@ -37,7 +37,7 @@ var userSchema = new Schema({
     },
     status: {
         type: String,
-        default: constants.STATUS.Account_Deactive
+        default: constants.STATUS.ACCOUNT_ACTIVE
     },
     device_token: {
         type: String,
@@ -46,10 +46,6 @@ var userSchema = new Schema({
     device_type: {
         type: Number,
         default: null  // 'ANDROID' : 1,	'IOS' : 2,
-    },
-    OTP:{
-        type:Number,
-        default:null
     },
     refresh_tokens: {
         type: String,
@@ -86,8 +82,8 @@ userSchema.methods.validPassword = function (password) {
 
 //Output data to JSON
 userSchema.methods.toJSON = function () {
-    var user = this;
-    var userObject = user.toObject();
+    const user = this;
+    const userObject = user.toObject();
     return userObject;
 };
 
@@ -113,8 +109,8 @@ userSchema.statics.findByCredentials = async function (email, password, user_typ
 
 //Generating auth token
 userSchema.methods.generateAuthToken = async function () {
-    var user = this;
-    var token = await jwt.sign({
+    const user = this;
+    const token = await jwt.sign({
         _id: user._id.toString()
     }, JWT_SECRET , { expiresIn: '24h' })
     user.tokens = token
@@ -125,8 +121,8 @@ userSchema.methods.generateAuthToken = async function () {
 }
 
 userSchema.methods.generateRefreshToken = async function () {
-    var user = this;
-    var refresh_tokens = await jwt.sign({
+    const user = this;
+    const refresh_tokens = await jwt.sign({
         _id: user._id.toString()
     }, JWT_SECRET)
 
@@ -138,5 +134,5 @@ userSchema.methods.generateRefreshToken = async function () {
 
 
 //Define user model
-var User = mongoose.model('users', userSchema);
+const User = mongoose.model('users', userSchema);
 module.exports = User;
