@@ -166,7 +166,6 @@ exports.login = async (req, res) => {
     user.device_type = undefined;
     user.OTP = undefined;
     user.refresh_tokens = undefined;
-    user.authTokens = undefined;
     user.deleted_at = undefined;
     user.status = undefined;
     user.profile_img = undefined;
@@ -178,7 +177,7 @@ exports.login = async (req, res) => {
       res,
       constants.WEB_STATUS_CODE.OK,
       constants.STATUS_CODE.SUCCESS,
-      "USER.login_success"
+      "USER.login_success", user
     );
   } catch (err) {
     console.log("Error(Login)", err);
