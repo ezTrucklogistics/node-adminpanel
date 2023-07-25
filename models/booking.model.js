@@ -30,7 +30,7 @@ const bookingSchema = new Schema({
         type:String
     },
     trip_cost: {
-        type: String,
+        type: Number,
     },
     duration: {
         type: String,
@@ -43,7 +43,7 @@ const bookingSchema = new Schema({
         ref:'users'
     },
     driverId: {
-        type: [{ type:String }]
+        type: String 
     },
     truck_type: {
         type: String,

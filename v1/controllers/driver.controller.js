@@ -5,7 +5,7 @@ const constants = require("../../config/constants");
 const { sendResponse } = require("../../services/common.service");
 const { generate_Id } = require("../../middleware/common.function");
 const {geocoder} = require("../../middleware/common.function");
-const {calculateTotalPriceInDriver} = require("../../middleware/earning.system")
+const { calculateTotalPriceInDriver } = require("../../middleware/earning.system")
 
 
 exports.Add_driver_detalis = async (req, res) => {
@@ -73,6 +73,7 @@ exports.Add_driver_detalis = async (req, res) => {
     );
   }
 };
+
 
 
 exports.List_of_driver = async (req, res) => {

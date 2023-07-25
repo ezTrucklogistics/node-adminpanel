@@ -42,12 +42,6 @@ exports.Booking = async (req, res) => {
     reqBody.customer_mobile_number = user.mobile_number
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
-
-    driverData.map((item) => {
-
-        sendPushNotification(item._id , item.device_token)
-    });
-    
     const booking = await Bookingsave(reqBody);
 
     booking.deleted_at = undefined;
@@ -133,8 +127,8 @@ exports.booking_cancel  = async (req, res) => {
      booking_cancel.drop_location_lat = undefined;
      booking_cancel.drop_location_long = undefined;
      booking_cancel.userId = undefined;
-
-     await booking
+     
+     await booking.save();
 
     return  sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking_cancel',  booking_cancel )
 

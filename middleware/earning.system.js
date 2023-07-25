@@ -46,12 +46,19 @@ function calculateTotalPrice(distanceInKm, truckType) {
 
 
   
-  function calculateTotalPriceInDriver(basePrice) {
-    // Calculate the TDS deduction (2%)
-    const tdsAmount = (basePrice * 2) / 100;
-    const finalPrice = basePrice - tdsAmount;
+  async function calculateTotalPriceInDriver(basePrice) {
   
-    return finalPrice;
+    // const data  = await booking.find()
+
+    //   data.map((item) => {
+
+    //     item.
+    // })
+
+    // const tdsAmount = (basePrice * 2) / 100;
+    // const finalPrice = basePrice - tdsAmount;
+  
+    // return finalPrice;
   }
   
 
