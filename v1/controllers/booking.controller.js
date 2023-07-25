@@ -7,7 +7,7 @@ const {sendResponse} = require("../../services/common.service")
 const User = require('../../models/user.model')
 const {calculateTotalPrice} = require("../../middleware/earning.system")
 const driver = require("../../models/driver.model")
-const { sendPushNotification } = require("../../middleware/push.notification")
+//const { sendPushNotification } = require("../../middleware/push.notification")
 
 
 
@@ -37,7 +37,7 @@ exports.Booking = async (req, res) => {
     reqBody.duration = duration; 
     const distanceNumber = parseFloat(distance);
     reqBody.trip_cost =  calculateTotalPrice(distanceNumber, reqBody.truck_type);
-    sendPushNotification()
+   // sendPushNotification()
     reqBody.userId = user._id;
     reqBody.customer_mobile_number = user.mobile_number
     reqBody.created_at = await dateFormat.set_current_timestamp();

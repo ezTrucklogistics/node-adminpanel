@@ -98,7 +98,7 @@ const Verify_otp_validator = [
     .not()
     .isEmpty()
     .withMessage(USER_VALIDATION.otp_required)
-    .isString()
+    .isNumeric()
     .withMessage(USER_VALIDATION.otp_is_number)
     .isLength({min:4})
     .withMessage(USER_VALIDATION.otp_length)

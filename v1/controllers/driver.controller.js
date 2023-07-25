@@ -32,13 +32,13 @@ exports.Add_driver_detalis = async (req, res) => {
 
     let file = req.file;
     reqBody.driver_img = file.originalname;
-    reqBody.driver_total_earning = calculateTotalPriceInDriver()
+    //reqBody.driver_total_earning = calculateTotalPriceInDriver()
     reqBody.driverId = generate_Id();
     const pickup_location = await geocoder.geocode(reqBody.driver_current_location);
 
-    pickup_location.map((item) => {
-      reqBody.driver_lat = item.latitude;
-      reqBody.driver_long = item.longitude;
+     pickup_location.map((item) => {
+       reqBody.driver_lat = item.latitude;
+       reqBody.driver_long = item.longitude;
     });
 
     reqBody.created_at = await dateFormat.set_current_timestamp();

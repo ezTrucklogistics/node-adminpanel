@@ -39,6 +39,9 @@ const userSchema = new Schema({
         type: String,
         default: constants.STATUS.ACCOUNT_ACTIVE
     },
+    OTP:{
+        type:Number
+    },
     device_token: {
         type: String,
         default: null

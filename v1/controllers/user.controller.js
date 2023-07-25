@@ -11,7 +11,7 @@ const {
 } = require("../../helper/notifications.helper");
 
 const {
-  generate_Id,
+  generate_Id,generateOTP 
 } = require("../../middleware/common.function");
 const {
   getUser,
@@ -23,7 +23,6 @@ const {
 const constants = require("../../config/constants");
 const { JWT_SECRET } = require("../../keys/keys");
 const {sendResponse} = require("../../services/common.service")
-
 
 exports.signUp = async (req, res) => {
 
@@ -72,7 +71,7 @@ exports.signUp = async (req, res) => {
     reqBody.device_token = reqBody.device_token ? reqBody.device_token : null;
     let file = req.file;
     reqBody.profile_img = file.originalname;
-
+    reqBody.OTP = generateOTP()
     const user = await Usersave(reqBody);
     user.user_type = undefined;
     user.device_token = undefined;
@@ -103,7 +102,9 @@ exports.signUp = async (req, res) => {
 
 
 exports.logout = async (req, res) => {
+
   try {
+
     const userId = req.user._id;
     let UserData = await User.findById(userId);
 
@@ -214,12 +215,14 @@ exports.Otp_Verify = async (req, res) => {
     user.authTokens = newAuthToken;
     user.OTP = "";
     await user.save();
-    return sendResponse(
-      res,
-      constants.WEB_STATUS_CODE.BAD_REQUEST,
-      constants.STATUS_CODE.FAIL,
-      "OTP VERIFY SUCESSFULLY"
-    );
+    // return sendResponse(
+    //   res,
+    //   constants.WEB_STATUS_CODE.BAD_REQUEST,
+    //   constants.STATUS_CODE.FAIL,
+    //   "OTP VERIFY SUCESSFULLY"
+    // );
+
+    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"OTP VERIFY SUCESSFULLY"})
   } catch (err) {
     console.log(err);
     return sendResponse(
@@ -349,6 +352,7 @@ exports.update_customer_detalis = async (req, res) => {
   }
 };
 
+
 exports.customer_account_actived = async (req, res) => {
 
   try {
@@ -394,6 +398,7 @@ exports.customer_account_actived = async (req, res) => {
   }
 };
 
+
 exports.export_customer_data_into_excel_file = async (req, res) => {
   try {
     const users = await User.find({ user_type: 2 });
@@ -437,6 +442,8 @@ exports.export_customer_data_into_excel_file = async (req, res) => {
     );
   }
 };
+
+
 
 exports.customer_file_export_into_csv_file = async (req, res) => {
   try {
