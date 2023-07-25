@@ -4,9 +4,9 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const cors = require("cors");
-
 const cookie = require("cookie-session");
 const flash = require("connect-flash");
+
 
 //swagger
 const swaggerUi = require("swagger-ui-express");
@@ -48,6 +48,7 @@ app.use(
   swaggerUi.setup(swaggerAdminDocument)
 );
 
+
 //Database connection with mongodb
 const mongoose = require("./config/database");
 
@@ -85,5 +86,8 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render("error");
 });
+
+
+
 
 module.exports = app;

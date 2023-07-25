@@ -69,8 +69,6 @@ exports.signUp = async (req, res) => {
 
     reqBody.device_type = reqBody.device_type ? reqBody.device_type : null;
     reqBody.device_token = reqBody.device_token ? reqBody.device_token : null;
-    let file = req.file;
-    reqBody.profile_img = file.originalname;
     reqBody.OTP = generateOTP()
     const user = await Usersave(reqBody);
     user.user_type = undefined;

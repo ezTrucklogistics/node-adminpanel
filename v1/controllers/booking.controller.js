@@ -142,7 +142,6 @@ exports.booking_confirm  = async (req, res) => {
 
   try {
 
-
     const  booking_cancel =  await booking.findOneAndUpdate({ userId:req.user._id }, {
       $set:{booking_status:constants.BOOKING_STATUS.STATUS_CONFIRM}
    },{new:true});

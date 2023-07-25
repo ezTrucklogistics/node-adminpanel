@@ -26,9 +26,6 @@ const bookingSchema = new Schema({
     drop_location_long: {
         type: Number, 
     },
-    customer_mobile_number:{
-        type:String
-    },
     trip_cost: {
         type: Number,
     },

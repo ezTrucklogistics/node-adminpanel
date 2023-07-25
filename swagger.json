@@ -35,8 +35,10 @@
                     "schema": {
                         "type": "object",
                         "required": [
+                            "Image",
                             "email",
-                            "password"
+                            "mobile_number",
+                            "customer_name"
                         ],
                         "properties": {
                             "email": {

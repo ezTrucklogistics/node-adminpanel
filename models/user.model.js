@@ -54,10 +54,6 @@ const userSchema = new Schema({
         type: String,
         default:null
     },
-    profile_img:{
-        type:String,
-        default:null
-    },
     authTokens: {
         type: String,
         default:null
