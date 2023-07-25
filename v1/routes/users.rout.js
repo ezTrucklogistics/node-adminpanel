@@ -32,8 +32,6 @@ const { upload } = require("../../middleware/multer");
 
 router.post(
   "/signUp",
-  user_validator,
-  validation_result,
   signUp
 );
 router.post("/login", login_validator, validation_result, login);
