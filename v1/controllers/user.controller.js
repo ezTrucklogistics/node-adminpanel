@@ -237,13 +237,26 @@ exports.Otp_Verify = async (req, res) => {
 };
 
 exports.generate_auth_tokens = async (req, res) => {
-  try {
-    const refresh_tokens = req.params.refresh_tokens;
 
-    let user = await User.findOne({ refresh_tokens: refresh_tokens });
-    let newToken = await user.generateAuthToken();
-    user.authTokens = newToken;
-    user.save();
+  try {
+
+    const { refresh_tokens } = req.params;
+
+    const verified = jwt.verify(refresh_tokens, JWT_SECRET);
+    console.log(verified)
+
+    let user = await User.findById(verified._id);
+    user.authTokens = await jwt.sign(
+      {
+        data: user.email,
+      },
+      JWT_SECRET,
+      {
+        expiresIn: constants.URL_EXPIRE_TIME,
+      }
+    );
+
+    await user.save();
 
     return sendResponse(
       res,
@@ -283,14 +296,16 @@ exports.get_all_customer = async (req, res) => {
         __v: 0,
         _id: 0,
       }
-    ).limit(30).skip(30);
+    )
 
-    return sendResponse(
-      res,
-      constants.WEB_STATUS_CODE.OK,
-      constants.STATUS_CODE.SUCCESS,
-      "SUCESSFULLY GET ALL CUSTOMER " , customer
-    );
+    // return sendResponse(
+    //   res,
+    //   constants.WEB_STATUS_CODE.OK,
+    //   constants.STATUS_CODE.SUCCESS,
+    //   "SUCESSFULLY GET ALL CUSTOMER " , customer
+    // );
+
+    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"SUCESSFULLY GET ALL CUSTOMER " , customer})
 
   } catch (err) {
     console.log("Error(get_all_customer)", err);
@@ -333,11 +348,12 @@ exports.update_customer_detalis = async (req, res) => {
     );
 
     user.updated_at = await dateFormat.set_current_timestamp();
-    return sendResponse(res,
-      constants.WEB_STATUS_CODE.OK,
-      constants.STATUS_CODE.SUCCESS,
-      "USER DATA SUCESSFULLY UPDATE "
-    );
+    return res.send({msg:"USER DATA SUCESSFULLY UPDATE" , user})
+    // return sendResponse(res,
+    //   constants.WEB_STATUS_CODE.OK,
+    //   constants.STATUS_CODE.SUCCESS,
+    //   "USER DATA SUCESSFULLY UPDATE "
+    // );
 
   } catch (err) {
     console.log("Error(update_customer_detalis)", err);
@@ -379,11 +395,9 @@ exports.customer_account_actived = async (req, res) => {
     );
 
     user.updated_at = await dateFormat.set_current_timestamp();
-    return sendResponse(res,
-      constants.WEB_STATUS_CODE.OK,
-      constants.STATUS_CODE.SUCCESS,
-      "USER ACCOUNT SUCESSFULLY ACTIVED", user
-    );
+    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS,
+      msg:"USER ACCOUNT SUCESSFULLY ACTIVED", user})
+    
 
   } catch (err) {
     console.log("Error(customer_account_actived)", err);

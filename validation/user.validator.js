@@ -56,7 +56,7 @@ const update_customer_validator = [
     .withMessage(USER_VALIDATION.mobile_number_is_required)
     .isString()
     .withMessage(USER_VALIDATION.mobile_is_string)
-    .isLength({ max: 10 })
+    .isLength({ min: 10 })
     .withMessage(USER_VALIDATION.mobile_number_length)
     .isMobilePhone()
     .withMessage("Enter Valid Mobile number")
@@ -113,8 +113,6 @@ const refresh_token__validator = [
     .withMessage(USER_VALIDATION.refresh_token_required)
     .isString()
     .withMessage(USER_VALIDATION.refresh_token_is_string)
-    .isLength({max:24})
-    .withMessage(USER_VALIDATION.refresh_token_length)
     .matches(/^[a-f0-9]+$/)
     .withMessage(USER_VALIDATION.refresh_token_invalid)
     .trim(),

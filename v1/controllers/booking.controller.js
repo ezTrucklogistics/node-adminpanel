@@ -17,8 +17,8 @@ exports.Booking = async (req, res) => {
 
     const reqBody = req.body;
     const user = req.user;
-    const driverData = await driver.find()
-
+    console.log(user)
+                                                                                                                                                                                                                                                                          
     const pickup_location = await geocoder.geocode(reqBody.pickup_location);
 
     pickup_location.map((item) => {
@@ -116,7 +116,7 @@ exports.booking_cancel  = async (req, res) => {
 
   try {
 
-    const  booking_cancel =  await booking.findOneAndUpdate({ userId:req.user._id }, {
+    const  booking_cancel =  await booking.findOneAndUpdate({ userId : req.user._id }, {
       $set:{booking_status:constants.BOOKING_STATUS.STATUS_CANCEL}
    },{returnOriginal: false});
     
@@ -127,8 +127,6 @@ exports.booking_cancel  = async (req, res) => {
      booking_cancel.drop_location_lat = undefined;
      booking_cancel.drop_location_long = undefined;
      booking_cancel.userId = undefined;
-     
-     await booking.save();
 
     return  sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking_cancel',  booking_cancel )
 

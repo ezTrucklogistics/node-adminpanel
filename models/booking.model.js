@@ -38,7 +38,7 @@ const bookingSchema = new Schema({
     distance:{
         type:String,
     },
-    user: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref:'users'
     },

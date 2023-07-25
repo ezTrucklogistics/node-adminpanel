@@ -48,15 +48,13 @@ router.post(
 );
 router.get(
   "/auth_tokens/:refresh_tokens",
-  refresh_token__validator,
-  validation_result,
   generate_auth_tokens
 );
 router.get("/List_of_customer", get_all_customer);
 router.put(
   "/update_customer_detalis",
-  update_customer_validator,
-  validation_result,
+  // update_customer_validator,
+  // validation_result,
   authenticate,
   update_customer_detalis
 );
