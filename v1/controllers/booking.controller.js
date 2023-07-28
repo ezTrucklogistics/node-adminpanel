@@ -181,6 +181,7 @@ exports.booking_confirm  = async (req, res) => {
       { booking_status : constants.BOOKING_STATUS.STATUS_CONFIRM ,  driverId : driverId },
       { new: true }  
     );
+    
      booking_cancel.deleted_at = undefined; 
      booking_cancel.driverId = undefined;
      booking_cancel.pickup_location_lat = undefined;

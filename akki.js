@@ -59,21 +59,32 @@
 // let data = calculateFinalAmount(20000)
 // console.log(data)
 
-async function calculateDriverDailyEarnings(driverId) {
+// async function calculateDriverDailyEarnings(driverId) {
 
-  try {
+//   try {
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0);
 
-    // Find all trips accepted by the driver for today
-    const trips = await Trip.find({ driver: driverId, createdAt: { $gte: today } });
+//     // Find all trips accepted by the driver for today
+//     const trips = await Trip.find({ driver: driverId, createdAt: { $gte: today } });
 
-    // Calculate the driver's daily earnings
-    const dailyEarnings = trips.reduce((acc, trip) => acc + trip.driverEarnings, 0);
+//     // Calculate the driver's daily earnings
+//     const dailyEarnings = trips.reduce((acc, trip) => acc + trip.driverEarnings, 0);
 
-    return dailyEarnings;
-  } catch (err) {
-    throw err;
-  }
-}
+//     return dailyEarnings;
+//   } catch (err) {
+//     throw err;
+//   }
+// }
+
+
+
+const cron = require('node-cron');
+
+
+
+cron.schedule('* * * * *', () =>  {
+  console.log('stopped task');
+})
+

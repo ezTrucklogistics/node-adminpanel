@@ -18,7 +18,7 @@ var router = express.Router();
 const { upload } = require("../../middleware/multer");
 const { driver_authenticate } = require("../../middleware/authenticate");
 
-router.post("/driver_signup", upload.single("file"), driver_signup);
+router.post("/driver_signup", driver_signup);
 router.post("/login", login);
 router.get("/logout", driver_authenticate, logout);
 router.get("/auth_tokens/:refresh_tokens", generate_auth_tokens);

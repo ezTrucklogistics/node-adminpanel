@@ -20,8 +20,8 @@ exports.driver_signup = async (req, res) => {
     const reqBody = req.body;
     const {} = reqBody;
 
-    let file = req.file;
-    reqBody.driver_img = file.originalname;
+    // let file = req.file;
+    // reqBody.driver_img = file.originalname;
     reqBody.driverId = generate_Id();
     const pickup_location = await geocoder.geocode(reqBody.driver_current_location);
 
