@@ -8,25 +8,16 @@ const jwt = require("jsonwebtoken")
 const ExcelJs = require("exceljs");
 const fs = require("fs");
 const driver = require("../../models/driver.model");
-// const {totalEarningbyDriver} = require("../../middleware/earning.system")
 
 
 
-exports.driver_signup = async (req, res) => {
+exports.signup = async (req, res) => {
 
   try {
     
     const reqBody = req.body;
     const {driver_name , driver_email , driver_mobile_number , Aadhar_card_number , pan_card_number,brand,truck_type,driving_licence,account_number,ifsc_code} = reqBody;
-    // let file = req.file;
-    // reqBody.driver_img = file.originalname;
     reqBody.driverId = generate_Id();
-    // const pickup_location = await geocoder.geocode(reqBody.driver_current_location);
-
-    //  pickup_location.map((item) => {
-    //    reqBody.driver_lat = item.latitude;
-    //    reqBody.driver_long = item.longitude;
-    // });
 
     reqBody.authTokens = await jwt.sign(
       {
