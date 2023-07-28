@@ -15,7 +15,6 @@ const {
   validation_result,
 } = require("../../validation/driver.validator");
 var router = express.Router();
-const { upload } = require("../../middleware/multer");
 const { driver_authenticate } = require("../../middleware/authenticate");
 
 router.post("/driver_signup", driver_signup);
