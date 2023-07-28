@@ -1,14 +1,13 @@
-const driver = require("../../models/driver.model");
-const { Driversave } = require("../../v1/services/driver.service");
+
 const dateFormat = require("../../helper/dateformat.helper");
 const constants = require("../../config/constants");
 const { sendResponse } = require("../../services/common.service");
-const { generate_Id } = require("../../middleware/common.function");
-const {geocoder } = require("../../middleware/common.function");
+const { generate_Id } = require("../../middleware/common.function")
 const {JWT_SECRET} = require("../../keys/development.keys")
 const jwt = require("jsonwebtoken")
 const ExcelJs = require("exceljs");
 const fs = require("fs");
+const driver = require("../../models/driver.model");
 // const {totalEarningbyDriver} = require("../../middleware/earning.system")
 
 
@@ -18,17 +17,16 @@ exports.driver_signup = async (req, res) => {
   try {
     
     const reqBody = req.body;
-    const {} = reqBody;
-
+    const {driver_name , driver_email , driver_mobile_number , Aadhar_card_number , pan_card_number,brand,truck_type,driving_licence,account_number,ifsc_code} = reqBody;
     // let file = req.file;
     // reqBody.driver_img = file.originalname;
     reqBody.driverId = generate_Id();
-    const pickup_location = await geocoder.geocode(reqBody.driver_current_location);
+    // const pickup_location = await geocoder.geocode(reqBody.driver_current_location);
 
-     pickup_location.map((item) => {
-       reqBody.driver_lat = item.latitude;
-       reqBody.driver_long = item.longitude;
-    });
+    //  pickup_location.map((item) => {
+    //    reqBody.driver_lat = item.latitude;
+    //    reqBody.driver_long = item.longitude;
+    // });
 
     reqBody.authTokens = await jwt.sign(
       {
@@ -44,22 +42,22 @@ exports.driver_signup = async (req, res) => {
     reqBody.device_token = reqBody.device_token ? reqBody.device_token : null;
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
-    const driver = await Driversave(reqBody);
+    const drivers = await driver.create(reqBody)
 
-    driver.deleted_at = undefined;
-    driver.vehical_number = undefined;
-    driver.account_number = undefined;
-    driver.ifsc_code = undefined;
-    driver.Aadhar_card_number = undefined;
-    driver.pan_card_number = undefined;
-    driver.driving_licence = undefined;
-    driver.driverId = undefined;
-    driver.refresh_tokens = undefined;
-    driver.authTokens = undefined;
-    driver.device_token = undefined;
-    driver.device_type = undefined;
+    drivers.deleted_at = undefined;
+    drivers.vehical_number = undefined;
+    drivers.account_number = undefined;
+    drivers.ifsc_code = undefined;
+    drivers.Aadhar_card_number = undefined;
+    drivers.pan_card_number = undefined;
+    drivers.driving_licence = undefined;
+    drivers.driverId = undefined;
+    drivers.refresh_tokens = undefined;
+    drivers.authTokens = undefined;
+    drivers.device_token = undefined;
+    drivers.device_type = undefined;
 
-    return res.status(constants.WEB_STATUS_CODE.CREATED).send({status:constants.STATUS_CODE.SUCCESS , msg:'SUCCESSFULLY CREATE DRIVER ACCOUNT', driver})
+    return res.status(constants.WEB_STATUS_CODE.CREATED).send({status:constants.STATUS_CODE.SUCCESS , msg:'SUCCESSFULLY CREATE DRIVER ACCOUNT', drivers})
 
   } catch (err) {
     console.log("Error(driver_signup)", err);
