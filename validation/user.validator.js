@@ -29,21 +29,28 @@ const user_validator = [
     .withMessage(USER_VALIDATION.mobile_number_is_required)
     .isString()
     .withMessage(USER_VALIDATION.mobile_is_string)
+    .isLength({min:10})
+    .withMessage("Length should be 10")
     .isMobilePhone()
+    .withMessage("Enter Valid Mobile number")
+    .matches(/((\+*)((0[ -]*)*|((91 )*))((\d{12})+|(\d{10})+))|\d{5}([- ]*)\d{6}/)
     .withMessage("Enter Valid Mobile number")
     .trim(),
 ];
 
 const login_validator = [
+
   body("mobile_number")
     .not()
     .isEmpty()
     .withMessage(USER_VALIDATION.mobile_number_is_required)
     .isString()
     .withMessage(USER_VALIDATION.mobile_is_string)
-    .isLength({ min: 10 })
-    .withMessage(USER_VALIDATION.mobile_number_length)
+    .isLength({min:10})
+    .withMessage("Length should be 10")
     .isMobilePhone()
+    .withMessage("Enter Valid Mobile number")
+    .matches(/((\+*)((0[ -]*)*|((91 )*))((\d{12})+|(\d{10})+))|\d{5}([- ]*)\d{6}/)
     .withMessage("Enter Valid Mobile number")
     .trim(),
 ];
@@ -92,18 +99,7 @@ const update_customer_status_validator = [
     .trim(),
 ];
 
-const Verify_otp_validator = [
 
-  body("OTP")
-    .not()
-    .isEmpty()
-    .withMessage(USER_VALIDATION.otp_required)
-    .isNumeric()
-    .withMessage(USER_VALIDATION.otp_is_number)
-    .isLength({min:4})
-    .withMessage(USER_VALIDATION.otp_length)
-    .trim(),
-];
 
 const refresh_token__validator = [
 
@@ -112,6 +108,8 @@ const refresh_token__validator = [
     .isEmpty()
     .withMessage(USER_VALIDATION.refresh_token_required)
     .isString()
+    .isMongoId()
+    .withMessage('please enter valid token')
     .withMessage(USER_VALIDATION.refresh_token_is_string)
     .matches(/^[a-f0-9]+$/)
     .withMessage(USER_VALIDATION.refresh_token_invalid)
@@ -136,6 +134,5 @@ module.exports = {
   update_customer_status_validator,
   update_customer_validator,
   validation_result,
-  Verify_otp_validator,
   refresh_token__validator
 };

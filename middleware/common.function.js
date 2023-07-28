@@ -16,11 +16,6 @@ exports.generate_Id = () => {
       return  Math.floor(Math.random() * 900) + 100;
 }
 
-exports.generateOTP = () => {
-   
-    return Math.floor((Math.random()*1000000)+1);
-  };
-  
 
 exports.getDistanceAndTime = async (origins , destinations)  => {
 

@@ -9,8 +9,8 @@ module.exports = {
 	'WORKOUT_DEFAULT_STATUS': 'workout_remaing',
 	'DRILL_DEFAULT_STATUS': 'drill_remaing',
 	'USER_TYPE': {
-		'ADMIN': 1,
-		'USER': 2
+		'DRIVER': 1,
+		'CUSTOMER': 2
 	},
 	'USER_SKILL': {
 		'BEGGINER': 1,

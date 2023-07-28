@@ -6,21 +6,26 @@ function calculateTotalPrice(distanceInKm, truckType) {
   let baseCostPerKm, baseCostPerKm2;
 
   switch (truckType) {
+
     case 'dalaauto':
-      baseCostPerKm = 17;
-      baseCostPerKm2 = 18;
+      baseCostPerKm = 18;
+      baseCostPerKm2 = 19;
       break;
     case 'tataace':
       baseCostPerKm = 22;
       baseCostPerKm2 = 23;
       break;
-    case 'pickup':
-      baseCostPerKm = 26;
-      baseCostPerKm2 = 27;
+    case 'small_pickup':
+      baseCostPerKm = 28;
+      baseCostPerKm2 = 29;
       break;
+   case 'large_pickup':
+        baseCostPerKm = 30;
+        baseCostPerKm2 = 31;
+        break;
     case 'eicher':
-      baseCostPerKm = 38;
-      baseCostPerKm2 = 39;
+      baseCostPerKm = 41;
+      baseCostPerKm2 = 42;
       break;
     default:
       throw new Error('Invalid truck type');
@@ -31,36 +36,37 @@ function calculateTotalPrice(distanceInKm, truckType) {
   // Calculate the commission (15%)
   const commissionAmount = (totalCost * 15) / 100;
   const costAfterCommission = totalCost + commissionAmount;
- console.log(costAfterCommission)
   // Calculate the GST (5%)
   const gstAmount = (costAfterCommission * 5) / 100;
   const costAfterGst = costAfterCommission + gstAmount;
- console.log(costAfterCommission)
+
   // Calculate the TDS (2%)
   const tdsAmount = (costAfterGst * 2) / 100;
   const finalPrice = costAfterGst + tdsAmount;
-  console.log(finalPrice)
+
   return finalPrice;
 
 }
 
 
-  
-  async function calculateTotalPriceInDriver(basePrice) {
-  
-    // const data  = await booking.find()
+// function totalEarningbyDriver(totalPrice) {
 
-    //   data.map((item) => {
+//    const commissionAmount = (totalPrice * 15) / 100;
+//   const costAfterCommission = totalPrice - commissionAmount;
+//   // Calculate the GST (5%)
+//   const gstAmount = (costAfterCommission * 5) / 100;
+//   const costAfterGst = costAfterCommission - gstAmount;
 
-    //     item.
-    // })
+//   // Calculate the TDS (2%)
+//   const tdsAmount = (costAfterGst * 2) / 100;
+//   const finalPrice = costAfterGst - tdsAmount;
 
-    // const tdsAmount = (basePrice * 2) / 100;
-    // const finalPrice = basePrice - tdsAmount;
-  
-    // return finalPrice;
-  }
-  
+//    return finalPrice;
+// }
+
+// let totalEarningbyDriver = totalEarningbyDriver(20000)
 
 
-module.exports = {calculateTotalPriceInDriver , calculateTotalPrice}; 
+
+
+module.exports = {calculateTotalPrice}; 

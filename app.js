@@ -11,15 +11,12 @@ const flash = require("connect-flash");
 //swagger
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger.json");
-const swaggerAdminDocument = require("./swaggerAdmin.json");
+
 
 const indexRouter = require("./v1/routes/index");
 const usersRouter = require("./v1/routes/users.rout");
 const bookRouter = require("./v1/routes/booking.rout");
-const driverRouter = require("./v1/routes/driver.rout");
-const indexAdminRouter = require("./admin/routes/index");
-const adminRouter = require("./admin/routes/admin");
-const versionRouter = require("./admin/routes/version");
+const driverRouter = require("./Driver_modules/routes/driver.rout");
 var app = express();
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -42,11 +39,7 @@ app.use(
 
 //swagger
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use(
-  "/api-docs-admin",
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerAdminDocument)
-);
+
 
 
 //Database connection with mongodb
@@ -66,9 +59,7 @@ app.use("/", indexRouter);
 app.use("/v1/users", usersRouter);
 app.use("/v1/book", bookRouter);
 app.use("/v1/driver",driverRouter)
-app.use("/v1/", indexAdminRouter);
-app.use("/admin", adminRouter);
-app.use("/version", versionRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

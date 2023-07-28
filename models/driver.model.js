@@ -1,10 +1,10 @@
 
 const mongoose = require('mongoose');
 const constants = require("../config/constants")
-
+const {JWT_SECRET} = require("../keys/development.keys")
 const Schema = mongoose.Schema;
-
-  
+const jwt = require("jsonwebtoken")
+const dateFormat = require("../helper/dateformat.helper")
 
 //Define Booing schema
 const driverSchema = new Schema({
@@ -33,6 +33,10 @@ const driverSchema = new Schema({
     driver_mobile_number: {
         type: String, 
     },
+    user_type: {
+        type: Number, //1-admin 2-user
+        default: 1
+     },
     vehical_number: {
         type: String,
     }, 
@@ -45,6 +49,14 @@ const driverSchema = new Schema({
     status:{
         type:String,
         default:constants.STATUS.ACCOUNT_DEACCTIVE
+    },
+    total_earning:{
+        type:Number,
+        default:0
+    },
+    daily_earning:{
+        type:Number,
+        default:0
     },
     account_number: {
         type: Number,
@@ -70,8 +82,13 @@ const driverSchema = new Schema({
         type: Number,
         default: null  // 'ANDROID' : 1,	'IOS' : 2,
     },
-    driver_total_earning:{
-        type:String
+    refresh_tokens: {
+        type: String,
+        default:null
+    },
+    authTokens: {
+        type: String,
+        default:null
     },
     created_at: {
         type: String,
@@ -85,6 +102,42 @@ const driverSchema = new Schema({
     },
 });
 
+
+driverSchema.index({
+    "email": 1
+});
+
+//Output data to JSON
+driverSchema.methods.toJSON = function () {
+    const driver = this;
+    const userObject = driver.toObject();
+    return userObject;
+};
+
+//Generating auth token
+driverSchema.methods.generateAuthToken = async function () {
+    const driver = this;
+    const token = await jwt.sign({
+        _id: driver._id.toString()
+    }, JWT_SECRET , { expiresIn: '24h' })
+    driver.tokens = token
+    driver.updated_at = await dateFormat.set_current_timestamp();
+    driver.refresh_tokens_expires = await dateFormat.add_time_current_date(1,'days')
+    await driver.save()
+    return token
+}
+
+driverSchema.methods.generateRefreshToken = async function () {
+    const driver = this;
+    const refresh_tokens = await jwt.sign({
+        _id: driver._id.toString()
+    }, JWT_SECRET)
+
+    driver.refresh_tokens = refresh_tokens
+    driver.updated_at = await dateFormat.set_current_timestamp();
+    await driver.save()
+    return refresh_tokens
+}
 
 //Define user model
 const driver = mongoose.model('driver', driverSchema);

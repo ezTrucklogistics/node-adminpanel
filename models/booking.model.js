@@ -40,15 +40,30 @@ const bookingSchema = new Schema({
         ref:'users'
     },
     driverId: {
-        type: String 
+        type: mongoose.Schema.Types.ObjectId,
+        ref:'driver',
+        default:null
     },
     truck_type: {
         type: String,
-        lowercase:true
+        lowercase:true,
+        enum:["dalaauto" , "tataace", "small_pickup" , "large_pickup" , "eicher"]
     },
     booking_status:{
         type:String,
         default: constants.BOOKING_STATUS.STATUS_PENDING
+    },
+    booking_cancel_reason_for_customer:{
+        type:String,
+        default:""
+    },
+    booking_cancel_reason_for_driver:{
+        type:String,
+        default:""
+    },
+    payment_type:{
+        type:String,
+        default:""
     },
     created_at: {
         type: String,

@@ -1,13 +1,12 @@
-const { Bookingsave , getBooking} = require("../services/booking.service");
+const { Bookingsave} = require("../services/booking.service");
 const { geocoder , getDistanceAndTime } = require("../../middleware/common.function");
 const dateFormat = require("../../helper/dateformat.helper");
 const constants = require("../../config/constants");
 const booking = require("../../models/booking.model");
 const {sendResponse} = require("../../services/common.service")
-const User = require('../../models/user.model')
 const {calculateTotalPrice} = require("../../middleware/earning.system")
-const driver = require("../../models/driver.model")
 //const { sendPushNotification } = require("../../middleware/push.notification")
+
 
 
 
@@ -36,8 +35,9 @@ exports.Booking = async (req, res) => {
     reqBody.distance = distance;
     reqBody.duration = duration; 
     const distanceNumber = parseFloat(distance);
-    reqBody.trip_cost =  calculateTotalPrice(distanceNumber, reqBody.truck_type);
-   // sendPushNotification()
+    reqBody.trip_cost =  calculateTotalPrice(distanceNumber.toFixed(2), reqBody.truck_type);
+
+   //sendPushNotification()
     reqBody.userId = user._id;
     reqBody.customer_mobile_number = user.mobile_number
     reqBody.created_at = await dateFormat.set_current_timestamp();
@@ -52,7 +52,7 @@ exports.Booking = async (req, res) => {
     booking.drop_location_long = undefined;
     booking.userId = undefined;
 
-   return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking_created',booking)
+   return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking_created',booking)
 
   } catch (err) {
     console.log("Error(Booking)", err);
@@ -76,7 +76,8 @@ exports.List_of_Booking = async (req, res) => {
         truck_type: 1,
         status: 1,
       }
-    )
+
+    ).populate('userId', 'customer_name email mobile_number');
 
     return  sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking', bookings)
 
@@ -91,18 +92,18 @@ exports.booking_By_Id = async (req, res) => {
 
   try {
 
-   const { bookingId } = req.params
-    const booking = await getBooking(bookingId)
+    const { bookingId } = req.params
+    const booking_data = await booking.findOne({ _id: bookingId}).populate('userId', 'customer_name email mobile_number').exec()
 
-    booking.deleted_at = undefined;                                                                                                                                                                                                            z``
-    booking.driverId = undefined;
-    booking.pickup_location_lat = undefined;
-    booking.pickup_location_long = undefined;
-    booking.drop_location_lat = undefined;
-    booking.drop_location_long = undefined;
-    booking.userId = undefined;
+    booking_data.deleted_at = undefined;                                                                                                                                                                                                            
+    booking_data.driverId = undefined;
+    booking_data.pickup_location_lat = undefined;
+    booking_data.pickup_location_long = undefined;
+    booking_data.drop_location_lat = undefined;
+    booking_data.drop_location_long = undefined;
+    booking_data.userId = undefined;
 
-    return  sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking', booking)
+    return  sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking', booking_data)
 
   } catch (err) {
     console.log("Error(booking_By_Id)", err);
@@ -112,9 +113,12 @@ exports.booking_By_Id = async (req, res) => {
 
 
  
-exports.booking_cancel  = async (req, res) => {
+exports.booking_cancel_by_customer  = async (req, res) => {
 
   try {
+
+
+      await booking.findOneAndUpdate({ userId : req.user._id } , req.body , {new:true})
 
     const  booking_cancel =  await booking.findOneAndUpdate({ userId : req.user._id }, {
       $set:{booking_status:constants.BOOKING_STATUS.STATUS_CANCEL}
@@ -137,15 +141,18 @@ exports.booking_cancel  = async (req, res) => {
 };
 
 
- 
-exports.booking_confirm  = async (req, res) => {
+exports.booking_cancel_by_driver  = async (req, res) => {
 
   try {
 
-    const  booking_cancel =  await booking.findOneAndUpdate({ userId:req.user._id }, {
-      $set:{booking_status:constants.BOOKING_STATUS.STATUS_CONFIRM}
-   },{new:true});
+    await booking.findOneAndUpdate({ driverId : req.drivers._id } , req.body , {new:true})
+
+    const  booking_cancel =  await booking.findOneAndUpdate({ driverId : req.drivers._id }, {
+      $set:{booking_status:constants.BOOKING_STATUS.STATUS_CANCEL}
+   },{returnOriginal: false});
     
+   await booking_cancel.save();
+
      booking_cancel.deleted_at = undefined;
      booking_cancel.driverId = undefined;
      booking_cancel.pickup_location_lat = undefined;
@@ -154,10 +161,39 @@ exports.booking_confirm  = async (req, res) => {
      booking_cancel.drop_location_long = undefined;
      booking_cancel.userId = undefined;
 
-    return  sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking_confirm',  booking_cancel )
+    return  sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking_cancel',  booking_cancel )
 
   } catch (err) {
     console.log("Error(booking )", err);
     return  sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
   }
 };
+
+
+exports.booking_confirm  = async (req, res) => {
+
+  try {
+
+    const { bookingId , driverId } = req.params;
+
+     await bookingooking.findByIdAndUpdate(
+      bookingId,
+      { booking_status : constants.BOOKING_STATUS.STATUS_CONFIRM ,  driverId : driverId },
+      { new: true }  
+    );
+     booking_cancel.deleted_at = undefined; 
+     booking_cancel.driverId = undefined;
+     booking_cancel.pickup_location_lat = undefined;
+     booking_cancel.pickup_location_long = undefined;
+     booking_cancel.drop_location_lat = undefined;
+     booking_cancel.drop_location_long = undefined;
+     booking_cancel.userId = undefined;
+
+    return  sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking_confirm',  updatedBooking )
+
+  } catch (err) {
+    console.log("Error(booking )", err);
+    return  sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+  }
+};
+
