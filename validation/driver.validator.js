@@ -109,6 +109,24 @@ const driver_validator = [
 ]
 
 
+const login_validator = [
+
+  body("driver_mobile_number")
+    .not()
+    .isEmpty()
+    .withMessage("driver_mobile_number is required")
+    .isString()
+    .withMessage("driver_mobile_number is String")
+    .isLength({min:10})
+    .withMessage("Length should be 10")
+    .isMobilePhone()
+    .withMessage("Enter Valid Mobile number")
+    .matches(/((\+*)((0[ -]*)*|((91 )*))((\d{12})+|(\d{10})+))|\d{5}([- ]*)\d{6}/)
+    .withMessage("Enter Valid Mobile number")
+    .trim(),
+];
+
+
 
 
 
@@ -127,5 +145,5 @@ const validation_result = (req, res, next) => {
 
 module.exports = {
     driver_validator,
-    validation_result
+    validation_result,login_validator
 }

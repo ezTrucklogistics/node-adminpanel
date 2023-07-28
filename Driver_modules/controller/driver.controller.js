@@ -96,9 +96,10 @@ exports.logout = async (req, res) => {
 exports.login = async (req, res) => {
 
   try {
-
-    const { mobile_number } = req.body;
-    let driverdata = await driver.findOne({ mobile_number });
+    
+    let reqBody = req.body;
+    const { driver_mobile_number } = reqBody;
+    let driverdata = await driver.findOne({ driver_mobile_number });
 
     if (driverdata.user_type == 2)
       return sendResponse(
