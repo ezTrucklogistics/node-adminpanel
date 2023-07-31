@@ -140,11 +140,11 @@ router.get(
  * @swagger
  * /v1/users/List_of_customer:
  *   get:
- *     summary: Returns the list of all the books
+ *     summary: Returns the list of all the customers
  *     tags: [Customers]
  *     responses:
  *       200:
- *         description: The list of the books
+ *         description: The list of the customers
  *         content:
  *           application/json:
  *             schema:

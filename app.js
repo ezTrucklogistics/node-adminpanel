@@ -15,6 +15,7 @@ const driverRouter = require("./Driver_modules/routes/driver");
 var app = express();
 app.use(flash());
 
+
 app.use(
   cookie({
     // Cookie config, take a look at the docs...
@@ -64,8 +65,10 @@ const options = {
 			},
 		],
 	},
-	apis: ["./v1/routes/*.js"],
+	apis: ["./v1/routes/*.js" , "./Driver_modules/routes/*.js"],
 };
+
+
 
 const specs = swaggerJsDoc(options);
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
