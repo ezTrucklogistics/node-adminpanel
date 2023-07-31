@@ -1,28 +1,18 @@
 var createError = require("http-errors");
 var express = require("express");
-var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const cors = require("cors");
 const cookie = require("cookie-session");
 const flash = require("connect-flash");
-
-
-//swagger
-const swaggerUi = require("swagger-ui-express");
-const swaggerDocument = require("./swagger.json");
-
+const swaggerUI = require("swagger-ui-express");
+const swaggerJsDoc = require("swagger-jsdoc");
 
 const indexRouter = require("./v1/routes/index");
-const usersRouter = require("./v1/routes/users.rout");
-const bookRouter = require("./v1/routes/booking.rout");
-const driverRouter = require("./Driver_modules/routes/driver.rout");
+const usersRouter = require("./v1/routes/users");
+const bookRouter = require("./v1/routes/booking");
+const driverRouter = require("./Driver_modules/routes/driver");
 var app = express();
-
-app.use(express.static(path.join(__dirname, "public")));
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "ejs");
-
 app.use(flash());
 
 app.use(
@@ -37,8 +27,6 @@ app.use(
   })
 );
 
-//swagger
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
 
@@ -58,7 +46,31 @@ app.use(cookieParser());
 app.use("/", indexRouter);
 app.use("/v1/users", usersRouter);
 app.use("/v1/book", bookRouter);
-app.use("/v1/driver",driverRouter)
+app.use("/v1/driver", driverRouter);
+
+
+const options = {
+
+	definition: {
+		openapi: "3.0.0",
+		info: {
+			title: "Library API",
+			version: "1.0.0",
+			description: "A simple Express Library API",
+		},
+		servers: [
+			{
+				url: "http://localhost:4001",
+			},
+		],
+	},
+	apis: ["./v1/routes/*.js"],
+};
+
+const specs = swaggerJsDoc(options);
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
+
+
 
 
 // catch 404 and forward to error handler
@@ -77,8 +89,6 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render("error");
 });
-
-
 
 
 module.exports = app;

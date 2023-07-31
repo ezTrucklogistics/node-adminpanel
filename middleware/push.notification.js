@@ -1,15 +1,18 @@
 const FCM = require("fcm-node");
-const serverKey =
-  "AAAAse1II2Q:APA91bFF-4gzE9DJ6Egq76-d9nbx9lCUAbZL36BYDTm4gC-3NjCFUO75sprfC8a1nq-igaSHARMUbYF_Yb6boHdWnRVDXpPwqLhh-Dqh9MVKcH5TwL9kPS9frHq4KubrBuOC-9mZtLFE"; // Replace with your Firebase server key
-const fcm = new FCM(serverKey);
+const { SERVICE_KEY } = require("../keys/development.keys")
+const fcm = new FCM(SERVICE_KEY);
 const driver = require("./models/driver"); // Replace with the correct path to your Driver model
 const booking = require("../models/booking.model");
 const User = require("../models/user.model");
 
 
+
 // Function to send notification to active drivers
 exports.sendNotificationToActiveDrivers = async () => {
+
   try {
+
+    
     // Find active drivers from the database
     const activeDrivers = await driver.find({ status: "ACTIVE" });
 
@@ -42,6 +45,7 @@ exports.sendNotificationToActiveDrivers = async () => {
 };
 
 exports.sendNotificationToDrivers = async () => {
+
   try {
     // Find active drivers from the database
     const activeDrivers = await driver.find();
@@ -75,6 +79,7 @@ exports.sendNotificationToDrivers = async () => {
     console.error("Error find in drivers notifications:", err);
   }
 };
+
 
 exports.sendNotificationToCustomers = async () => {
   try {

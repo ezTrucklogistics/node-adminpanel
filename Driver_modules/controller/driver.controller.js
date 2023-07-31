@@ -3,11 +3,12 @@ const dateFormat = require("../../helper/dateformat.helper");
 const constants = require("../../config/constants");
 const { sendResponse } = require("../../services/common.service");
 const { generate_Id } = require("../../middleware/common.function")
-const {JWT_SECRET} = require("../../keys/development.keys")
+const { JWT_SECRET } = require("../../keys/development.keys")
 const jwt = require("jsonwebtoken")
 const ExcelJs = require("exceljs");
 const fs = require("fs");
 const driver = require("../../models/driver.model");
+
 
 
 
@@ -19,6 +20,8 @@ exports.signup = async (req, res) => {
     const {driver_name , driver_email , driver_mobile_number , Aadhar_card_number , pan_card_number,brand,truck_type,driving_licence,account_number,ifsc_code} = reqBody;
     reqBody.driverId = generate_Id();
 
+     let files = req.file
+     console.log(files)
     reqBody.authTokens = await jwt.sign(
       {
         data: reqBody.email,
@@ -62,6 +65,7 @@ exports.signup = async (req, res) => {
     );
   }
 };
+
 
 
 exports.logout = async (req, res) => {
@@ -257,6 +261,7 @@ exports.update_driver_detalis = async (req, res) => {
     );
   }
 };
+
 
 
 exports.driver_account_actived = async (req, res) => {

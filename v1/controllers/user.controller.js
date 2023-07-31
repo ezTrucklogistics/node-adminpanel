@@ -18,6 +18,8 @@ const constants = require("../../config/constants");
 const { JWT_SECRET } = require("../../keys/keys");
 const {sendResponse} = require("../../services/common.service")
 
+
+
 exports.signUp = async (req, res) => {
 
   try {
@@ -29,23 +31,13 @@ exports.signUp = async (req, res) => {
     const checkMail = await isValid(reqBody.email);
 
     if (checkMail == false)
-      return sendResponse(
-        res,
-        constants.WEB_STATUS_CODE.BAD_REQUEST,
-        constants.STATUS_CODE.FAIL,
-        "GENERAL.blackList_mail"
-      );
+    return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"EMAIL FORMATE NOT CORRECT"})
 
     
     const existMobile = await User.findOne({ mobile_number });
 
     if (existMobile) {
-      return sendResponse(
-        res,
-        constants.WEB_STATUS_CODE.BAD_REQUEST,
-        constants.STATUS_CODE.FAIL,
-        "Mobile Number already exist"
-      );
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"MOBILE NUMBER ALREADY EXIST" })
     }
 
     reqBody.customer_Id = generate_Id();

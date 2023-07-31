@@ -41,50 +41,33 @@
 
 
 
-// function calculateFinalAmount(totalPrice) {
+function calculateFinalAmount(totalPrice) {
 
-//    const commissionAmount = (totalPrice * 15) / 100;
-//   const costAfterCommission = totalPrice - commissionAmount;
-//   // Calculate the GST (5%)
-//   const gstAmount = (costAfterCommission * 5) / 100;
-//   const costAfterGst = costAfterCommission - gstAmount;
+   const commissionAmount = (totalPrice * 15) / 100;
+   
+  const costAfterCommission = totalPrice - commissionAmount;
+  // Calculate the GST (5%)
+  const gstAmount = (costAfterCommission * 5) / 100;
+  const costAfterGst = costAfterCommission - gstAmount;
 
-//   // Calculate the TDS (2%)
-//   const tdsAmount = (costAfterGst * 2) / 100;
-//   const finalPrice = costAfterGst - tdsAmount;
+  // Calculate the TDS (2%)
+  const tdsAmount = (costAfterGst * 2) / 100;
+  const finalPrice = costAfterGst - tdsAmount;
 
-//    return finalPrice;
-// }
+   return finalPrice;
+}
 
-// let data = calculateFinalAmount(20000)
-// console.log(data)
-
-// async function calculateDriverDailyEarnings(driverId) {
-
-//   try {
-
-//     const today = new Date();
-//     today.setHours(0, 0, 0, 0);
-
-//     // Find all trips accepted by the driver for today
-//     const trips = await Trip.find({ driver: driverId, createdAt: { $gte: today } });
-
-//     // Calculate the driver's daily earnings
-//     const dailyEarnings = trips.reduce((acc, trip) => acc + trip.driverEarnings, 0);
-
-//     return dailyEarnings;
-//   } catch (err) {
-//     throw err;
-//   }
-// }
+let data = calculateFinalAmount(20000)
+console.log(data)
 
 
 
-const cron = require('node-cron');
 
 
 
-cron.schedule('* * * * *', () =>  {
-  console.log('stopped task');
-})
+
+
+
+
+
 
