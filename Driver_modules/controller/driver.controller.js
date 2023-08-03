@@ -467,7 +467,7 @@ exports.driver_daily_earning = async (req, res) => {
      
 
   } catch (err) {
-    console.log("Error(driver_total_earning)", err);
+    console.log("Error(driver_daily_earning)", err);
     return sendResponse(
       res,
       constants.WEB_STATUS_CODE.SERVER_ERROR,

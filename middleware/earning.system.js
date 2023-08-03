@@ -1,8 +1,6 @@
-const booking = require('../models/booking.model')
+
 const cron = require('node-cron');
-const booking = require("../models/booking.model");
-const driver = require('../models/driver.model');
-const axios = require('axios');
+
 
 function calculateTotalPrice(distanceInKm, truckType) {
   
