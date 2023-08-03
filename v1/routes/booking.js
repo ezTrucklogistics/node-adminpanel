@@ -9,7 +9,7 @@ const {
   booking_cancel_by_driver,
 } = require("../controllers/booking.controller");
 var router = express.Router();
-const { authenticate } = require("../../middleware/authenticate");
+const { authenticate, driver_authenticate } = require("../../middleware/authenticate");
 const {
   booking_validator,
   booking_validation_result,

@@ -1,5 +1,8 @@
 const booking = require('../models/booking.model')
-
+const cron = require('node-cron');
+const booking = require("../models/booking.model");
+const driver = require('../models/driver.model');
+const axios = require('axios');
 
 function calculateTotalPrice(distanceInKm, truckType) {
   
@@ -43,30 +46,45 @@ function calculateTotalPrice(distanceInKm, truckType) {
   // Calculate the TDS (2%)
   const tdsAmount = (costAfterGst * 2) / 100;
   const finalPrice = costAfterGst + tdsAmount;
-
   return finalPrice;
 
 }
 
 
-// function totalEarningbyDriver(totalPrice) {
+function totalEarningbyDriver(totalPrice) {
+    
+   const commissionAmount = (totalPrice * 15) / 100;
+   const costAfterCommission = totalPrice - commissionAmount;
+  // Calculate the GST (5%)
+  const gstAmount = (costAfterCommission * 5) / 100;
+  const costAfterGst = costAfterCommission - gstAmount;
 
-//    const commissionAmount = (totalPrice * 15) / 100;
-//   const costAfterCommission = totalPrice - commissionAmount;
-//   // Calculate the GST (5%)
-//   const gstAmount = (costAfterCommission * 5) / 100;
-//   const costAfterGst = costAfterCommission - gstAmount;
+  // Calculate the TDS (2%)
+  const tdsAmount = (costAfterGst * 2) / 100;
+  const finalPrice = costAfterGst - tdsAmount;
+  let data = Math.floor(finalPrice)
+  return data;
 
-//   // Calculate the TDS (2%)
-//   const tdsAmount = (costAfterGst * 2) / 100;
-//   const finalPrice = costAfterGst - tdsAmount;
-
-//    return finalPrice;
-// }
-
-// let totalEarningbyDriver = totalEarningbyDriver(20000)
-
+}
 
 
 
-module.exports = {calculateTotalPrice}; 
+
+// Main function to set up the cron job
+function setupCronJob() {
+  // Set up the cron job to run every hour from 12:00 AM to 12:00 PM (UTC time)
+  cron.schedule('0 0-11 * * *', () => {
+    console.log('Cron job started at:', new Date().toLocaleString());
+    console.log('Cron job completed at:', new Date().toLocaleString());
+  });
+
+  console.log('Cron job set up successfully.');
+}
+
+// Call the main function to set up the cron job
+setupCronJob();
+
+
+
+
+module.exports = {calculateTotalPrice , totalEarningbyDriver , setupCronJob}; 

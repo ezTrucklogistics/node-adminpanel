@@ -8,8 +8,9 @@ const jwt = require("jsonwebtoken")
 const ExcelJs = require("exceljs");
 const fs = require("fs");
 const driver = require("../../models/driver.model");
-
-
+const booking = require("../../models/booking.model")
+const {totalEarningbyDriver} = require("../../middleware/earning.system")
+const cron = require('node-cron');
 
 
 exports.signup = async (req, res) => {
@@ -397,5 +398,86 @@ exports.driver_file_export_into_csv_file = async (req, res) => {
     );
   }
 };
+
+
+
+
+exports.driver_total_earning = async (req, res) => {
+
+  try {
+    
+    const  driverId  = req.drivers._id;
+
+    const drivers = await booking.find({ driverId })
+
+    let sum = 0;
+
+    for(let i=0; i<drivers.length; i++){
+        
+         let data = totalEarningbyDriver(drivers[i].trip_cost)
+         sum += data;
+    }
+    
+    const total_earning = Math.floor(sum);
+    const driverdata = await driver.findById(driverId)
+
+    driverdata.total_earning = total_earning;
+    await driverdata.save()
+
+    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"DRIVER TOTAL EARNING IS :" , total_earning})
+     
+
+  } catch (err) {
+    console.log("Error(driver_total_earning)", err);
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
+  }
+};
+
+
+exports.driver_daily_earning = async (req, res) => {
+
+  try {
+    
+    const  driverId  = req.drivers._id;
+
+    const drivers = await booking.find({ driverId })
+
+    let sum = 0;
+
+    for(let i=0; i<drivers.length; i++){
+        
+         let data = totalEarningbyDriver(drivers[i].trip_cost)
+         sum += data;
+    }
+    
+    const total_earning = Math.floor(sum);
+    const driverdata = await driver.findOneAndUpdate({driverId} , {$set:{daily_earning:total_earning}});
+    await driverdata.save()
+    let daily_earning =  cron.schedule('0 0-11 * * *', driverdata)
+
+
+    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"DRIVER DAILY EARNING IS :" , daily_earning})
+     
+
+  } catch (err) {
+    console.log("Error(driver_total_earning)", err);
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
+  }
+};
+
 
 

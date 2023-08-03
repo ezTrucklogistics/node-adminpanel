@@ -16,6 +16,7 @@ exports.Booking = async (req, res) => {
 
     const reqBody = req.body;
     const user = req.user;
+
     console.log(user)
                                                                                                                                                                                                                                                                           
     const pickup_location = await geocoder.geocode(reqBody.pickup_location);
@@ -59,6 +60,7 @@ exports.Booking = async (req, res) => {
    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
   }
 };
+
 
 
 exports.List_of_Booking = async (req, res) => {
