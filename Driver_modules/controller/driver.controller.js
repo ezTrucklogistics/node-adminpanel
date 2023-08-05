@@ -264,6 +264,35 @@ exports.update_driver_detalis = async (req, res) => {
 };
 
 
+exports.delete_driver_detalis = async (req, res) => {
+
+  try {
+
+    const { driverId } = req.query;
+
+    if (!driverId) return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"DRIVER ID NOT FOUND" , driverdata})
+
+    let driverdata = await driver.findByIdAndDelete(driverId);
+
+    if (!driverdata)
+     return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"DRIVER DATA NOT FOUND" , driverdata})
+
+    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"DRIVER DATA DELETE SUCESSFULLY" , driverdata})
+
+  } catch (err) {
+    console.log("Error(delete_driver_detalis)", err);
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
+  }
+};
+
+
 
 exports.driver_account_actived = async (req, res) => {
 

@@ -282,6 +282,35 @@ exports.update_customer_detalis = async (req, res) => {
 };
 
 
+exports.delete_customer_detalis = async (req, res) => {
+
+  try {
+
+   const { customerId } = req.query;
+
+    if (!customerId) return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"3 DIGIT OF CUSTOMER ENTER"})
+
+    let customerdata = await User.findOneAndDelete({_id: customerId});
+
+    if (!customerdata)
+     return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"CUSTOMER DATA NOT FOUND"})
+
+    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"CUSTOMER DATA DELETE SUCESSFULLY" , customerdata})
+
+  } catch (err) {
+    console.log("Error(delete_customer_detalis)", err);
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
+  }
+};
+
+
 exports.customer_account_actived = async (req, res) => {
 
   try {

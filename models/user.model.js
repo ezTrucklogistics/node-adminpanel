@@ -20,7 +20,7 @@ const userSchema = new Schema({
         lowercase: true,
     },
     customer_Id :{
-        type:Number,
+        type:String,
         default:null
     },
     customer_name: {

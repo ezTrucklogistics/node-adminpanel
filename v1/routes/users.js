@@ -21,6 +21,7 @@ const {
   customer_account_actived,
   export_customer_data_into_excel_file,
   customer_file_export_into_csv_file,
+  delete_customer_detalis,
   
 } = require("../controllers/user.controller");
 
@@ -279,6 +280,6 @@ router.post("/customer_data_export_excel" , export_customer_data_into_excel_file
  */
 
 router.post("/customer_data_export_csv" , customer_file_export_into_csv_file)
-
+router.delete("/delete_customer_account" ,delete_customer_detalis)
 
 module.exports = router;

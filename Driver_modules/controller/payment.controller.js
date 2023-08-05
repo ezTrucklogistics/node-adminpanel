@@ -3,7 +3,7 @@ const { sendResponse } = require("../../services/common.service");
 const constants = require("../../config/constants");
 const sdk = require("api")("@cashfreedocs-new/v3#z7c5zzlkqza7c0");
 const dateFormate = require("../../helper/dateformat.helper")
-
+const refund  = require("../../models/refund.model")
 
 
 exports.create_payment_order = async (req, res) => {
@@ -11,7 +11,7 @@ exports.create_payment_order = async (req, res) => {
   try {
 
     let reqBody = req.body;
-    sdk.server('https://api.cashfree.com/pg');
+    //sdk.server('https://api.cashfree.com/pg');
     const data = await sdk.createOrder(
       {
 
@@ -27,9 +27,9 @@ exports.create_payment_order = async (req, res) => {
         order_id:reqBody.order_id
       },
       {
-        "x-client-id": "131642e290fab66ebbe5b52d62246131",
-        "x-client-secret": "0f18e731a53e6a6ea065af4bf44419b6f2eadda6",
-        "x-api-version": "2022-09-01",
+        'x-client-id': '847673e995aa46bb6de60ae4276748',
+        'x-client-secret': 'e760149f048327c3588778e26e56b2d779e2fb51',
+        'x-api-version': '2022-09-01'
       }
     );
 
@@ -143,27 +143,28 @@ exports.GetOrder = async (req, res) => {
     }
   };
 
+
   exports.OrderPay = async (req, res) => {
 
     try {
 
-      let { order_id } = req.query
+      let { payment_session_id } = req.query
   
        sdk.server('https://api.cashfree.com/pg');
        
-      const data = await sdk.preauthorization({
-        order_id: order_id,
+      const data = await sdk.OrderPay({
+        order_id: payment_session_id,
         "x-client-id": "131642e290fab66ebbe5b52d62246131",
         "x-client-secret": "0f18e731a53e6a6ea065af4bf44419b6f2eadda6",
         "x-api-version": "2022-09-01",
       })
   
-      await Payment.findOneAndUpdate({order_id} , {$set:{payment_method:data}})
+      await Payment.findOneAndUpdate({order_id} , {$set:{ $push: { payment_method : data } }}, {new:true})
       return res
         .status(constants.WEB_STATUS_CODE.OK)
         .send({
           status: constants.STATUS_CODE.SUCCESS,
-          msg: "SUCCESSFULLY AUTHORIZISED PAYMENT",
+          msg: "SUCCESSFULLY ORDER",
           data
         });
   
@@ -175,4 +176,177 @@ exports.GetOrder = async (req, res) => {
         
       });
     }
+  }; 
+
+
+  //........................ Refund all Api......................................
+
+  exports.create_payment_refund = async (req, res) => {
+
+    try {
+  
+      let {order_id , refund_amount } = req.query;
+
+      sdk.server('https://sandbox.cashfree.com/pg');
+
+      const data = await sdk.createrefund(
+        {
+  
+          refund_amount: refund_amount
+        }, {
+          order_id: order_id,
+          'x-client-id': '847673e995aa46bb6de60ae4276748',
+          'x-client-secret': 'e760149f048327c3588778e26e56b2d779e2fb51',
+          'x-api-version': '2022-09-01'
+        
+        },
+      );
+  
+  
+      // // Save the payment data to MongoDB
+      // const paymentData = new Payment({
+      
+      //   created_at:data.data.created_at,
+      //   driverId: data.data.customer_details.customer_id,
+      //   driver_name: data.data.customer_details.customer_name,
+      //   driver_email: data.data.customer_details.customer_email,
+      //   driver_phone: data.data.customer_details.customer_phone,
+      //   order_amount:data.data.order_amount,
+      //   order_currency:data.data.order_currency,
+      //   order_expiry_time:data.data.order_expiry_time,
+      //   order_id:data.data.order_id,
+      //   payments_url: data.data.payments.url,
+      //   refunds_url: data.data.refunds.url,
+      //   settlements_url: data.data.settlements.url,
+      //   driver_bank_account_number:reqBody.driver_bank_account_number,
+      //   ifsc_code:reqBody.ifsc_code,
+      //   payment_session_id:data.data.payment_session_id
+        
+      // });
+  
+      // await paymentData.save();
+    
+  
+      return res
+        .status(constants.WEB_STATUS_CODE.CREATED)
+        .send({
+          status: constants.STATUS_CODE.SUCCESS,
+          msg: "PAYMENT REFUND CREATED SUCCESSFULLY",
+          data
+        });
+  
+    } catch (err) {
+      console.error("Error( create_payment_refund )", err);
+      return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+        status: constants.STATUS_CODE.ERROR,
+        msg: "Something went wrong while creating the payment order.",
+        
+      });
+    }
   };
+
+
+  exports.GetAllRefund = async (req, res) => {
+
+    try {
+
+      let { order_id } = req.query
+  
+      // sdk.server('https://api.cashfree.com/pg');
+       
+      const data = await sdk.getallrefundsfororde({
+        order_id: order_id,
+          'x-client-id': '847673e995aa46bb6de60ae4276748',
+          'x-client-secret': 'e760149f048327c3588778e26e56b2d779e2fb51',
+          'x-api-version': '2022-09-01'
+      })
+  
+      return res
+        .status(constants.WEB_STATUS_CODE.OK)
+        .send({
+          status: constants.STATUS_CODE.SUCCESS,
+          msg: "SUCCESSFULLY GET ALL REFUND AMOUNT",
+          data
+        });
+  
+    } catch (err) {
+      console.error("Error(GetAllRefund)", err);
+      return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+        status: constants.STATUS_CODE.ERROR,
+        msg: "Something went wrong while creating the payment order.",
+        
+      });
+    }
+  }; 
+
+
+  exports.GetRefund = async (req, res) => {
+
+    try {
+
+      let { order_id } = req.query
+  
+      // sdk.server('https://api.cashfree.com/pg');
+       
+      const data = await sdk.getRefund({
+        order_id: order_id,
+          'x-client-id': '847673e995aa46bb6de60ae4276748',
+          'x-client-secret': 'e760149f048327c3588778e26e56b2d779e2fb51',
+          'x-api-version': '2022-09-01'
+      })
+  
+      return res
+        .status(constants.WEB_STATUS_CODE.OK)
+        .send({
+          status: constants.STATUS_CODE.SUCCESS,
+          msg: "SUCCESSFULLY GET REFUND AMOUNT",
+          data
+        });
+  
+    } catch (err) {
+
+      console.error("Error(GetRefund)", err);
+      return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+        status: constants.STATUS_CODE.ERROR,
+        msg: "Something went wrong while creating the payment order.",
+        
+      });
+    }
+  }; 
+
+
+   //........................Settlements all Api......................................
+
+   exports.Get_Settlements_by_Order_ID = async (req, res) => {
+
+    try {
+
+      let { order_id } = req.query
+  
+      // sdk.server('https://api.cashfree.com/pg');
+       
+      const data = await sdk.getRefund({
+        order_id: order_id,
+          'x-client-id': '847673e995aa46bb6de60ae4276748',
+          'x-client-secret': 'e760149f048327c3588778e26e56b2d779e2fb51',
+          'x-api-version': '2022-09-01'
+      })
+  
+      return res
+        .status(constants.WEB_STATUS_CODE.OK)
+        .send({
+          status: constants.STATUS_CODE.SUCCESS,
+          msg: "SUCCESSFULLY GET SETTLEMENT AMOUNT",
+          data
+        });
+  
+    } catch (err) {
+
+      console.error("Error(Get_Settlements_by_Order_ID)", err);
+      return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+        status: constants.STATUS_CODE.ERROR,
+        msg: "Something went wrong while creating the payment order.",
+        
+      });
+    }
+  }; 
