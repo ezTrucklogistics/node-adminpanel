@@ -41,7 +41,7 @@ const PaymentSchema = new Schema({
     settlements_url: {type:String},
     order_expiry_time:{type:String},
     payment_session_id:{type:String},
-    payment_method:{type:Object},
+    payment_method:{type:Array},
     created_at: {
         type: String,
     },
