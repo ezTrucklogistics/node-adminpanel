@@ -72,8 +72,7 @@ exports.signup = async (req, res) => {
 exports.logout = async (req, res) => {
 
   try {
-    
-    console.log(req.drivers)
+
     const driverId = req.drivers._id;
     let driverData = await driver.findById(driverId);
 
@@ -132,7 +131,6 @@ exports.login = async (req, res) => {
     driverdata.refresh_tokens = undefined;
     driverdata.deleted_at = undefined;
     driverdata.status = undefined;
-    driverdata.driverId = undefined;
     driverdata.__v = undefined;
     driverdata._id = undefined;
 
@@ -268,11 +266,11 @@ exports.delete_driver_detalis = async (req, res) => {
 
   try {
 
-    const { driverId } = req.query;
+    const  driverId  = req.drivers._id;
 
-    if (!driverId) return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"DRIVER ID NOT FOUND" , driverdata})
+    if (!driverId) return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"DRIVER iD NOT FOUND" , driverdata})
 
-    let driverdata = await driver.findByIdAndDelete(driverId);
+    let driverdata = await driver.findOneAndDelete({_id: driverId});
 
     if (!driverdata)
      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"DRIVER DATA NOT FOUND" , driverdata})
@@ -280,7 +278,7 @@ exports.delete_driver_detalis = async (req, res) => {
     return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"DRIVER DATA DELETE SUCESSFULLY" , driverdata})
 
   } catch (err) {
-    console.log("Error(delete_driver_detalis)", err);
+    console.log("Error(update_driver_detalis)", err);
     return sendResponse(
       res,
       constants.WEB_STATUS_CODE.SERVER_ERROR,

@@ -146,7 +146,6 @@ exports.login = async (req, res) => {
     user.refresh_tokens = undefined;
     user.deleted_at = undefined;
     user.status = undefined;
-    user.customer_Id = undefined;
     user.__v = undefined;
     user._id = undefined;
 
@@ -286,7 +285,7 @@ exports.delete_customer_detalis = async (req, res) => {
 
   try {
 
-   const { customerId } = req.query;
+   const {  } = req.query;
 
     if (!customerId) return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"3 DIGIT OF CUSTOMER ENTER"})
 
