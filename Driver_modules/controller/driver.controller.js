@@ -312,6 +312,7 @@ exports.driver_account_actived = async (req, res) => {
 };
 
 
+
 exports.export_driver_data_into_excel_file = async (req, res) => {
 
   try {
@@ -401,7 +402,6 @@ exports.driver_file_export_into_csv_file = async (req, res) => {
 
 
 
-
 exports.driver_total_earning = async (req, res) => {
 
   try {
@@ -459,14 +459,14 @@ exports.driver_daily_earning = async (req, res) => {
     
     const total_earning = Math.floor(sum);
     const driverdata = await driver.findOneAndUpdate({driverId} , {$set:{daily_earning:total_earning}});
+    cron.schedule('0 0-11 * * *', driverdata)
     await driverdata.save()
-    let daily_earning =  cron.schedule('0 0-11 * * *', driverdata)
-
 
     return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"DRIVER DAILY EARNING IS :" , daily_earning})
      
 
   } catch (err) {
+
     console.log("Error(driver_daily_earning)", err);
     return sendResponse(
       res,

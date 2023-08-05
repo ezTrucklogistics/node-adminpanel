@@ -1,4 +1,4 @@
-var express = require("express");
+const express = require("express");
 const {signup,
   login,
   logout,
@@ -221,6 +221,8 @@ router.put("/update_driver_detalis" ,driver_authenticate, update_driver_detalis)
  *       400:
  *         description: Bad Request
  */
+
+
 router.post("/driver_data_export_excel" , export_driver_data_into_excel_file)
 
 /**
@@ -245,5 +247,7 @@ router.post("/driver_data_export_excel" , export_driver_data_into_excel_file)
 router.post("/driver_data_export_csv" , driver_file_export_into_csv_file)
 router.post("/driver_total_earning" ,driver_authenticate, driver_total_earning)
 router.post("/driver_daily_earning" , driver_daily_earning)
+
+
 
 module.exports = router;

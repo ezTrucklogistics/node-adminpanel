@@ -68,21 +68,9 @@ function totalEarningbyDriver(totalPrice) {
 
 
 
-// Main function to set up the cron job
-function setupCronJob() {
-  // Set up the cron job to run every hour from 12:00 AM to 12:00 PM (UTC time)
-  cron.schedule('0 0-11 * * *', () => {
-    console.log('Cron job started at:', new Date().toLocaleString());
-    console.log('Cron job completed at:', new Date().toLocaleString());
-  });
-
-  console.log('Cron job set up successfully.');
-}
-
-// Call the main function to set up the cron job
-setupCronJob();
 
 
 
 
-module.exports = {calculateTotalPrice , totalEarningbyDriver , setupCronJob}; 
+
+module.exports = {calculateTotalPrice , totalEarningbyDriver}; 

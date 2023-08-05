@@ -2,7 +2,6 @@ var createError = require("http-errors");
 var express = require("express");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-const cors = require("cors");
 const cookie = require("cookie-session");
 const flash = require("connect-flash");
 const swaggerUI = require("swagger-ui-express");
@@ -12,6 +11,8 @@ const indexRouter = require("./v1/routes/index");
 const usersRouter = require("./v1/routes/users");
 const bookRouter = require("./v1/routes/booking");
 const driverRouter = require("./Driver_modules/routes/driver");
+const paymentRouter = require("./Driver_modules/routes/payment")
+
 var app = express();
 app.use(flash());
 
@@ -34,7 +35,6 @@ app.use(
 //Database connection with mongodb
 const mongoose = require("./config/database");
 
-app.use(cors());
 app.use(logger("dev"));
 app.use(express.json());
 app.use(
@@ -48,7 +48,7 @@ app.use("/", indexRouter);
 app.use("/v1/users", usersRouter);
 app.use("/v1/book", bookRouter);
 app.use("/v1/driver", driverRouter);
-
+app.use("/v1/payment" , paymentRouter)
 
 const options = {
 
