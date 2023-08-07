@@ -4,9 +4,7 @@ const User = require("../../models/user.model");
 const ExcelJs = require("exceljs");
 const fs = require("fs");
 const { isValid } = require("../../services/blackListMail");
-const {
-  generate_Id,generateOTP 
-} = require("../../middleware/common.function");
+
 const {
   getUser,
   updateUser,
@@ -40,7 +38,7 @@ exports.signUp = async (req, res) => {
       return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"MOBILE NUMBER ALREADY EXIST" })
     }
 
-    reqBody.customer_Id = generate_Id();
+    reqBody.customer_Id = Math.floor(100000 + Math.random() * 900) + 1
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
     reqBody.authTokens = await jwt.sign(
