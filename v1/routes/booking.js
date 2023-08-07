@@ -23,7 +23,7 @@ const {
 
 /**
  * @swagger
- * https://fexmy.co/v1/book/create_new_booking:
+ * /v1/book/create_new_booking:
  *   post:
  *     summary: Create a new Booking
  *     tags: [Booking]
@@ -63,7 +63,7 @@ router.post(
 
 /**
  * @swagger
- * https://fexmy.co/v1/book/List_of_booking:
+ * /v1/book/List_of_booking:
  *   get:
  *     summary: Returns the list of all the books
  *     tags: [Booking]
@@ -82,7 +82,7 @@ router.get("/List_of_booking", List_of_Booking);
 
 /**
  * @swagger
- * https://fexmy.co/v1/book/Booking_By_Id/{bookingId}:
+ * /v1/book/Booking_By_Id/{bookingId}:
  *   get:
  *     summary: Get booking by ID
  *     tags: [Booking]
@@ -113,7 +113,7 @@ router.get(
 
 /**
  * @swagger
- * https://fexmy.co/v1/book/booking_cancel_by_customer/{bookingId}:
+ * /v1/book/booking_cancel_by_customer/{bookingId}:
  *   put:
  *     summary: Get booking by ID
  *     tags: [Booking]
@@ -145,7 +145,7 @@ router.put(
 
 /**
  * @swagger
- * https://fexmy.co/v1/book/booking_cancel_by_driver/{bookingId}:
+ * /v1/book/booking_cancel_by_driver/{bookingId}:
  *   put:
  *     summary: Get booking by ID
  *     tags: [Booking]
@@ -176,7 +176,7 @@ router.put(
 
 /**
  * @swagger
- * https://fexmy.co/v1/book/booking_confirm/{bookingId}/{driverId}:
+ * /v1/book/booking_confirm/{bookingId}/{driverId}:
  *   put:
  *     summary: Get booking by ID
  *     tags: [Booking]
@@ -204,6 +204,6 @@ router.put(
 );
 
 router.post("/booking_otp_verify" , Booking_otp_verify)
-router.post("/distance_by_driver_customer" , customer_to_driver_distance)
+router.post("/distance_by_driver_customer" ,authenticate, customer_to_driver_distance)
 
 module.exports = router;

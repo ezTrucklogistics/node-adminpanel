@@ -36,7 +36,7 @@ const {
 
 /**
  * @swagger
- * https://fexmy.co/v1/users/signUp:
+ * /v1/users/signUp:
  *   post:
  *     summary: Signup a new user
  *     tags: [Customers]
@@ -68,7 +68,7 @@ router.post(
 
 /**
  * @swagger
- * https://fexmy.co/v1/users/login:
+ * /v1/users/login:
  *   post:
  *     summary: customer login sucessfully
  *     tags: [Customers]
@@ -92,7 +92,7 @@ router.post("/login", login_validator, validation_result, login);
 
 /**
  * @swagger
- * https://fexmy.co/v1/users/logout:
+ * /v1/users/logout:
  *   get:
  *     summary: Logout the customer
  *     tags: [Customers]
@@ -114,7 +114,7 @@ router.get("/logout", authenticate, logout);
 
 /**
  * @swagger
- * https://fexmy.co/v1/users/auth_tokens/{refresh_token}:
+ * /v1/users/auth_tokens/{refresh_token}:
  *   get:
  *     summary: Generate authentication tokens using a refresh token
  *     tags: [Customers]
@@ -139,7 +139,7 @@ router.get(
 
 /**
  * @swagger
- * https://fexmy.co/v1/users/List_of_customer:
+ * /v1/users/List_of_customer:
  *   get:
  *     summary: Returns the list of all the customers
  *     tags: [Customers]
@@ -158,7 +158,7 @@ router.get("/List_of_customer", get_all_customer);
 
 /**
  * @swagger
- * https://fexmy.co/v1/users/update_customer_details:
+ * /v1/users/update_customer_details:
  *   put:
  *     summary: Update customer details
  *     tags: [Customers]
@@ -205,7 +205,7 @@ router.put(
 
 /**
  * @swagger
- * https://fexmy.co/v1/users/account_actived:
+ * /v1/users/account_actived:
  *   put:
  *     summary: Update customer details
  *     tags: [Customers]
@@ -239,7 +239,7 @@ router.put(
 
 /**
  * @swagger
- * https://fexmy.co/v1/users/customer_data_export_excel:
+ * /v1/users/customer_data_export_excel:
  *   post:
  *     summary: create new excel file
  *     tags: [Customers]
@@ -261,7 +261,7 @@ router.post("/customer_data_export_excel" , export_customer_data_into_excel_file
 
 /**
  * @swagger
- * https://fexmy.co/v1/users/customer_data_export_csv:
+ * /v1/users/customer_data_export_csv:
  *   post:
  *     summary: create new csv file
  *     tags: [Customers]
