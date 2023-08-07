@@ -58,7 +58,7 @@ const options = {
 		},
 		servers: [
 			{
-				url: "http://localhost:4001",
+				url: "https://fexmy.co",
 			},
 		],
 	},

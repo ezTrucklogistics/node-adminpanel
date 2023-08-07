@@ -19,7 +19,7 @@ const { driver_authenticate, authenticate } = require("../../middleware/authenti
 
 /**
  * @swagger
- * /v1/driver/signUp:
+ * https://fexmy.co/v1/driver/signUp:
  *   post:
  *     summary: Signup a new driver
  *     tags: [Drivers]
@@ -47,7 +47,7 @@ router.post("/signup", signup);
 
 /**
  * @swagger
- * /v1/driver/login:
+ * https://fexmy.co/v1/driver/login:
  *   post:
  *     summary: driver login sucessfully
  *     tags: [Drivers]
@@ -72,7 +72,7 @@ router.post("/login",login_validator, validation_result, login);
 
 /**
  * @swagger
- * /v1/driver/logout:
+ * https://fexmy.co/v1/driver/logout:
  *   get:
  *     summary: Logout the Driver
  *     tags: [Drivers]
@@ -94,7 +94,7 @@ router.get("/logout", driver_authenticate, logout);
 
 /**
  * @swagger
- * /v1/driver/auth_tokens/{refresh_token}:
+ * https://fexmy.co/v1/driver/auth_tokens/{refresh_token}:
  *   get:
  *     summary: Generate authentication tokens using a refresh token
  *     tags: [Drivers]
@@ -117,7 +117,7 @@ router.get("/auth_tokens/:refresh_tokens", generate_auth_tokens);
 
 /**
  * @swagger
- * /v1/driver/List_of_driver:
+ * https://fexmy.co/v1/driver/List_of_driver:
  *   get:
  *     summary: Returns the list of all the books
  *     tags: [Drivers]
@@ -135,7 +135,7 @@ router.get("/List_of_driver", get_all_driver);
 
 /**
  * @swagger
- * /v1/driver/driver_status_actived:
+ * https://fexmy.co/v1/driver/driver_status_actived:
  *   put:
  *     summary: driver_status details
  *     tags: [Drivers]
@@ -164,7 +164,7 @@ router.put("/driver_status_actived", driver_authenticate , driver_account_active
 
 /**
  * @swagger
- * /v1/driver/update_driver_detalis:
+ * https://fexmy.co/v1/driver/update_driver_detalis:
  *   put:
  *     summary: Update customer details
  *     tags: [Drivers]
@@ -206,7 +206,7 @@ router.put("/update_driver_detalis" ,driver_authenticate, update_driver_detalis)
 
 /**
  * @swagger
- * /v1/driver/driver_data_export_excel:
+ * https://fexmy.co/v1/driver/driver_data_export_excel:
  *   post:
  *     summary: create new excel file
  *     tags: [Drivers]
@@ -228,7 +228,7 @@ router.post("/driver_data_export_excel" , export_driver_data_into_excel_file)
 
 /**
  * @swagger
- * /v1/driver/driver_data_export_csv:
+ * https://fexmy.co/v1/driver/driver_data_export_csv:
  *   post:
  *     summary: create new csv file
  *     tags: [Drivers]

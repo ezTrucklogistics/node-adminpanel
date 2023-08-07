@@ -36,7 +36,7 @@ const {
 
 /**
  * @swagger
- * /v1/users/signUp:
+ * https://fexmy.co/v1/users/signUp:
  *   post:
  *     summary: Signup a new user
  *     tags: [Customers]
@@ -68,7 +68,7 @@ router.post(
 
 /**
  * @swagger
- * /v1/users/login:
+ * https://fexmy.co/v1/users/login:
  *   post:
  *     summary: customer login sucessfully
  *     tags: [Customers]
@@ -92,7 +92,7 @@ router.post("/login", login_validator, validation_result, login);
 
 /**
  * @swagger
- * /v1/users/logout:
+ * https://fexmy.co/v1/users/logout:
  *   get:
  *     summary: Logout the customer
  *     tags: [Customers]
@@ -114,7 +114,7 @@ router.get("/logout", authenticate, logout);
 
 /**
  * @swagger
- * /v1/users/auth_tokens/{refresh_token}:
+ * https://fexmy.co/v1/users/auth_tokens/{refresh_token}:
  *   get:
  *     summary: Generate authentication tokens using a refresh token
  *     tags: [Customers]
@@ -139,7 +139,7 @@ router.get(
 
 /**
  * @swagger
- * /v1/users/List_of_customer:
+ * https://fexmy.co/v1/users/List_of_customer:
  *   get:
  *     summary: Returns the list of all the customers
  *     tags: [Customers]
@@ -156,10 +156,9 @@ router.get(
 router.get("/List_of_customer", get_all_customer);
 
 
-
 /**
  * @swagger
- * /v1/users/update_customer_details:
+ * https://fexmy.co/v1/users/update_customer_details:
  *   put:
  *     summary: Update customer details
  *     tags: [Customers]
@@ -206,7 +205,7 @@ router.put(
 
 /**
  * @swagger
- * /v1/users/account_actived:
+ * https://fexmy.co/v1/users/account_actived:
  *   put:
  *     summary: Update customer details
  *     tags: [Customers]
@@ -240,7 +239,7 @@ router.put(
 
 /**
  * @swagger
- * /v1/users/customer_data_export_excel:
+ * https://fexmy.co/v1/users/customer_data_export_excel:
  *   post:
  *     summary: create new excel file
  *     tags: [Customers]
@@ -262,7 +261,7 @@ router.post("/customer_data_export_excel" , export_customer_data_into_excel_file
 
 /**
  * @swagger
- * /v1/users/customer_data_export_csv:
+ * https://fexmy.co/v1/users/customer_data_export_csv:
  *   post:
  *     summary: create new csv file
  *     tags: [Customers]

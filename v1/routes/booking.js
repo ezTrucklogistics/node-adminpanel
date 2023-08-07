@@ -21,7 +21,7 @@ const {
 
 /**
  * @swagger
- * /v1/book/create_new_booking:
+ * https://fexmy.co/v1/book/create_new_booking:
  *   post:
  *     summary: Create a new Booking
  *     tags: [Booking]
@@ -61,7 +61,7 @@ router.post(
 
 /**
  * @swagger
- * /v1/book/List_of_booking:
+ * https://fexmy.co/v1/book/List_of_booking:
  *   get:
  *     summary: Returns the list of all the books
  *     tags: [Booking]
@@ -80,7 +80,7 @@ router.get("/List_of_booking", List_of_Booking);
 
 /**
  * @swagger
- * /v1/book/Booking_By_Id/{bookingId}:
+ * https://fexmy.co/v1/book/Booking_By_Id/{bookingId}:
  *   get:
  *     summary: Get booking by ID
  *     tags: [Booking]
@@ -111,7 +111,7 @@ router.get(
 
 /**
  * @swagger
- * /v1/book/booking_cancel_by_customer/{bookingId}:
+ * https://fexmy.co/v1/book/booking_cancel_by_customer/{bookingId}:
  *   put:
  *     summary: Get booking by ID
  *     tags: [Booking]
@@ -143,7 +143,7 @@ router.put(
 
 /**
  * @swagger
- * /v1/book/booking_cancel_by_driver/{bookingId}:
+ * https://fexmy.co/v1/book/booking_cancel_by_driver/{bookingId}:
  *   put:
  *     summary: Get booking by ID
  *     tags: [Booking]
@@ -174,7 +174,7 @@ router.put(
 
 /**
  * @swagger
- * /v1/book/booking_confirm/{bookingId}/{driverId}:
+ * https://fexmy.co/v1/book/booking_confirm/{bookingId}/{driverId}:
  *   put:
  *     summary: Get booking by ID
  *     tags: [Booking]
