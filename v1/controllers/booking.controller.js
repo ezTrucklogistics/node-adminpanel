@@ -1,12 +1,13 @@
 const { Bookingsave} = require("../services/booking.service");
-const { geocoder , getDistanceAndTime } = require("../../middleware/common.function");
+const { geocoder , getDistanceAndTime , generateOtp } = require("../../middleware/common.function");
 const dateFormat = require("../../helper/dateformat.helper");
 const constants = require("../../config/constants");
 const booking = require("../../models/booking.model");
 const {sendResponse} = require("../../services/common.service")
-const {calculateTotalPrice} = require("../../middleware/earning.system")
+const {calculateTotalPrice} = require("../../middleware/earning.system");
+const message = require("../../lang/en/message");
 //const { sendPushNotification } = require("../../middleware/push.notification")
-
+const distances = require("../../models/driver_distance_calculate.model")
 
 
 
@@ -34,13 +35,14 @@ exports.Booking = async (req, res) => {
 
     const { distance, duration } = await getDistanceAndTime(reqBody.pickup_location, reqBody.drop_location);
     reqBody.distance = distance;
-    reqBody.duration = duration; 
+    reqBody.duration = duration;
     const distanceNumber = parseFloat(distance);
     reqBody.trip_cost =  calculateTotalPrice(distanceNumber.toFixed(2), reqBody.truck_type);
 
    //sendPushNotification()
     reqBody.userId = user._id;
     reqBody.customer_mobile_number = user.mobile_number
+    reqBody.OTP = generateOtp();
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
     const booking = await Bookingsave(reqBody);
@@ -57,10 +59,46 @@ exports.Booking = async (req, res) => {
 
   } catch (err) {
     console.log("Error(Booking)", err);
-   return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+    return sendResponse(
+    res,
+    constants.WEB_STATUS_CODE.SERVER_ERROR,
+    constants.STATUS_CODE.FAIL,
+    "GENERAL.general_error_content",
+    err.message,
+    req.headers.lang
+  );
   }
 };
 
+
+exports.Booking_otp_verify = async (req , res) => {
+
+  try {
+
+    const { OTP } = req.body;
+
+    const bookings = await booking.findOne({OTP:OTP});
+
+    if(!booking){
+
+        return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , message:"OTP NOT FOUND"})
+    }
+
+    if(bookings.OTP !== OTP) {
+
+       return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , message:"OTP NOT MATCH , PLEASE ENTER VALID OTP"})
+    }
+
+    bookings.OTP = null;
+    await bookings.save()
+    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , message:"OTP VERIFY SUCESSFULLY"})
+  
+  } catch (err) {
+    console.log("Error(Booking_otp_verify)", err);
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , message:"GENERAL.general_error_content"})
+  }
+     
+}
 
 
 exports.List_of_Booking = async (req, res) => {
@@ -85,7 +123,14 @@ exports.List_of_Booking = async (req, res) => {
 
   } catch (err) {
     console.log("Error(booking)", err);
-    return  sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content',  req.headers.lang)
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
@@ -109,7 +154,14 @@ exports.booking_By_Id = async (req, res) => {
 
   } catch (err) {
     console.log("Error(booking_By_Id)", err);
-    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
@@ -138,7 +190,14 @@ exports.booking_cancel_by_customer  = async (req, res) => {
 
   } catch (err) {
     console.log("Error(booking )", err);
-    return  sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
@@ -166,8 +225,16 @@ exports.booking_cancel_by_driver  = async (req, res) => {
     return  sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking_cancel',  booking_cancel )
 
   } catch (err) {
+
     console.log("Error(booking )", err);
-    return  sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
@@ -196,7 +263,34 @@ exports.booking_confirm  = async (req, res) => {
 
   } catch (err) {
     console.log("Error(booking )", err);
-    return  sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+     return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
   }
 };
 
+
+exports.customer_to_driver_distance = async (req , res) => {
+
+  try {
+
+    const reqBody = req.body;
+    const { distance, duration } = await getDistanceAndTime(reqBody.driver_current_location, reqBody.customer_current_location);
+    reqBody.distance = distance;
+    reqBody.duration = duration;
+    const distanceNumber = parseFloat(distance);
+    const distance_by_driver_customer = await distances.create(reqBody);
+    return res.status(constants.WEB_STATUS_CODE.CREATED).send({status:constants.STATUS_CODE.SUCCESS , message:"DISTANCE BY DRIVER AND CUSTOMER" , distance_by_driver_customer})
+
+  } catch (err) {
+    console.log("Error(customer_to_driver_distance)", err);
+
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , message:"Something went wrong. Please try again later."})
+
+  }
+}

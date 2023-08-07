@@ -7,6 +7,8 @@ const {
   booking_confirm,
   booking_cancel_by_customer,
   booking_cancel_by_driver,
+  Booking_otp_verify,
+  customer_to_driver_distance,
 } = require("../controllers/booking.controller");
 var router = express.Router();
 const { authenticate, driver_authenticate } = require("../../middleware/authenticate");
@@ -201,6 +203,7 @@ router.put(
   booking_confirm
 );
 
-
+router.post("/booking_otp_verify" , Booking_otp_verify)
+router.post("/distance_by_driver_customer" , customer_to_driver_distance)
 
 module.exports = router;

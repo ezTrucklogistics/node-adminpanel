@@ -11,9 +11,9 @@ const options = {
 exports.geocoder = NodeGeocoder(options);
 
 
-exports.generate_Id = () => {
+exports.generateOtp = () => {
 
-      return  Math.floor(Math.random() * 900) + 100;
+      return Math.floor(100000 + Math.random() * 900000)
 }
 
 

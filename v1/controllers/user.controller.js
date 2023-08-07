@@ -118,7 +118,7 @@ exports.login = async (req, res) => {
     const { mobile_number } = req.body;
     let user = await User.findOne({ mobile_number });
 
-    if (!mobile_number)
+    if (!user)
     return sendResponse(
       res,
       constants.WEB_STATUS_CODE.BAD_REQUEST,

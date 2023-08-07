@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 
 
 
+
 //Define Booing schema
 const bookingSchema = new Schema({
     
@@ -64,6 +65,10 @@ const bookingSchema = new Schema({
     payment_type:{
         type:String,
         default:""
+    },
+    OTP:{
+        type:String,
+        default:null
     },
     created_at: {
         type: String,
