@@ -117,7 +117,14 @@ exports.login = async (req, res) => {
 
     const { mobile_number } = req.body;
     let user = await User.findOne({ mobile_number });
-    console.log(user);
+
+    if (!mobile_number)
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.BAD_REQUEST,
+      constants.STATUS_CODE.FAIL,
+      "Your are not a user"
+    );
 
     if (user.user_type == 1)
       return sendResponse(
@@ -127,19 +134,13 @@ exports.login = async (req, res) => {
         "Your are not a user"
       );
 
-    if (user == 1)
-      return sendResponse(
-        res,
-        constants.WEB_STATUS_CODE.BAD_REQUEST,
-        constants.STATUS_CODE.FAIL,
-        "USER. mobile_number_not_found"
-      );
-
     let newToken = await user.generateAuthToken();
     let refreshToken = await user.generateRefreshToken();
 
     user.authTokens = newToken;
+    user.refresh_tokens = refreshToken
     await user.save();
+
     user.user_type = undefined;
     user.device_token = undefined;
     user.device_type = undefined;
@@ -285,11 +286,12 @@ exports.delete_customer_detalis = async (req, res) => {
 
   try {
 
-   const {  } = req.query;
+   const userId = req.user;
+   console.log(req.user)
+  
+    if (!userId) return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"CUSTOMER ID NOT FOUND"})
 
-    if (!customerId) return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"3 DIGIT OF CUSTOMER ENTER"})
-
-    let customerdata = await User.findOneAndDelete({_id: customerId});
+    let customerdata = await User.findByIdAndDelete(userId._id);
 
     if (!customerdata)
      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"CUSTOMER DATA NOT FOUND"})
@@ -396,7 +398,6 @@ exports.export_customer_data_into_excel_file = async (req, res) => {
     );
   }
 };
-
 
 
 exports.customer_file_export_into_csv_file = async (req, res) => {
