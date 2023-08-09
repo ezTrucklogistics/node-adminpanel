@@ -320,7 +320,6 @@ exports.booking_confirm = async (req, res) => {
 
 
 
-
 exports.customer_to_driver_distance = async (req, res) => {
 
   try {
@@ -359,3 +358,4 @@ exports.customer_to_driver_distance = async (req, res) => {
       });
   }
 };
+

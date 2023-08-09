@@ -32,6 +32,7 @@ exports.signup = async (req, res) => {
       }
     );
 
+    
     const driver_current_location = await geocoder.geocode(reqBody.driver_current_location);
 
     driver_current_location.map((item) => {
@@ -74,7 +75,6 @@ exports.signup = async (req, res) => {
     );
   }
 };
-
 
 
 exports.logout = async (req, res) => {
@@ -205,6 +205,8 @@ exports.get_all_driver = async (req, res) => {
         driver_email: 1,
         driver_mobile_number: 1,
         driver_current_location: 1,
+        driver_lat:1,
+        driver_long:1,
         brand: 1,
         vehical_number: 1,
         truck_type:1,
