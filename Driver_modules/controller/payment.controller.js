@@ -1,9 +1,9 @@
 const Payment = require("../../models/payment.model");
-const { sendResponse } = require("../../services/common.service");
 const constants = require("../../config/constants");
 const sdk = require("api")("@cashfreedocs-new/v3#z7c5zzlkqza7c0");
 const dateFormate = require("../../helper/dateformat.helper")
 const refund  = require("../../models/refund.model")
+
 
 
 exports.create_payment_order = async (req, res) => {
@@ -57,7 +57,6 @@ exports.create_payment_order = async (req, res) => {
 
     await paymentData.save();
   
-
     return res
       .status(constants.WEB_STATUS_CODE.CREATED)
       .send({

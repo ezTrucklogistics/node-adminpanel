@@ -20,7 +20,7 @@ exports.signup = async (req, res) => {
     
     const reqBody = req.body;
     const {driver_name , driver_email , driver_mobile_number,Aadhar_card_number ,pan_card_number,brand,truck_type, driving_licence,account_number,ifsc_code} = reqBody;
-    reqBody.driverId = generateId();
+
 
     reqBody.authTokens = await jwt.sign(
       {
@@ -112,22 +112,13 @@ exports.login = async (req, res) => {
     let reqBody = req.body;
     const { driver_mobile_number } = reqBody;
     let driverdata = await driver.findOne({ driver_mobile_number });
+    console.log(driverdata)
 
     if (driverdata.user_type == 2)
-      return sendResponse(
-        res,
-        constants.WEB_STATUS_CODE.BAD_REQUEST,
-        constants.STATUS_CODE.FAIL,
-        "Your are not a driver"
-      );
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"YOUR ARE NOT DRIVER"})
 
     if (driverdata == 1)
-      return sendResponse(
-        res,
-        constants.WEB_STATUS_CODE.BAD_REQUEST,
-        constants.STATUS_CODE.FAIL,
-        "USER.mobile_number_not_found"
-      );
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"MOBILE NUMBER NOT FOUND"})
 
     let newToken = await driverdata.generateAuthToken();
     let refreshToken = await driverdata.generateRefreshToken();
@@ -145,16 +136,9 @@ exports.login = async (req, res) => {
     return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"DRIVER LOGIN SUCESSFULLY" , driverdata})
   } catch (err) {
     console.log("Error(Login)", err);
-    return sendResponse(
-      res,
-      constants.WEB_STATUS_CODE.SERVER_ERROR,
-      constants.STATUS_CODE.FAIL,
-      "GENERAL.general_error_content",
-      err.message,
-      req.headers.lang
-    );
-  }
-};
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
+   };
+}
 
 
 exports.generate_auth_tokens = async (req, res) => {

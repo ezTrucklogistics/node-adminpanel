@@ -1,6 +1,7 @@
 const { body, validationResult , param , query  } = require("express-validator");
 const { USER_VALIDATION } = require("../lang/en/validationMessage");
 
+let nums = [ 1, 2]
 
 //validate user form detail
 const user_validator = [
@@ -34,6 +35,7 @@ const user_validator = [
     .isMobilePhone()
     .withMessage("Enter Mobile number star with 0 or +91")
     .trim(),
+
 ];
 
 const login_validator = [
@@ -111,7 +113,28 @@ const customerId_validator = [
     .trim(),
 ];
 
+const  update_Roles_validator = [
 
+    query('email')
+    .not()
+    .isEmpty()
+    .withMessage('email is required')
+    .isString()
+    .withMessage('email should be a string')
+    .isEmail()
+    .withMessage('Enter valid email')
+    .trim(),
+
+    body('user_type')
+    .not()
+    .isEmpty()
+    .withMessage('user_type is required')
+    .isNumeric()
+    .withMessage('user_type should be a number')
+    .isIn(nums)
+    .withMessage('Enter valid user_type 1 or 2')
+    .trim()
+]
 
 
 
@@ -134,5 +157,6 @@ module.exports = {
   update_customer_validator,
   validation_result,
   refresh_token__validator,
-  customerId_validator
+  customerId_validator,
+  update_Roles_validator
 };

@@ -1,39 +1,33 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const dateFormat = require('../helper/dateformat.helper');
-
-
 const {
     JWT_SECRET
 } = require('../keys/keys');
 const constants = require('../config/constants');
-
 const Schema = mongoose.Schema;
+
+
 
 
 //Define user schema
 const userSchema = new Schema({
-    
+
+    mobile_number : {
+        type:String,
+        default:null
+    },
     email: {
         type: String,
         trim: true,
         lowercase: true,
     },
-    customer_Id :{
-        type:String,
-        default:null
-    },
     customer_name: {
         type: String,
         default: null
     },
-    mobile_number : {
-        type:String,
-        default:null
-    },
     user_type: {
         type: Number, //1-driver 2-customer
-        default: 2
     },
     status: {
         type: String,
@@ -68,7 +62,7 @@ const userSchema = new Schema({
 });
 
 userSchema.index({
-    "email": 1
+    "mobile_number": 1
 });
 
 //Output data to JSON

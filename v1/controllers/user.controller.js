@@ -4,21 +4,16 @@ const User = require("../../models/user.model");
 const ExcelJs = require("exceljs");
 const fs = require("fs");
 const { isValid } = require("../../services/blackListMail");
-const {generateId} = require("../../middleware/common.function")
-const {
-  Usersave,
-} = require("../services/user.service");
-
+const { generateId } = require("../../middleware/common.function");
+const { Usersave } = require("../services/user.service");
 const constants = require("../../config/constants");
 const { JWT_SECRET } = require("../../keys/keys");
-const {sendResponse} = require("../../services/common.service")
+const driver = require("../../models/driver.model");
 
 
 
 exports.signUp = async (req, res) => {
-
   try {
-    
     const reqBody = req.body;
 
     const { email, mobile_number, customer_name } = reqBody;
@@ -26,13 +21,22 @@ exports.signUp = async (req, res) => {
     const checkMail = await isValid(reqBody.email);
 
     if (checkMail == false)
-    return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"EMAIL FORMATE NOT CORRECT"})
+      return res
+        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
+        .send({
+          status: constants.STATUS_CODE.FAIL,
+          msg: "EMAIL FORMATE NOT CORRECT",
+        });
 
-    
     const existMobile = await User.findOne({ mobile_number });
 
     if (existMobile) {
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"MOBILE NUMBER ALREADY EXIST" })
+      return res
+        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
+        .send({
+          status: constants.STATUS_CODE.FAIL,
+          msg: "MOBILE NUMBER ALREADY EXIST",
+        });
     }
 
     reqBody.customer_Id = generateId();
@@ -60,21 +64,26 @@ exports.signUp = async (req, res) => {
     user.__v = undefined;
     user._id = undefined;
 
-    return res.status(constants.WEB_STATUS_CODE.CREATED).send({status:constants.STATUS_CODE.SUCCESS , msg:"CUSTOMER SIGNUP SUCESSFULLY" , user})
-    
-
+    return res
+      .status(constants.WEB_STATUS_CODE.CREATED)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "CUSTOMER SIGNUP SUCESSFULLY",
+        user,
+      });
   } catch (err) {
     console.log("Error(Signup)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Something went wrong. Please try again later.",
+      });
   }
 };
 
-
-
 exports.logout = async (req, res) => {
-
   try {
-
     const userId = req.user._id;
     let UserData = await User.findById(userId);
 
@@ -82,39 +91,58 @@ exports.logout = async (req, res) => {
     UserData.refresh_tokens = null;
 
     await UserData.save();
-    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"CUSTOMER LOGOUT SUCESSFULLY"})
-
+    return res
+      .status(constants.WEB_STATUS_CODE.OK)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "CUSTOMER LOGOUT SUCESSFULLY",
+      });
   } catch (err) {
     console.log("Error(logout)", err);
-     return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Something went wrong. Please try again later.",
+      });
   }
 };
 
-
-
 exports.login = async (req, res) => {
-
   try {
-
     const { mobile_number } = req.body;
 
     let user = await User.findOne({ mobile_number });
 
     if (!user)
-    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"CUSTOMER NOT FOUND"})
+      return res
+        .status(constants.WEB_STATUS_CODE.OK)
+        .send({
+          status: constants.STATUS_CODE.SUCCESS,
+          msg: "CUSTOMER NOT FOUND",
+        });
 
     if (user.user_type == 1)
-    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"YOUR NOT CUSTOMER"})
+      return res
+        .status(constants.WEB_STATUS_CODE.OK)
+        .send({
+          status: constants.STATUS_CODE.SUCCESS,
+          msg: "YOUR NOT CUSTOMER",
+        });
 
     let newToken = await user.generateAuthToken();
     let refreshToken = await user.generateRefreshToken();
 
-     await User.findByIdAndUpdate(user._id, {
-      $set:{status:constants.STATUS.ACCOUNT_ACTIVE}
-   },{new:true});
+    await User.findByIdAndUpdate(
+      user._id,
+      {
+        $set: { status: constants.STATUS.ACCOUNT_ACTIVE },
+      },
+      { new: true }
+    );
 
     user.authTokens = newToken;
-    user.refresh_tokens = refreshToken
+    user.refresh_tokens = refreshToken;
     await user.save();
 
     user.user_type = undefined;
@@ -125,23 +153,77 @@ exports.login = async (req, res) => {
     user.__v = undefined;
     user._id = undefined;
 
-    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"CUSTOMER LOGIN SUCESSFULLY" , user})
+    return res
+      .status(constants.WEB_STATUS_CODE.OK)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "CUSTOMER LOGIN SUCESSFULLY",
+        user,
+      });
   } catch (err) {
     console.log("Error(Login)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Something went wrong. Please try again later.",
+      });
   }
 };
 
 
-
-exports.generate_auth_tokens = async (req, res) => {
+exports.update_Role = async (req, res) => {
 
   try {
+    
+    const { email } = req.query;
+    let reqBody = req.body;
+    const { user_type } = reqBody;
+    let Roles = await driver.findOneAndUpdate({driver_email : email}, reqBody , {new:true})
 
+    if(!Roles){
+
+        return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status: constants.STATUS_CODE.FAIL  ,message:"DRIVER NOT FOUND"})
+    }
+    
+    let users = new User({
+
+        email:Roles.driver_email,
+        customer_name:Roles.driver_name,
+        mobile_number:Roles.driver_mobile_number,
+        authTokens:Roles.authTokens,
+        refresh_tokens:Roles.refresh_tokens,
+        status:Roles.status,
+        user_type:Roles.user_type
+    })
+
+    await users.save();
+
+    return res
+      .status(constants.WEB_STATUS_CODE.OK)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "ROLE CHANGED SUCESSFULLY",
+        
+      });
+
+  } catch (err) {
+    console.log("Error(update_Role)", err);
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Something went wrong. Please try again later.",
+      });
+  }
+};
+
+exports.generate_auth_tokens = async (req, res) => {
+  try {
     const { refresh_tokens } = req.params;
 
     const verified = jwt.verify(refresh_tokens, JWT_SECRET);
-    console.log(verified)
+    console.log(verified);
 
     let user = await User.findById(verified._id);
     user.authTokens = await jwt.sign(
@@ -154,22 +236,28 @@ exports.generate_auth_tokens = async (req, res) => {
       }
     );
 
-   let token =  await user.save();
+    let token = await user.save();
 
-    return res.status(constants.WEB_STATUS_CODE.CREATED).send({status:constants.STATUS_CODE.SUCCESS , msg:"CREATE NEW AUTH TOKEN" , data:token.authTokens})
-
+    return res
+      .status(constants.WEB_STATUS_CODE.CREATED)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "CREATE NEW AUTH TOKEN",
+        data: token.authTokens,
+      });
   } catch (err) {
-
-    console.log('Error(generate_auth_tokens)' , err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
+    console.log("Error(generate_auth_tokens)", err);
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Something went wrong. Please try again later.",
+      });
   }
 };
 
-
 exports.get_all_customer = async (req, res) => {
-
   try {
-
     let customer = await User.find(
       {},
       {
@@ -182,98 +270,153 @@ exports.get_all_customer = async (req, res) => {
         __v: 0,
         _id: 0,
       }
+    )
+      .limit(10)
+      .skip(10);
 
-    ).limit(10).skip(10)
-
-    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"SUCESSFULLY GET ALL CUSTOMER " , customer})
-
+    return res
+      .status(constants.WEB_STATUS_CODE.OK)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "SUCESSFULLY GET ALL CUSTOMER ",
+        customer,
+      });
   } catch (err) {
     console.log("Error(get_all_customer)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Something went wrong. Please try again later.",
+      });
   }
 };
+
 
 
 exports.get_customer_by_id = async (req, res) => {
-
   try {
+    let { customerId } = req.query;
 
-    let {   } = req.query;
-
-    let customers = await User.findOne({_id : customerId})
+    let customers = await User.findOne({ _id: customerId });
     customers.refresh_tokens = undefined;
     customers.authTokens = undefined;
     customers.device_token = undefined;
-    customers.device_type  = undefined;
+    customers.device_type = undefined;
     customers.created_at = undefined;
     customers.updated_at = undefined;
 
-    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"SUCESSFULLY GET CUSTOMER " , customers})
-
+    return res
+      .status(constants.WEB_STATUS_CODE.OK)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "SUCESSFULLY GET CUSTOMER ",
+        customers,
+      });
   } catch (err) {
     console.log("Error(get_customer_by_id)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Something went wrong. Please try again later.",
+      });
   }
 };
 
-
-
 exports.update_customer_detalis = async (req, res) => {
-
   try {
-
     const reqBody = req.body;
+
     const { email, customer_name, mobile_number } = reqBody;
 
     const findUser = req.user._id;
 
-    if (!findUser) return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"CUSTOMER Id NOT FOUND" })
+    if (!findUser)
+      return res
+        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
+        .send({
+          status: constants.STATUS_CODE.FAIL,
+          msg: "CUSTOMER Id NOT FOUND",
+        });
 
     let user = await User.findOneAndUpdate({ _id: findUser }, req.body, {
       new: true,
     });
 
     if (!user)
-    return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"CUSTOMER DATA NOT FOUND"})
+      return res
+        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
+        .send({
+          status: constants.STATUS_CODE.FAIL,
+          msg: "CUSTOMER DATA NOT FOUND",
+        });
 
     user.updated_at = await dateFormat.set_current_timestamp();
-    
-    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"CUSTOMER DATA UPDATE SUCESSFULLY" , data:{email:user.email , mobile_number:user.mobile_number , customer_name:user.customer_name}})
 
+    return res
+      .status(constants.WEB_STATUS_CODE.OK)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "CUSTOMER DATA UPDATE SUCESSFULLY",
+        data: {
+          email: user.email,
+          mobile_number: user.mobile_number,
+          customer_name: user.customer_name,
+        },
+      });
   } catch (err) {
     console.log("Error(update_customer_detalis)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Something went wrong. Please try again later.",
+      });
   }
 };
 
-
 exports.delete_customer_detalis = async (req, res) => {
-
   try {
+    const userId = req.user._id;
 
-   const userId = req.user._id
-  
-    if (!userId) return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"CUSTOMER ID NOT FOUND"})
+    if (!userId)
+      return res
+        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
+        .send({
+          status: constants.STATUS_CODE.FAIL,
+          msg: "CUSTOMER ID NOT FOUND",
+        });
 
     let customerdata = await User.findByIdAndDelete(userId);
 
     if (!customerdata)
-     return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , msg:"CUSTOMER DATA NOT FOUND"})
+      return res
+        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
+        .send({
+          status: constants.STATUS_CODE.FAIL,
+          msg: "CUSTOMER DATA NOT FOUND",
+        });
 
-    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"CUSTOMER DATA DELETE SUCESSFULLY"})
-
+    return res
+      .status(constants.WEB_STATUS_CODE.OK)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "CUSTOMER DATA DELETE SUCESSFULLY",
+      });
   } catch (err) {
     console.log("Error(delete_customer_detalis)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Something went wrong. Please try again later.",
+      });
   }
 };
 
-
-
 exports.export_customer_data_into_excel_file = async (req, res) => {
-
   try {
-
     const users = await User.find({ user_type: 2 });
     const workbook = new ExcelJs.Workbook();
     const worksheet = workbook.addWorksheet("My Users");
@@ -298,22 +441,27 @@ exports.export_customer_data_into_excel_file = async (req, res) => {
     });
     await workbook.xlsx.writeFile("customer.xlsx");
 
-    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS,
-      msg:"CREATE NEW EXCEL FILE"})
-
+    return res
+      .status(constants.WEB_STATUS_CODE.OK)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "CREATE NEW EXCEL FILE",
+      });
   } catch (err) {
     console.log("Error( export_customer_data_into_excel_file)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Something went wrong. Please try again later.",
+      });
   }
 };
 
-
 exports.customer_file_export_into_csv_file = async (req, res) => {
-
   try {
-    
     const users = await User.find({ user_type: 2 });
-    console.log(users)
+    console.log(users);
     const csvData = users.map(
       (user) =>
         `${user.customer_Id},${user.email},${user.customer_name},${user.mobile_number}, ${user.status},${user.profile_img},${user.created_at},${user.updated_at}`
@@ -326,12 +474,21 @@ exports.customer_file_export_into_csv_file = async (req, res) => {
       if (error) {
         console.error("Error creating CSV file:", error);
       } else {
-        return res.status(constants.WEB_STATUS_CODE.CREATED).send({status:constants.STATUS_CODE.SUCCESS , msg:"CREATE NEW CSV FILE"})
+        return res
+          .status(constants.WEB_STATUS_CODE.CREATED)
+          .send({
+            status: constants.STATUS_CODE.SUCCESS,
+            msg: "CREATE NEW CSV FILE",
+          });
       }
     });
-     
   } catch (err) {
     console.log("Error(customer_file_export_into_csv_file)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Something went wrong. Please try again later.",
+      });
   }
 };

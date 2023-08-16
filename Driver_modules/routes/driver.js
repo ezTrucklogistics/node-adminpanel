@@ -245,10 +245,42 @@ router.post("/driver_data_export_excel" , export_driver_data_into_excel_file)
  *         description: Bad Request
  */
 
+
 router.post("/driver_data_export_csv" , driver_file_export_into_csv_file)
+
+
+/**
+ * @swagger
+ * /v1/driver/driver_total_earning:
+ *   put:
+ *     summary: sucessfuly return driver total earning
+ *     tags: [Drivers]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Bearer token for authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description:  sucessfuly return driver total earning
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized - Token not provided or invalid
+ */
+
 router.post("/driver_total_earning" ,driver_authenticate, driver_total_earning)
 router.post("/driver_daily_earning" , driver_daily_earning)
 router.delete("/driver_account_deleted" , driver_authenticate, delete_driver_detalis)
+
 
 
 module.exports = router;

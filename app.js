@@ -12,6 +12,7 @@ const usersRouter = require("./v1/routes/users");
 const bookRouter = require("./v1/routes/booking");
 const driverRouter = require("./Driver_modules/routes/driver");
 const paymentRouter = require("./Driver_modules/routes/payment")
+const ratingRouter = require('./v1/routes/rating')
 
 var app = express();
 app.use(flash());
@@ -45,7 +46,9 @@ app.use(cors())
 app.use("/v1/users", usersRouter);
 app.use("/v1/book", bookRouter);
 app.use("/v1/driver", driverRouter);
-app.use("/v1/payment" , paymentRouter)
+app.use("/v1/payment" , paymentRouter);
+app.use("/v1/rating" , ratingRouter)
+
 
 const options = {
 

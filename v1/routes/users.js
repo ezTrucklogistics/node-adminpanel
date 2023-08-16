@@ -8,7 +8,8 @@ const {
   update_customer_validator,
   user_validator, 
   refresh_token__validator,
-  customerId_validator
+  customerId_validator,
+  update_Roles_validator
 } = require("../../validation/user.validator");
 
 
@@ -24,6 +25,7 @@ const {
   customer_file_export_into_csv_file,
   delete_customer_detalis,
   get_customer_by_id,
+  update_Role,
   
 } = require("../controllers/user.controller");
 
@@ -289,9 +291,8 @@ router.get('/get_customer_by_id' ,customerId_validator , validation_result , get
  *         description: Unauthorized - Token not provided or invalid
  */
 
-router.delete("/delete_customer_account" ,authenticate , delete_customer_detalis)
-
-
+router.delete("/delete_customer_account" , authenticate , delete_customer_detalis)
+router.put('/update_roles', update_Roles_validator , validation_result ,  update_Role)
 
 
 module.exports = router;

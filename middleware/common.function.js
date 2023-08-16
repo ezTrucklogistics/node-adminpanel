@@ -17,12 +17,6 @@ exports.generateOtp = () => {
 }
 
 
-exports.generateId = () => {
-
-  return Math.floor(Math.random() * 900   ) + 1
-}
-
-
 exports.getDistanceAndTime = async (origins , destinations)  => {
 
   const apiUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
