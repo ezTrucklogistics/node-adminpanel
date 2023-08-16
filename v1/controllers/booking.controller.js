@@ -19,8 +19,6 @@ exports.create_Booking = async (req, res) => {
     const reqBody = req.body;
     const user = req.user;
 
-    console.log(user);
-
     const pickup_location = await geocoder.geocode(reqBody.pickup_location);
 
     pickup_location.map((item) => {
@@ -152,6 +150,91 @@ exports.List_of_Booking = async (req, res) => {
       });
   }
 };
+
+
+exports.List_of_Booking_by_customers = async (req, res) => {
+
+  try {
+
+    let { userId } = req.query;
+    const bookings = await booking
+      .find(
+        {User : userId},
+        {
+          pickup_location: 1,
+          drop_location: 1,
+          trip_cost: 1,
+          duration: 1,
+          distance: 1,
+          truck_type: 1,
+          status: 1,
+        }
+      )
+      .populate('User' , 'mobile_number email customer_name').populate('driver' , 'driver_mobile_number driver_name driver_email')
+
+      return res
+      .status(constants.WEB_STATUS_CODE.OK)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        message: "SUCESSFULLY GET ALL BOOKINGS BY CUSTOMERS", bookings
+      });
+
+
+  } catch (err) {
+    console.log("Error(List_of_Booking_by_customers)", err);
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        message: "GENERAL.general_error_content",
+      });
+  }
+};
+
+
+
+exports.List_of_Booking_by_drivers = async (req, res) => {
+
+  try {
+
+    let { driverId } = req.query;
+    const bookings = await booking
+      .find(
+        {driver:driverId},
+        {
+          pickup_location: 1,
+          drop_location: 1,
+          trip_cost: 1,
+          duration: 1,
+          distance: 1,
+          truck_type: 1,
+          status: 1,
+        }
+      )
+      .populate('User' , 'mobile_number email customer_name').populate('driver' , 'driver_mobile_number driver_name driver_email')
+
+      return res
+      .status(constants.WEB_STATUS_CODE.OK)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        message: "SUCESSFULLY GET ALL BOOKINGS BY DRIVERS", bookings
+      });
+
+
+  } catch (err) {
+    console.log("Error(List_of_Booking_by_drivers)", err);
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        message: "GENERAL.general_error_content",
+      });
+  }
+};
+
+
+
+
 
 exports.booking_By_Id = async (req, res) => {
 

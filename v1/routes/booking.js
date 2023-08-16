@@ -9,6 +9,8 @@ const {
   Booking_otp_verify,
   customer_to_driver_distance,
   create_Booking,
+  List_of_Booking_by_customers,
+  List_of_Booking_by_drivers,
 } = require("../controllers/booking.controller");
 var router = express.Router();
 const { authenticate, driver_authenticate } = require("../../middleware/authenticate");
@@ -248,6 +250,9 @@ router.post("/booking_otp_verify" , Booking_otp_verify)
  *         description: Bad Request
  */
 router.post("/distance_by_driver_customer" , authenticate, customer_to_driver_distance)
+router.get('/List_booking_by_customer' , List_of_Booking_by_customers)
+router.get('/List_booking_by_drivers' , List_of_Booking_by_drivers)
+
 
 
 
