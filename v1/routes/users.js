@@ -20,12 +20,11 @@ const {
   logout,
   get_all_customer,
   update_customer_detalis,
-  customer_account_actived,
   export_customer_data_into_excel_file,
   customer_file_export_into_csv_file,
   delete_customer_detalis,
-  get_customer_by_id,
   update_Role,
+  search_customer,
   
 } = require("../controllers/user.controller");
 
@@ -266,30 +265,6 @@ router.post("/customer_data_export_csv" , customer_file_export_into_csv_file)
  *               type: object
  *               items:
  * */
-
-router.get('/get_customer_by_id' ,customerId_validator , validation_result , get_customer_by_id )
-
-/**
- * @swagger
- * /v1/users/delete_customer_account:
- *   delete:
- *     summary: delete customer details
- *     tags: [Customers]
- *     parameters:
- *       - in: path
- *         name: token
- *         schema:
- *           type: string
- *         required: true
- *         description: Bearer token for authentication
- *     responses:
- *       200:
- *         description: Customer details deleted successfully
- *       400:
- *         description: Bad Request
- *       401:
- *         description: Unauthorized - Token not provided or invalid
- */
 
 router.delete("/delete_customer_account" , authenticate , delete_customer_detalis)
 router.put('/update_roles', update_Roles_validator , validation_result ,  update_Role)

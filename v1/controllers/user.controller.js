@@ -218,7 +218,9 @@ exports.update_Role = async (req, res) => {
   }
 };
 
+
 exports.generate_auth_tokens = async (req, res) => {
+
   try {
     const { refresh_tokens } = req.params;
 
@@ -256,75 +258,76 @@ exports.generate_auth_tokens = async (req, res) => {
   }
 };
 
+
+
 exports.get_all_customer = async (req, res) => {
+
   try {
-    let customer = await User.find(
-      {},
-      {
-        user_type: 0,
-        device_token: 0,
-        device_type: 0,
-        refresh_tokens: 0,
-        authTokens: 0,
-        deleted_at: 0,
-        __v: 0,
-        _id: 0,
-      }
-    )
-      .limit(10)
-      .skip(10);
 
-    return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
+    const { email , customer_name , page = 1, limit = 10, offset = 0 ,  sortBy = 'created_at', sortOrder = 'email' } = req.query;
+
+    const query = {};
+
+    if (email) {
+      query.email = { $regex: email, $options: 'i' }; // Case-insensitive search by email
+    }
+
+    if (customer_name) {
+      query.customer_name = { $regex: customer_name, $options: 'i' }; // Case-insensitive search by customer name
+    }
+
+    // Calculate skip for pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
+
+    // Count total matching customers
+    const totalCustomers = await User.countDocuments(query);
+
+    const customers = await User.find(query , {
+      user_type: 0,
+      device_token: 0,
+      device_type: 0,
+      refresh_tokens: 0,
+      authTokens: 0,
+      deleted_at: 0,
+      __v: 0,
+      _id: 0,
+    })
+    .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
+    .skip(skip)
+    .limit(parseInt(limit));
+
+    const jsonData = JSON.parse(customers);
+
+    console.log(jsonData)
+
+    if (Array.isArray(jsonData)) {
+      return res.status(constants.WEB_STATUS_CODE.OK).send({
         status: constants.STATUS_CODE.SUCCESS,
-        msg: "SUCESSFULLY GET ALL CUSTOMER ",
-        customer,
-      });
-  } catch (err) {
-    console.log("Error(get_all_customer)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        msg: "Something went wrong. Please try again later.",
-      });
-  }
-};
-
-
-
-exports.get_customer_by_id = async (req, res) => {
-  try {
-    let { customerId } = req.query;
-
-    let customers = await User.findOne({ _id: customerId });
-    customers.refresh_tokens = undefined;
-    customers.authTokens = undefined;
-    customers.device_token = undefined;
-    customers.device_type = undefined;
-    customers.created_at = undefined;
-    customers.updated_at = undefined;
-
-    return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        msg: "SUCESSFULLY GET CUSTOMER ",
+        msg: "SUCCESSFULLY SEARCHED CUSTOMERS",
         customers,
       });
-  } catch (err) {
-    console.log("Error(get_customer_by_id)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
+
+    } else {
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
         status: constants.STATUS_CODE.FAIL,
-        msg: "Something went wrong. Please try again later.",
+        msg: "Unexpected data format: Not an array.",
       });
+    }
+
+
+  } catch (err) {
+    console.log("Error(get_all_customer)", err);
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      msg: "Something went wrong. Please try again later.",
+    });
   }
 };
 
+
+
 exports.update_customer_detalis = async (req, res) => {
+  
   try {
     const reqBody = req.body;
 

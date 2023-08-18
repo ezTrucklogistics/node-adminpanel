@@ -13,6 +13,8 @@ const bookRouter = require("./v1/routes/booking");
 const driverRouter = require("./Driver_modules/routes/driver");
 const paymentRouter = require("./Driver_modules/routes/payment")
 const ratingRouter = require('./v1/routes/rating')
+const rateLimit = require('express-rate-limit');
+
 
 var app = express();
 app.use(flash());
@@ -30,6 +32,11 @@ app.use(
   })
 );
 
+const limiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000, // 24 hours
+  max: 100, // Max requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+});
 
 //Database connection with mongodb
 const mongoose = require("./config/database");
@@ -43,11 +50,11 @@ app.use(
 );
 app.use(cookieParser());
 app.use(cors())
-app.use("/v1/users", usersRouter);
-app.use("/v1/book", bookRouter);
-app.use("/v1/driver", driverRouter);
-app.use("/v1/payment" , paymentRouter);
-app.use("/v1/rating" , ratingRouter)
+app.use("/v1/users", limiter, usersRouter);
+app.use("/v1/book", limiter, bookRouter);
+app.use("/v1/driver", limiter, driverRouter);
+app.use("/v1/payment" , limiter, paymentRouter);
+app.use("/v1/rating" , limiter, ratingRouter)
 
 
 const options = {
@@ -67,6 +74,9 @@ const options = {
 	},
 	apis: ["./v1/routes/*.js" , "./Driver_modules/routes/*.js"],
 };
+
+// Apply rate limiter middleware
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));

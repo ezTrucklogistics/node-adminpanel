@@ -11,16 +11,16 @@ exports.create_payment_order = async (req, res) => {
   try {
 
     let reqBody = req.body;
-    //sdk.server('https://api.cashfree.com/pg');
+    sdk.server('https://sandbox.cashfree.com/pg/orders');
     const data = await sdk.createOrder(
       {
 
         created_at : reqBody.created_at = dateFormate.set_current_timestamp(),
         customer_details: {
-          customer_id: reqBody.driverId,
-          customer_email: reqBody.drive_email,
-          customer_phone: reqBody.drive_phone,
-          customer_name:reqBody.driver_name,
+          customer_id: reqBody.paymentId,
+          customer_email: reqBody.email,
+          customer_phone: reqBody.mobile_number,
+          customer_name:reqBody.name,
         },
         order_amount: reqBody.order_amount,
         order_currency: "INR",
@@ -38,10 +38,10 @@ exports.create_payment_order = async (req, res) => {
     const paymentData = new Payment({
     
       created_at:data.data.created_at,
-      driverId: data.data.customer_details.customer_id,
-      driver_name: data.data.customer_details.customer_name,
-      driver_email: data.data.customer_details.customer_email,
-      driver_phone: data.data.customer_details.customer_phone,
+      paymentId: data.data.customer_details.customer_id,
+      name: data.data.customer_details.customer_name,
+      email: data.data.customer_details.customer_email,
+      mobile_number: data.data.customer_details.customer_phone,
       order_amount:data.data.order_amount,
       order_currency:data.data.order_currency,
       order_expiry_time:data.data.order_expiry_time,
@@ -82,12 +82,12 @@ exports.GetOrder = async (req, res) => {
     try {
 
       let { order_id } = req.query
-     sdk.server('https://api.cashfree.com/pg');
+     sdk.server('https://sandbox.cashfree.com/pg/orders/{order_id}');
       const data = await sdk.GetOrder({
         order_id: order_id,
-        "x-client-id": "131642e290fab66ebbe5b52d62246131",
-        "x-client-secret": "0f18e731a53e6a6ea065af4bf44419b6f2eadda6",
-        "x-api-version": "2022-09-01",
+        'x-client-id': '847673e995aa46bb6de60ae4276748',
+        'x-client-secret': 'e760149f048327c3588778e26e56b2d779e2fb51',
+        'x-api-version': '2022-09-01'
       })
   
       return res
@@ -148,17 +148,16 @@ exports.GetOrder = async (req, res) => {
     try {
 
       let { payment_session_id } = req.query
-  
-       sdk.server('https://api.cashfree.com/pg');
-       
+       sdk.server('https://sandbox.cashfree.com/pg/orders/sessions');
       const data = await sdk.OrderPay({
-        order_id: payment_session_id,
+        payment_session_id : payment_session_id,
         "x-client-id": "131642e290fab66ebbe5b52d62246131",
         "x-client-secret": "0f18e731a53e6a6ea065af4bf44419b6f2eadda6",
         "x-api-version": "2022-09-01",
       })
-  
-      await Payment.findOneAndUpdate({order_id} , {$set:{ $push: { payment_method : data } }}, {new:true})
+      console.log(data)
+
+      await Payment.findOneAndUpdate({ payment_session_id } , {$set:{ $push: { payment_method : data } }}, {new:true})
       return res
         .status(constants.WEB_STATUS_CODE.OK)
         .send({
