@@ -8,7 +8,7 @@ const {
   update_customer_validator,
   user_validator, 
   refresh_token__validator,
-  customerId_validator,
+  get_all_customer_validator,
   update_Roles_validator
 } = require("../../validation/user.validator");
 
@@ -24,7 +24,6 @@ const {
   customer_file_export_into_csv_file,
   delete_customer_detalis,
   update_Role,
-  search_customer,
   
 } = require("../controllers/user.controller");
 
@@ -157,8 +156,7 @@ router.get(
  *               items:
  * */
 
-router.get("/List_of_customer", get_all_customer);
-
+router.get("/List_of_customer",get_all_customer_validator , validation_result , get_all_customer);
 
 /**
  * @swagger

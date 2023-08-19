@@ -4,13 +4,13 @@ const User = require("../../models/user.model");
 const ExcelJs = require("exceljs");
 const fs = require("fs");
 const { isValid } = require("../../services/blackListMail");
-const { generateId } = require("../../middleware/common.function");
-const { Usersave } = require("../services/user.service");
 const constants = require("../../config/constants");
 const { JWT_SECRET } = require("../../keys/keys");
 const driver = require("../../models/driver.model");
-
-
+const {
+  isJSONString,
+  isArrayofObjectsJSON,
+} = require("../../middleware/common.function");
 
 exports.signUp = async (req, res) => {
   try {
@@ -21,25 +21,20 @@ exports.signUp = async (req, res) => {
     const checkMail = await isValid(reqBody.email);
 
     if (checkMail == false)
-      return res
-        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
-        .send({
-          status: constants.STATUS_CODE.FAIL,
-          msg: "EMAIL FORMATE NOT CORRECT",
-        });
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "EMAIL FORMATE NOT CORRECT",
+      });
 
     const existMobile = await User.findOne({ mobile_number });
 
     if (existMobile) {
-      return res
-        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
-        .send({
-          status: constants.STATUS_CODE.FAIL,
-          msg: "MOBILE NUMBER ALREADY EXIST",
-        });
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "MOBILE NUMBER ALREADY EXIST",
+      });
     }
 
-    reqBody.customer_Id = generateId();
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
     reqBody.authTokens = await jwt.sign(
@@ -54,7 +49,9 @@ exports.signUp = async (req, res) => {
 
     reqBody.device_type = reqBody.device_type ? reqBody.device_type : null;
     reqBody.device_token = reqBody.device_token ? reqBody.device_token : null;
-    const user = await Usersave(reqBody);
+
+    const user = await User.create(reqBody);
+    isJSONString(user);
     user.user_type = undefined;
     user.device_token = undefined;
     user.device_type = undefined;
@@ -64,21 +61,17 @@ exports.signUp = async (req, res) => {
     user.__v = undefined;
     user._id = undefined;
 
-    return res
-      .status(constants.WEB_STATUS_CODE.CREATED)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        msg: "CUSTOMER SIGNUP SUCESSFULLY",
-        user,
-      });
+    return res.status(constants.WEB_STATUS_CODE.CREATED).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      msg: "CUSTOMER SIGNUP SUCESSFULLY",
+      user,
+    });
   } catch (err) {
     console.log("Error(Signup)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        msg: "Something went wrong. Please try again later.",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      msg: "Something went wrong. Please try again later.",
+    });
   }
 };
 
@@ -91,20 +84,16 @@ exports.logout = async (req, res) => {
     UserData.refresh_tokens = null;
 
     await UserData.save();
-    return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        msg: "CUSTOMER LOGOUT SUCESSFULLY",
-      });
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      msg: "CUSTOMER LOGOUT SUCESSFULLY",
+    });
   } catch (err) {
     console.log("Error(logout)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        msg: "Something went wrong. Please try again later.",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      msg: "Something went wrong. Please try again later.",
+    });
   }
 };
 
@@ -115,20 +104,16 @@ exports.login = async (req, res) => {
     let user = await User.findOne({ mobile_number });
 
     if (!user)
-      return res
-        .status(constants.WEB_STATUS_CODE.OK)
-        .send({
-          status: constants.STATUS_CODE.SUCCESS,
-          msg: "CUSTOMER NOT FOUND",
-        });
+      return res.status(constants.WEB_STATUS_CODE.OK).send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "CUSTOMER NOT FOUND",
+      });
 
     if (user.user_type == 1)
-      return res
-        .status(constants.WEB_STATUS_CODE.OK)
-        .send({
-          status: constants.STATUS_CODE.SUCCESS,
-          msg: "YOUR NOT CUSTOMER",
-        });
+      return res.status(constants.WEB_STATUS_CODE.OK).send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "YOUR NOT CUSTOMER",
+      });
 
     let newToken = await user.generateAuthToken();
     let refreshToken = await user.generateRefreshToken();
@@ -143,84 +128,76 @@ exports.login = async (req, res) => {
 
     user.authTokens = newToken;
     user.refresh_tokens = refreshToken;
-    await user.save();
+    let users = await user.save();
+    isJSONString(user);
+    users.user_type = undefined;
+    users.device_token = undefined;
+    users.device_type = undefined;
+    users.refresh_tokens = undefined;
+    users.deleted_at = undefined;
+    users.__v = undefined;
+    users._id = undefined;
 
-    user.user_type = undefined;
-    user.device_token = undefined;
-    user.device_type = undefined;
-    user.refresh_tokens = undefined;
-    user.deleted_at = undefined;
-    user.__v = undefined;
-    user._id = undefined;
-
-    return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        msg: "CUSTOMER LOGIN SUCESSFULLY",
-        user,
-      });
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      msg: "CUSTOMER LOGIN SUCESSFULLY",
+      user,
+    });
   } catch (err) {
     console.log("Error(Login)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        msg: "Something went wrong. Please try again later.",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      msg: "Something went wrong. Please try again later.",
+    });
   }
 };
-
 
 exports.update_Role = async (req, res) => {
 
   try {
-    
+
     const { email } = req.query;
-    let reqBody = req.body;
-    const { user_type } = reqBody;
-    let Roles = await driver.findOneAndUpdate({driver_email : email}, reqBody , {new:true})
+    let Roles = await driver.findOneAndUpdate(
+      { driver_email: email },
+      { set: { user_type: constants.USER_TYPE.CUSTOMER } },
+      { new: true }
+    );
 
-    if(!Roles){
-
-        return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status: constants.STATUS_CODE.FAIL  ,message:"DRIVER NOT FOUND"})
+    if (!Roles) {
+      return res
+        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
+        .send({
+          status: constants.STATUS_CODE.FAIL,
+          message: "DRIVER NOT FOUND",
+        });
     }
-    
+
     let users = new User({
+      email: Roles.driver_email,
+      customer_name: Roles.driver_name,
+      mobile_number: Roles.driver_mobile_number,
+      authTokens: Roles.authTokens,
+      refresh_tokens: Roles.refresh_tokens,
+      status: Roles.status,
+      user_type: Roles.user_type,
+    });
 
-        email:Roles.driver_email,
-        customer_name:Roles.driver_name,
-        mobile_number:Roles.driver_mobile_number,
-        authTokens:Roles.authTokens,
-        refresh_tokens:Roles.refresh_tokens,
-        status:Roles.status,
-        user_type:Roles.user_type
-    })
-
-    await users.save();
-
-    return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        msg: "ROLE CHANGED SUCESSFULLY",
-        
-      });
-
+    let data = await users.save();
+    isJSONString(data);
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      msg: "ROLE CHANGED SUCCESSFULLY",
+    });
   } catch (err) {
     console.log("Error(update_Role)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        msg: "Something went wrong. Please try again later.",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      msg: "Something went wrong. Please try again later.",
+    });
   }
 };
 
-
 exports.generate_auth_tokens = async (req, res) => {
-
   try {
     const { refresh_tokens } = req.params;
 
@@ -240,40 +217,40 @@ exports.generate_auth_tokens = async (req, res) => {
 
     let token = await user.save();
 
-    return res
-      .status(constants.WEB_STATUS_CODE.CREATED)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        msg: "CREATE NEW AUTH TOKEN",
-        data: token.authTokens,
-      });
+    return res.status(constants.WEB_STATUS_CODE.CREATED).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      msg: "CREATE NEW AUTH TOKEN",
+      data: token.authTokens,
+    });
   } catch (err) {
     console.log("Error(generate_auth_tokens)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        msg: "Something went wrong. Please try again later.",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      msg: "Something went wrong. Please try again later.",
+    });
   }
 };
 
-
-
 exports.get_all_customer = async (req, res) => {
-
   try {
-
-    const { email , customer_name , page = 1, limit = 10, offset = 0 ,  sortBy = 'created_at', sortOrder = 'email' } = req.query;
+    const {
+      email,
+      customer_name,
+      page = 1,
+      limit = 10,
+      offset = 0,
+      sortBy = "created_at",
+      sortOrder = "email",
+    } = req.query;
 
     const query = {};
 
     if (email) {
-      query.email = { $regex: email, $options: 'i' }; // Case-insensitive search by email
+      query.email = { $regex: email, $options: "i" }; // Case-insensitive search by email
     }
 
     if (customer_name) {
-      query.customer_name = { $regex: customer_name, $options: 'i' }; // Case-insensitive search by customer name
+      query.customer_name = { $regex: customer_name, $options: "i" }; // Case-insensitive search by customer name
     }
 
     // Calculate skip for pagination
@@ -282,7 +259,7 @@ exports.get_all_customer = async (req, res) => {
     // Count total matching customers
     const totalCustomers = await User.countDocuments(query);
 
-    const customers = await User.find(query , {
+    const customers = await User.find(query, {
       user_type: 0,
       device_token: 0,
       device_type: 0,
@@ -292,29 +269,23 @@ exports.get_all_customer = async (req, res) => {
       __v: 0,
       _id: 0,
     })
-    .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
-    .skip(skip)
-    .limit(parseInt(limit));
+      .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    const jsonData = JSON.parse(customers);
-
-    console.log(jsonData)
-
-    if (Array.isArray(jsonData)) {
+    if (isArrayofObjectsJSON(jsonData)) {
       return res.status(constants.WEB_STATUS_CODE.OK).send({
         status: constants.STATUS_CODE.SUCCESS,
         msg: "SUCCESSFULLY SEARCHED CUSTOMERS",
+        totalCustomers,
         customers,
       });
-
     } else {
       return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
         status: constants.STATUS_CODE.FAIL,
         msg: "Unexpected data format: Not an array.",
       });
     }
-
-
   } catch (err) {
     console.log("Error(get_all_customer)", err);
     return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
@@ -324,10 +295,7 @@ exports.get_all_customer = async (req, res) => {
   }
 };
 
-
-
 exports.update_customer_detalis = async (req, res) => {
-  
   try {
     const reqBody = req.body;
 
@@ -336,46 +304,40 @@ exports.update_customer_detalis = async (req, res) => {
     const findUser = req.user._id;
 
     if (!findUser)
-      return res
-        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
-        .send({
-          status: constants.STATUS_CODE.FAIL,
-          msg: "CUSTOMER Id NOT FOUND",
-        });
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "CUSTOMER Id NOT FOUND",
+      });
 
     let user = await User.findOneAndUpdate({ _id: findUser }, req.body, {
       new: true,
     });
 
+    isJSONString(user);
+
     if (!user)
-      return res
-        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
-        .send({
-          status: constants.STATUS_CODE.FAIL,
-          msg: "CUSTOMER DATA NOT FOUND",
-        });
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "CUSTOMER DATA NOT FOUND",
+      });
 
     user.updated_at = await dateFormat.set_current_timestamp();
 
-    return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        msg: "CUSTOMER DATA UPDATE SUCESSFULLY",
-        data: {
-          email: user.email,
-          mobile_number: user.mobile_number,
-          customer_name: user.customer_name,
-        },
-      });
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      msg: "CUSTOMER DATA UPDATE SUCESSFULLY",
+      data: {
+        email: user.email,
+        mobile_number: user.mobile_number,
+        customer_name: user.customer_name,
+      },
+    });
   } catch (err) {
     console.log("Error(update_customer_detalis)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        msg: "Something went wrong. Please try again later.",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      msg: "Something went wrong. Please try again later.",
+    });
   }
 };
 
@@ -384,37 +346,29 @@ exports.delete_customer_detalis = async (req, res) => {
     const userId = req.user._id;
 
     if (!userId)
-      return res
-        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
-        .send({
-          status: constants.STATUS_CODE.FAIL,
-          msg: "CUSTOMER ID NOT FOUND",
-        });
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "CUSTOMER ID NOT FOUND",
+      });
 
     let customerdata = await User.findByIdAndDelete(userId);
-
+    isJSONString(customerdata);
     if (!customerdata)
-      return res
-        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
-        .send({
-          status: constants.STATUS_CODE.FAIL,
-          msg: "CUSTOMER DATA NOT FOUND",
-        });
-
-    return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        msg: "CUSTOMER DATA DELETE SUCESSFULLY",
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "CUSTOMER DATA NOT FOUND",
       });
+
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      msg: "CUSTOMER DATA DELETE SUCESSFULLY",
+    });
   } catch (err) {
     console.log("Error(delete_customer_detalis)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        msg: "Something went wrong. Please try again later.",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      msg: "Something went wrong. Please try again later.",
+    });
   }
 };
 
@@ -444,20 +398,16 @@ exports.export_customer_data_into_excel_file = async (req, res) => {
     });
     await workbook.xlsx.writeFile("customer.xlsx");
 
-    return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        msg: "CREATE NEW EXCEL FILE",
-      });
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      msg: "CREATE NEW EXCEL FILE",
+    });
   } catch (err) {
     console.log("Error( export_customer_data_into_excel_file)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        msg: "Something went wrong. Please try again later.",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      msg: "Something went wrong. Please try again later.",
+    });
   }
 };
 
@@ -477,21 +427,17 @@ exports.customer_file_export_into_csv_file = async (req, res) => {
       if (error) {
         console.error("Error creating CSV file:", error);
       } else {
-        return res
-          .status(constants.WEB_STATUS_CODE.CREATED)
-          .send({
-            status: constants.STATUS_CODE.SUCCESS,
-            msg: "CREATE NEW CSV FILE",
-          });
+        return res.status(constants.WEB_STATUS_CODE.CREATED).send({
+          status: constants.STATUS_CODE.SUCCESS,
+          msg: "CREATE NEW CSV FILE",
+        });
       }
     });
   } catch (err) {
     console.log("Error(customer_file_export_into_csv_file)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        msg: "Something went wrong. Please try again later.",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      msg: "Something went wrong. Please try again later.",
+    });
   }
 };

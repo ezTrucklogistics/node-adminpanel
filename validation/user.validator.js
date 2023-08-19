@@ -33,7 +33,14 @@ const user_validator = [
     .isLength({max:12})
     .withMessage("Length should be 10")
     .isMobilePhone()
-    .withMessage("Enter Mobile number star with 0 or +91")
+    .withMessage("Enter valid Mobile number")
+    .custom((value) => {
+      // Custom validation function to check the country code
+      if (!value.startsWith('+91')) {
+        throw new Error('Mobile number must start with +91');
+      }
+      return true;
+    })
     .trim(),
 
 ];
@@ -50,7 +57,14 @@ const login_validator = [
     .isLength({max:12})
     .withMessage("Length should be 10")
     .isMobilePhone()
-    .withMessage("Enter Mobile number star with 0 or +91")
+    .withMessage("Enter valid Mobile number ")
+    .custom((value) => {
+      // Custom validation function to check the country code
+      if (!value.startsWith('+91')) {
+        throw new Error('Mobile number must start with +91');
+      }
+      return true;
+    })
     .trim(),
 ];
 
@@ -83,7 +97,14 @@ body("mobile_number")
   .isLength({max:12})
   .withMessage("Length should be 10")
   .isMobilePhone()
-  .withMessage("Enter Mobile number star with 0 or +91")
+  .withMessage("Enter valid Mobile number")
+  .custom((value) => {
+    // Custom validation function to check the country code
+    if (!value.startsWith('+91')) {
+      throw new Error('Mobile number must start with +91');
+    }
+    return true;
+  })
   .trim(),
 ];
 
@@ -100,19 +121,6 @@ const refresh_token__validator = [
     .trim(),
 ];
 
-const customerId_validator = [
-
-  query("customerId")
-    .not()
-    .isEmpty()
-    .withMessage('customerId is required')
-    .isString()
-    .withMessage('customerId should be a string')
-    .isMongoId()
-    .withMessage('Enter valid customer id')
-    .trim(),
-];
-
 const  update_Roles_validator = [
 
     query('email')
@@ -124,18 +132,30 @@ const  update_Roles_validator = [
     .isEmail()
     .withMessage('Enter valid email')
     .trim(),
-
-    body('user_type')
-    .not()
-    .isEmpty()
-    .withMessage('user_type is required')
-    .isNumeric()
-    .withMessage('user_type should be a number')
-    .isIn(nums)
-    .withMessage('Enter valid user_type 1 or 2')
-    .trim()
 ]
 
+get_all_customer_validator = [
+
+  body("email")
+  .optional()
+  .not()
+  .isEmpty()
+  .withMessage('email or customer_name is required')
+  .isString()
+  .withMessage('email should be string')
+  .isEmail()
+  .withMessage('Enter a valid email')
+  .trim(),
+
+body("customer_name")
+  .optional()
+  .not()
+  .isEmpty()
+  .withMessage('email or customer Name is required')
+  .isString()
+  .withMessage('customer name should be string')
+  .trim(),
+]
 
 
 const validation_result = (req, res, next) => {
@@ -157,6 +177,6 @@ module.exports = {
   update_customer_validator,
   validation_result,
   refresh_token__validator,
-  customerId_validator,
-  update_Roles_validator
+  update_Roles_validator,
+  get_all_customer_validator
 };

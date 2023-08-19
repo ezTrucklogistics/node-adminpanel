@@ -40,6 +40,27 @@ try {
 }
 
 
+exports.isArrayofObjectsJSON = (arr) => {
+  try {
+    const jsonString = JSON.stringify(arr); // Convert array to JSON string
+    JSON.parse(jsonString); // Attempt to parse the JSON string
+    return true; // The array of objects is valid JSON
+  } catch (error) {
+    return console.log("It's not a valid type json")// The array of objects is not valid JSON
+  }
+}
+
+
+exports.isJSONString = (str) => {
+  try {
+    JSON.parse(str);
+    return true; // The string is valid JSON
+  } catch (error) {
+    return console.log('Not valid json type'); // The string is not valid JSON
+  }
+}
+
+
 
 
 
