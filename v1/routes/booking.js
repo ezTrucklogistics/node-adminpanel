@@ -61,6 +61,32 @@ router.post(
 );
 
 
+/**
+ * @swagger
+ * /v1/book/List_of_booking:
+ *   get:
+ *     summary: Returns the list of all the books
+ *     tags: [Booking]
+ *     responses:
+ *       200:
+ *         description: The list of the books
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ * */
+
+router.get("/List_of_booking", List_of_Booking);
+
+
+router.get(
+  "/Booking_By_Id",
+  get_booking_by_id,
+  booking_validation_result,
+  booking_By_Id
+);
+
 
 
 /**
