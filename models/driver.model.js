@@ -6,13 +6,9 @@ const Schema = mongoose.Schema;
 const jwt = require("jsonwebtoken")
 const dateFormat = require("../helper/dateformat.helper")
 
-
 //Define Booing schema
 const driverSchema = new Schema({
     
-    driverId: {
-        type: String,
-    },
     driver_img :{
         type:String,
     },
@@ -54,6 +50,10 @@ const driverSchema = new Schema({
     total_earning:{
         type:Number,
         default:0
+    },
+    driver_status:{
+        type:String,
+        default:constants.DRIVER_STATUS.STATUS_2
     },
     daily_earning:{
         type:Number,
@@ -139,6 +139,7 @@ driverSchema.methods.generateRefreshToken = async function () {
     await driver.save()
     return refresh_tokens
 }
+
 
 //Define user model
 const driver = mongoose.model('driver', driverSchema);

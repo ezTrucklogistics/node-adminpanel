@@ -61,54 +61,6 @@ router.post(
 );
 
 
-/**
- * @swagger
- * /v1/book/List_of_booking:
- *   get:
- *     summary: Returns the list of all the books
- *     tags: [Booking]
- *     responses:
- *       200:
- *         description: The list of the books
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- * */
-
-
-router.get("/List_of_booking", List_of_Booking);
-
-/**
- * @swagger
- * /v1/book/Booking_By_Id/{bookingId}:
- *   get:
- *     summary: Get booking by ID
- *     tags: [Booking]
- *     parameters:
- *       - in: path
- *         name: bookingId
- *         schema:
- *           type: string
- *         required: true
- *         description: ID of the booking to retrieve
- *     responses:
- *       200:
- *         description: Successfully retrieved the booking
- *       400:
- *         description: Bad Request
- *       404:
- *         description: Booking not found
- */
-
-router.get(
-  "/Booking_By_Id",
-  get_booking_by_id,
-  booking_validation_result,
-  booking_By_Id
-);
-
 
 
 /**

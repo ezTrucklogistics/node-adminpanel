@@ -2,7 +2,7 @@ module.exports = {
     'PORT': process.env.PORT || 4001,
     'NODE_ENV': 'development',
     'JWT_SECRET': 'Eztruck',
-    'SERVICE_KEY':'"AAAAse1II2Q:APA91bFF-4gzE9DJ6Egq76-d9nbx9lCUAbZL36BYDTm4gC-3NjCFUO75sprfC8a1nq-igaSHARMUbYF_Yb6boHdWnRVDXpPwqLhh-Dqh9MVKcH5TwL9kPS9frHq4KubrBuOC-9mZtLFE"; // Replace with your Firebase server key',
+    'SERVICE_KEY':'"AAAAXaN35Ss:APA91bGHihxZ4wDVO2J-yZiXkEOGn0ymytR6STB7zaxM-pfn50CaBWUQI9llthgCZn2ab98CzGln7zEl-38WtztISHvXmsrxAWUBqlnRB3Fqy4X4GrmA64tXCijlhaA2bCLx6PbtsJUj',
     'GOOGLE_APIKEY' : 'AIzaSyCqM7uF9c0ZMQjdssHqSMJJ3mBcmz5RNS0',
     'GEOCODER_PROVIDER':'mapquest',
     'GEOCODER_API_KEY': 'pb9y7WZJycuk9Zi1prOzZhs7Kn5EOG6G',

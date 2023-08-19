@@ -2,7 +2,7 @@
 const dateFormat = require("../../helper/dateformat.helper");
 const constants = require("../../config/constants");
 const { sendResponse } = require("../../services/common.service");
-const { generateId , geocoder } = require("../../middleware/common.function")
+const {  geocoder } = require("../../middleware/common.function")
 const { JWT_SECRET } = require("../../keys/development.keys")
 const jwt = require("jsonwebtoken")
 const ExcelJs = require("exceljs");
@@ -11,7 +11,7 @@ const driver = require("../../models/driver.model");
 const booking = require("../../models/booking.model")
 const {  totalEarningbyDriver } = require("../../middleware/earning.system")
 const cron = require('node-cron');
-
+const { isArrayofObjectsJSON } = require('../../middleware/common.function')
 
 
 exports.signup = async (req, res) => {
@@ -86,7 +86,7 @@ exports.logout = async (req, res) => {
 
     driverData.authTokens = null;
     driverData.refresh_tokens = null;
-
+    await driver.findOneAndUpdate({ _id : driverId} , {$set : {driver_status: constants.DRIVER_STATUS.STATUS_2}})
     await driverData.save();
     return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"DRIVER LOGOUT SUCESSFULLY"})
 
@@ -123,6 +123,8 @@ exports.login = async (req, res) => {
     let newToken = await driverdata.generateAuthToken();
     let refreshToken = await driverdata.generateRefreshToken();
     driverdata.authTokens = newToken;
+    let driverId = driverdata._id
+    await driver.findOneAndUpdate({ _id : driverId} , {$set : {driver_status: constants.DRIVER_STATUS.STATUS_1}})
     await driverdata.save();
     driverdata.user_type = undefined;
     driverdata.device_token = undefined;
@@ -182,25 +184,60 @@ exports.get_all_driver = async (req, res) => {
 
   try {
 
-    let drivers = await driver.find(
-      {},
-      {
-        driver_name: 1,
-        driver_email: 1,
-        driver_mobile_number: 1,
-        driver_current_location: 1,
-        driver_lat:1,
-        driver_long:1,
-        brand: 1,
-        vehical_number: 1,
-        truck_type:1,
-        status:1,
-        driverId:1,
-        driver_img:1
-      }
-    )
+    const {
+      driver_email,
+      driver_name,
+      page = 1,
+      limit = 10,
+      offset = 0,
+      sortBy = "created_at",
+      sortOrder = "driver_email",
+    } = req.query;
 
-    return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"SUCESSFULLY GET ALL DRIVER" , drivers})
+    const query = {};
+
+    if (driver_email) {
+      query.driver_email = { $regex: driver_email, $options: "i" }; // Case-insensitive search by email
+    }
+
+    if (driver_name) {
+      query.driver_name = { $regex: driver_name, $options: "i" }; // Case-insensitive search by customer name
+    }
+
+    // Calculate skip for pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
+
+    // Count total matching customers
+    const totalCustomers = await driver.countDocuments(query);
+
+    const drivers = await driver.find(query, {
+      user_type: 0,
+      device_token: 0,
+      device_type: 0,
+      refresh_tokens: 0,
+      authTokens: 0,
+      deleted_at: 0,
+      __v: 0,
+      _id: 0,
+    })
+      .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    if (isArrayofObjectsJSON(drivers)) {
+      return res.status(constants.WEB_STATUS_CODE.OK).send({
+        status: constants.STATUS_CODE.SUCCESS,
+        msg: "SUCCESSFULLY SEARCHED DRIVERS",
+        totalCustomers,
+        drivers,
+      });
+    } else {
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Unexpected data format: Not an array.",
+      });
+    }
+
 
   } catch (err) {
     console.log("Error(get_all_drivers)", err);

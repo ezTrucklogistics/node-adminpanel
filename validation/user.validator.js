@@ -30,8 +30,6 @@ const user_validator = [
     .withMessage('mobile_numbe is required')
     .isString()
     .withMessage('mobile number should be string')
-    .isLength({max:12})
-    .withMessage("Length should be 10")
     .isMobilePhone()
     .withMessage("Enter valid Mobile number")
     .custom((value) => {
@@ -54,8 +52,6 @@ const login_validator = [
     .withMessage('mobile_numbe is required')
     .isString()
     .withMessage('mobile number should be string')
-    .isLength({max:12})
-    .withMessage("Length should be 10")
     .isMobilePhone()
     .withMessage("Enter valid Mobile number ")
     .custom((value) => {
@@ -94,8 +90,6 @@ body("mobile_number")
   .withMessage('mobile_numbe is required')
   .isString()
   .withMessage('mobile number should be string')
-  .isLength({max:12})
-  .withMessage("Length should be 10")
   .isMobilePhone()
   .withMessage("Enter valid Mobile number")
   .custom((value) => {

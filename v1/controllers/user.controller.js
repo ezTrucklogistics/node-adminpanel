@@ -51,10 +51,8 @@ exports.signUp = async (req, res) => {
     reqBody.device_token = reqBody.device_token ? reqBody.device_token : null;
 
     const user = await User.create(reqBody);
-    isJSONString(user);
+    isJSONString(user);0
     user.user_type = undefined;
-    user.device_token = undefined;
-    user.device_type = undefined;
     user.refresh_tokens = undefined;
     user.authTokens = undefined;
     user.deleted_at = undefined;
@@ -74,6 +72,7 @@ exports.signUp = async (req, res) => {
     });
   }
 };
+
 
 exports.logout = async (req, res) => {
   try {
@@ -96,6 +95,7 @@ exports.logout = async (req, res) => {
     });
   }
 };
+
 
 exports.login = async (req, res) => {
   try {
@@ -131,8 +131,6 @@ exports.login = async (req, res) => {
     let users = await user.save();
     isJSONString(user);
     users.user_type = undefined;
-    users.device_token = undefined;
-    users.device_type = undefined;
     users.refresh_tokens = undefined;
     users.deleted_at = undefined;
     users.__v = undefined;
@@ -188,6 +186,7 @@ exports.update_Role = async (req, res) => {
       status: constants.STATUS_CODE.SUCCESS,
       msg: "ROLE CHANGED SUCCESSFULLY",
     });
+    
   } catch (err) {
     console.log("Error(update_Role)", err);
     return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
@@ -273,7 +272,7 @@ exports.get_all_customer = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit));
 
-    if (isArrayofObjectsJSON(jsonData)) {
+    if (isArrayofObjectsJSON(customers)) {
       return res.status(constants.WEB_STATUS_CODE.OK).send({
         status: constants.STATUS_CODE.SUCCESS,
         msg: "SUCCESSFULLY SEARCHED CUSTOMERS",

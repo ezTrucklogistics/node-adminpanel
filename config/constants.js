@@ -1,7 +1,8 @@
 //setting up keys and their values for development
 module.exports = {
 	'STATUS': { 'ACCOUNT_ACTIVE':'ACTIVE',   'ACCOUNT_DEACTIVE': 'DEACTIVE'},
-	'BOOKING_STATUS': {'STATUS_CANCEL':'CANCEL' , 'STATUS_CONFIRM':'CONFIRM' , 'STATUS_PENDING':'PENDING'},
+	'BOOKING_STATUS': {'STATUS_CANCEL':'CANCEL' , 'STATUS_CONFIRM':'CONFIRM' , 'STATUS_PENDING':'PENDING' , 'STATUS_COMPLETED':'COMPLETED'},
+	'DRIVER_STATUS':{'STATUS_1':'available' , 'STATUS_2':'offline' , 'STATUS_3':'busy'},
 	'DEFAULT_LANGUAGE': "en",
 	'APP_LANGUAGE': ['en', 'hn'],
 	'URL_EXPIRE_TIME': '2h',

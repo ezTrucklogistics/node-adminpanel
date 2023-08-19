@@ -3,12 +3,16 @@ const {
   geocoder,
   getDistanceAndTime,
   generateOtp,
+  isArrayofObjectsJSON,
+  isJSONString
 } = require("../../middleware/common.function");
 const dateFormat = require("../../helper/dateformat.helper");
 const constants = require("../../config/constants");
 const booking = require("../../models/booking.model");
 const { calculateTotalPrice } = require("../../middleware/earning.system");
 const distances = require("../../models/driver_distance_calculate.model");
+const { calculateDistance , sendBookingConfirmationNotification } = require('../../middleware/push.notification')
+const driver = require("../../models/driver.model");
 
 
 
@@ -35,6 +39,7 @@ exports.create_Booking = async (req, res) => {
       reqBody.pickup_location,
       reqBody.drop_location
     );
+    
     reqBody.distance = distance;
     reqBody.duration = duration;
     const distanceNumber = parseFloat(distance);
@@ -113,72 +118,49 @@ exports.Booking_otp_verify = async (req, res) => {
 };
 
 
-
-exports.List_of_Booking = async (req, res) => {
-
-  try {
-    const bookings = await booking
-      .find(
-        {},
-        {
-          pickup_location: 1,
-          drop_location: 1,
-          trip_cost: 1,
-          duration: 1,
-          distance: 1,
-          truck_type: 1,
-          status: 1,
-        }
-      )
-      .populate('User' , 'mobile_number email customer_name').populate('driver' , 'driver_mobile_number driver_name driver_email')
-
-      return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        message: "SUCESSFULLY GET ALL BOOKINGS", bookings
-      });
-
-
-  } catch (err) {
-    console.log("Error(List_of_Booking)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "GENERAL.general_error_content",
-      });
-  }
-};
-
-
 exports.List_of_Booking_by_customers = async (req, res) => {
 
   try {
 
-    let { userId } = req.query;
-    const bookings = await booking
-      .find(
-        {User : userId},
-        {
-          pickup_location: 1,
-          drop_location: 1,
-          trip_cost: 1,
-          duration: 1,
-          distance: 1,
-          truck_type: 1,
-          status: 1,
-        }
-      )
-      .populate('User' , 'mobile_number email customer_name').populate('driver' , 'driver_mobile_number driver_name driver_email')
+    const {
+      userId,
+      page = 1,
+      limit = 20,
+      offset = 0,
+      sortBy = "created_at",
+      sortOrder = "truck_type",
+    } = req.query;
 
-      return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
+
+    // Calculate skip for pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
+
+    const customers = await booking.find({User : userId }, {
+      user_type: 0,
+      device_token: 0,
+      device_type: 0,
+      refresh_tokens: 0,
+      authTokens: 0,
+      deleted_at: 0,
+      __v: 0,
+      _id: 0,
+    }).populate('User' , 'mobile_number email customer_name').populate('driver' , 'driver_mobile_number driver_name driver_email')
+      .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    if (isArrayofObjectsJSON(customers)) {
+      return res.status(constants.WEB_STATUS_CODE.OK).send({
         status: constants.STATUS_CODE.SUCCESS,
-        message: "SUCESSFULLY GET ALL BOOKINGS BY CUSTOMERS", bookings
+        msg: "SUCESSFULLY GET ALL BOOKINGS BY CUSTOMERS",
+        customers,
       });
-
+    } else {
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Unexpected data format: Not an array.",
+      });
+    }
 
   } catch (err) {
     console.log("Error(List_of_Booking_by_customers)", err);
@@ -197,29 +179,45 @@ exports.List_of_Booking_by_drivers = async (req, res) => {
 
   try {
 
-    let { driverId } = req.query;
-    const bookings = await booking
-      .find(
-        {driver:driverId},
-        {
-          pickup_location: 1,
-          drop_location: 1,
-          trip_cost: 1,
-          duration: 1,
-          distance: 1,
-          truck_type: 1,
-          status: 1,
-        }
-      )
-      .populate('User' , 'mobile_number email customer_name').populate('driver' , 'driver_mobile_number driver_name driver_email')
+    const {
+      driverId,
+      page = 1,
+      limit = 20,
+      offset = 0,
+      sortBy = "created_at",
+      sortOrder = "truck_type",
+    } = req.query;
 
-      return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
+
+    // Calculate skip for pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
+
+    const customers = await booking.find({driver : driverId }, {
+      user_type: 0,
+      device_token: 0,
+      device_type: 0,
+      refresh_tokens: 0,
+      authTokens: 0,
+      deleted_at: 0,
+      __v: 0,
+      _id: 0,
+    }).populate('User' , 'mobile_number email customer_name').populate('driver' , 'driver_mobile_number driver_name driver_email')
+      .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    if (isArrayofObjectsJSON(customers)) {
+      return res.status(constants.WEB_STATUS_CODE.OK).send({
         status: constants.STATUS_CODE.SUCCESS,
-        message: "SUCESSFULLY GET ALL BOOKINGS BY DRIVERS", bookings
+        msg: "SUCESSFULLY GET ALL BOOKINGS BY DRIVERSS",
+        customers,
       });
-
+    } else {
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Unexpected data format: Not an array.",
+      });
+    }
 
   } catch (err) {
     console.log("Error(List_of_Booking_by_drivers)", err);
@@ -233,44 +231,6 @@ exports.List_of_Booking_by_drivers = async (req, res) => {
 };
 
 
-
-
-
-exports.booking_By_Id = async (req, res) => {
-
-  try {
-
-    const { bookingId } = req.query;
-    const booking_data = await booking
-      .findOne({ _id: bookingId })
-      .populate('User' , 'mobile_number email customer_name').populate('driver' , 'driver_mobile_number driver_name driver_email')
-      .exec();
-
-    booking_data.deleted_at = undefined;
-    booking_data.driverId = undefined;
-    booking_data.pickup_location_lat = undefined;
-    booking_data.pickup_location_long = undefined;
-    booking_data.drop_location_lat = undefined;
-    booking_data.drop_location_long = undefined;
-    booking_data.userId = undefined;
-
-   return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        message: "SUCESSFULLY GET ALL BOOKINGS", booking_data
-      });
-
-  } catch (err) {
-    console.log("Error(booking_By_Id)", err);
-    return res
-    .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-    .send({
-      status: constants.STATUS_CODE.FAIL,
-      message: "GENERAL.general_error_content",
-    });
-  }
-};
 
 exports.booking_cancel_by_customer = async (req, res) => {
 
