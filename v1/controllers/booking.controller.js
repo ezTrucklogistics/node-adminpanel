@@ -14,6 +14,7 @@ const distances = require("../../models/driver_distance_calculate.model");
 
 
 
+
 exports.create_Booking = async (req, res) => {
 
   try {
@@ -51,7 +52,7 @@ exports.create_Booking = async (req, res) => {
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
     const booking = await Bookingsave(reqBody);
-
+    isJSONString(booking)
     booking.deleted_at = undefined;
     booking.driverId = undefined;
     booking.pickup_location_lat = undefined;
@@ -60,7 +61,7 @@ exports.create_Booking = async (req, res) => {
     booking.drop_location_long = undefined;
     booking.userId = undefined;
 
-    return res.status(constants.WEB_STATUS_CODE.CREATED).send({status:constants.STATUS_CODE.SUCCESS , message:"CREATE NEW BOOKING"})
+    return res.status(constants.WEB_STATUS_CODE.CREATED).send({status:constants.STATUS_CODE.SUCCESS , message:"CREATE NEW BOOKING" , booking})
    
   } catch (err) {
 
@@ -231,6 +232,7 @@ exports.List_of_Booking_by_drivers = async (req, res) => {
 exports.List_of_Booking = async (req, res) => {
 
   try {
+    
 
     const customers = await booking.find()
 
@@ -239,7 +241,7 @@ exports.List_of_Booking = async (req, res) => {
         msg: "SUCESSFULLY GET ALL BOOKINGS",
         customers,
       });
-
+    
   } catch (err) {
     console.log("Error(List_of_Booking)", err);
     return res

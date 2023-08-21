@@ -31,29 +31,6 @@ function toRadians(degrees) {
 }
 
 
-exports.sendBookingConfirmationNotification = async ( driverDeviceTokens ) => {
-
-    const notificationData = {
-      title: "New Booking Request",
-      body: "You have a new booking request. Accept or decline?",
-    };
-  
-    const message = {
-      registration_ids: driverDeviceTokens,
-      data: notificationData, // Include additional data here, e.g., bookingId
-    };
-
-    fcm.send(message, function (err, response) {
-      if (err) {
-        console.error("Error sending notification:", err);
-      } else {
-        console.log("Notification sent successfully:", response);
-      }
-    });
-
-};
-
-
 
 exports.sendNotificationToDrivers = async () => {
   try {
@@ -111,6 +88,7 @@ exports.sendNotificationToDrivers = async () => {
 
 
 exports.sendNotificationToCustomers = async () => {
+
   try {
     // Find active drivers from the database
     const customers = await User.find();
@@ -162,20 +140,6 @@ exports.sendNotificationToCustomers = async () => {
   }
 };
 
-
-
-// Function to send the notification
-function sendNotification(message) {
-  return new Promise((resolve, reject) => {
-    fcm.send(message, function (err, response) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(response);
-      }
-    });
-  });
-}
 
 
 

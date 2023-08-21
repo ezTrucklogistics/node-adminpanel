@@ -99,7 +99,7 @@ exports.logout = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { mobile_number } = req.body;
+    const { mobile_number  , token} = req.body;
 
     let user = await User.findOne({ mobile_number });
 
@@ -128,6 +128,7 @@ exports.login = async (req, res) => {
 
     user.authTokens = newToken;
     user.refresh_tokens = refreshToken;
+    user.device_token = token;
     let users = await user.save();
     isJSONString(user);
     users.user_type = undefined;

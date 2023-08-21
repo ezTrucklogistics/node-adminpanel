@@ -110,7 +110,7 @@ exports.login = async (req, res) => {
   try {
     
     let reqBody = req.body;
-    const { driver_mobile_number } = reqBody;
+    const { driver_mobile_number  , token} = reqBody;
     let driverdata = await driver.findOne({ driver_mobile_number });
     console.log(driverdata)
 
@@ -125,6 +125,7 @@ exports.login = async (req, res) => {
     driverdata.authTokens = newToken;
     let driverId = driverdata._id
     await driver.findOneAndUpdate({ _id : driverId} , {$set : {driver_status: constants.DRIVER_STATUS.STATUS_1}})
+    driverdata.device_token = token;
     await driverdata.save();
     driverdata.user_type = undefined;
     driverdata.device_token = undefined;
