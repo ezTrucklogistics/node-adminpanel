@@ -7,13 +7,14 @@ const retry = require('retry');
 
 
 
-const  findDriversWithinRadius = async (pickupLat, pickupLon, radius) => {
+const findDriversWithinRadius = async (pickup_location_lat, pickup_location_long, radius) => {
   // Define the customer location
   const customerLocation = {
     type: 'Point',
-    coordinates: [pickupLon, pickupLat], // [longitude, latitude]
+    coordinates: [pickup_location_long, pickup_location_lat], // [longitude, latitude]
   };
 
+  console.log(customerLocation)
   // Find drivers within the specified radius
   const driversWithinRadius = await driver.find({
     location: {
@@ -24,13 +25,14 @@ const  findDriversWithinRadius = async (pickupLat, pickupLon, radius) => {
     },
     driver_status: constants.DRIVER_STATUS.STATUS_1, // Filter by driver availability
   });
-
+  
+  console.log(driversWithinRadius)
   return driversWithinRadius;
 }
 
 
 
-const sendFCMNotificationToDriver = async (driverToken ,bookingDetails) => {
+const sendFCMNotificationToDriver = async (driverToken ) => {
 
 
     const message = {
@@ -39,11 +41,6 @@ const sendFCMNotificationToDriver = async (driverToken ,bookingDetails) => {
         notification: {
           title: 'New Booking Request',
           body: 'You have a new booking request.',
-        },
-        data: {
-          // Include booking details here
-          // For example, you can pass booking ID, customer ID, etc.
-          ...bookingDetails,
         },
       };
   
@@ -54,16 +51,18 @@ const sendFCMNotificationToDriver = async (driverToken ,bookingDetails) => {
           console.log("Notification sent successfully:", response);
         }
       });
-  
 }
 
-const  sendNotificationsToDrivers =  async(pickupLat, pickupLon, radius) => {
+
+const sendNotificationsToDrivers =  async (pickup_location_lat, pickup_location_long, radius) => {
 
   const driversWithinRadius = await findDriversWithinRadius(
-    pickupLat,
-    pickupLon,
+    pickup_location_lat,
+    pickup_location_long,
     radius
   );
+
+  console.log(driversWithinRadius);
 
   if (driversWithinRadius.length === 0) {
     // No drivers found within the current radius, expand the radius by 5 km
@@ -71,7 +70,7 @@ const  sendNotificationsToDrivers =  async(pickupLat, pickupLon, radius) => {
 
     if (expandedRadius <= 15) {
       console.log(`No drivers found within ${radius} km radius. Expanding to ${expandedRadius} km.`);
-      await sendNotificationsToDrivers(pickupLat, pickupLon, expandedRadius);
+      await sendNotificationsToDrivers(pickup_location_lat, pickup_location_long, expandedRadius);
     } else {
       console.log(`No drivers found within the maximum radius of 15 km.`);
       // Handle the case where no drivers are found even within the maximum radius.
@@ -82,24 +81,19 @@ const  sendNotificationsToDrivers =  async(pickupLat, pickupLon, radius) => {
     // Send notifications to each driver found
     for (const driver of driversWithinRadius) {
       // Assuming each driver document has a "deviceToken" field
-      const driverToken = driver.device_token; // Replace with the actual field name
-
-      // You can customize the bookingDetails object with relevant information
-      const bookingDetails = {
-        customerId: '123', // Replace with actual customer ID
-        // Add other booking details as needed
-      };
-
+      const driverToken = driver.device_token; // Replace with the actual field na
       await sendFCMNotificationToDriver(driverToken, bookingDetails);
     }
   }
 }
 
+const pickupLat = 52.5200; // Customer pickup location latitude
+const pickupLon = 13.4050; // Customer pickup location longitude
+const initialRadius = 10; // Initial search radius in kilometers
 
-exports.sendNotificationsToDrivers(pickupLat, pickupLon, initialRadius)
-
+sendNotificationsToDrivers(pickupLat, pickupLon, initialRadius)
   .then(() => {
-    console.log('sucessfully send notification to the driver');
+    // Handle success
   })
   .catch((error) => {
     console.error('Error sending notifications:', error);

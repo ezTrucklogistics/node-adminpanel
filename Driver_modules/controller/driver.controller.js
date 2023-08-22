@@ -14,6 +14,8 @@ const cron = require('node-cron');
 const { isArrayofObjectsJSON } = require('../../middleware/common.function')
 
 
+
+
 exports.signup = async (req, res) => {
 
   try {
@@ -110,7 +112,7 @@ exports.login = async (req, res) => {
   try {
     
     let reqBody = req.body;
-    const { driver_mobile_number  , token} = reqBody;
+    const { driver_mobile_number , token , device_type} = reqBody;
     let driverdata = await driver.findOne({ driver_mobile_number });
     console.log(driverdata)
 
@@ -126,6 +128,7 @@ exports.login = async (req, res) => {
     let driverId = driverdata._id
     await driver.findOneAndUpdate({ _id : driverId} , {$set : {driver_status: constants.DRIVER_STATUS.STATUS_1}})
     driverdata.device_token = token;
+    user.device_type = device_type
     await driverdata.save();
     driverdata.user_type = undefined;
     driverdata.device_token = undefined;
@@ -142,6 +145,21 @@ exports.login = async (req, res) => {
     return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
    };
 }
+
+exports.update_current_location = async () => {
+
+     try {
+       const { driverId, driver_lat, driver_long } = req.body;
+       await driver.findOneAndUpdate({ driverId }, { driver_lat, driver_long });
+       console.log(`Location updated for driver ${driverId}: Lat ${latitude}`)
+       return res.status(constants.WEB_STATUS_CODE.OK).send({status:constants.STATUS_CODE.SUCCESS , msg:"DRIVER LOCATION UPDATE SUCESSFULLY"})
+
+     }catch(err) {
+
+       console.log("Error (update_current_location)", err);
+       return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})   
+     }
+  }  
 
 
 exports.generate_auth_tokens = async (req, res) => {

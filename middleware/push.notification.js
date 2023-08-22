@@ -7,6 +7,7 @@ const { CronJob } = require('cron');
 const retry = require('retry');
 
 
+
 exports.calculateDistance = (lat1, lon1, lat2, lon2) => {
 
   const R = 6371; 
@@ -33,6 +34,7 @@ function toRadians(degrees) {
 
 
 exports.sendNotificationToDrivers = async () => {
+  
   try {
     // Find active drivers from the database
     const drivers = await driver.find();

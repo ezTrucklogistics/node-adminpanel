@@ -73,25 +73,6 @@ module.exports = {
 	},
 	"ANDROID_USERS_TOPIC": "twtmn_android_users",
 	"IOS_USERS_TOPIC": "twtmn_ios_users",
-	'PATH' : {
-		'PROFILE_IMG_PATH' : 'public/images/profilePic',
-		'BADGE_IMAGE_PATH' : 'public/images/badgeImage',
-		'KIT_IMAGE_PATH' : 'public/images/kitImage',
-		'KIT_LOGO_PATH' : 'public/images/kitLogo',
-		'NOTIFICATION_IMAGE_PATH' : 'public/images/notificationImage',
-		'APK_PATH' : 'public/files/apk',
-		'TDS_PATH' : 'public/files/certificate',
-		'TRIVIA_IMAGE_PATH' : 'public/files/apk',
-		'QUESTION_CSV_PATH' : 'public/files/questionsCsvFiles',
-		'SCRIPT_UPLOAD_PATH' : 'public/files/scriptUploadFiles',
-		'PUBLIC_CMS_PATH' : 'public/cms',
-		'CMS_UPLOAD_PATH' : 'public/cms/upload',
-		'CMS_BACKUP_PATH' : 'public/cms/backup'
-	},
-	'FS_TYPES': {
-        'DIR': 'DIR',
-        'FILE': 'FILE'
-	},
 	'LANG': {
 		'HINDI': 'hn',
 		'ENGLISH': 'en'

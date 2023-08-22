@@ -12,7 +12,9 @@ const {
   isArrayofObjectsJSON,
 } = require("../../middleware/common.function");
 
+
 exports.signUp = async (req, res) => {
+
   try {
     const reqBody = req.body;
 
@@ -99,7 +101,7 @@ exports.logout = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { mobile_number  , token} = req.body;
+    const { mobile_number,token,device_type} = req.body;
 
     let user = await User.findOne({ mobile_number });
 
@@ -129,6 +131,7 @@ exports.login = async (req, res) => {
     user.authTokens = newToken;
     user.refresh_tokens = refreshToken;
     user.device_token = token;
+    user.device_type = device_type
     let users = await user.save();
     isJSONString(user);
     users.user_type = undefined;
@@ -341,7 +344,9 @@ exports.update_customer_detalis = async (req, res) => {
   }
 };
 
+
 exports.delete_customer_detalis = async (req, res) => {
+  
   try {
     const userId = req.user._id;
 
@@ -372,8 +377,11 @@ exports.delete_customer_detalis = async (req, res) => {
   }
 };
 
+
 exports.export_customer_data_into_excel_file = async (req, res) => {
+
   try {
+    
     const users = await User.find({ user_type: 2 });
     const workbook = new ExcelJs.Workbook();
     const worksheet = workbook.addWorksheet("My Users");
@@ -402,6 +410,7 @@ exports.export_customer_data_into_excel_file = async (req, res) => {
       status: constants.STATUS_CODE.SUCCESS,
       msg: "CREATE NEW EXCEL FILE",
     });
+
   } catch (err) {
     console.log("Error( export_customer_data_into_excel_file)", err);
     return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
@@ -410,6 +419,7 @@ exports.export_customer_data_into_excel_file = async (req, res) => {
     });
   }
 };
+
 
 exports.customer_file_export_into_csv_file = async (req, res) => {
   try {
@@ -433,6 +443,7 @@ exports.customer_file_export_into_csv_file = async (req, res) => {
         });
       }
     });
+
   } catch (err) {
     console.log("Error(customer_file_export_into_csv_file)", err);
     return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({

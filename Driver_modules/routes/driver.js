@@ -11,6 +11,7 @@ const {signup,
   driver_total_earning,
   driver_daily_earning,
   delete_driver_detalis,
+  update_current_location,
 } = require("../controller/driver.controller");
  const {login_validator , validation_result} = require("../../validation/driver.validator")
 var router = express.Router();
@@ -280,7 +281,7 @@ router.post("/driver_data_export_csv" , driver_file_export_into_csv_file)
 router.post("/driver_total_earning" ,driver_authenticate, driver_total_earning)
 router.post("/driver_daily_earning" , driver_daily_earning)
 router.delete("/driver_account_deleted" , driver_authenticate, delete_driver_detalis)
-
+router.put('/driver_current_location_update' , update_current_location)
 
 
 module.exports = router;

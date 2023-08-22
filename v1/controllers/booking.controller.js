@@ -11,7 +11,7 @@ const constants = require("../../config/constants");
 const booking = require("../../models/booking.model");
 const { calculateTotalPrice } = require("../../middleware/earning.system");
 const distances = require("../../models/driver_distance_calculate.model");
-
+const { sendNotificationsToDrivers } = require('../../middleware/check_available_drivers')
 
 
 
@@ -27,6 +27,7 @@ exports.create_Booking = async (req, res) => {
       reqBody.pickup_location_lat = item.latitude;
       reqBody.pickup_location_long = item.longitude;
     });
+
     const drop_location = await geocoder.geocode(reqBody.drop_location);
 
     drop_location.map((item) => {
@@ -52,6 +53,7 @@ exports.create_Booking = async (req, res) => {
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
     const booking = await Bookingsave(reqBody);
+    sendNotificationsToDrivers(booking.pickup_location_lat , booking.pickup_location_long , 10000);
     isJSONString(booking)
     booking.deleted_at = undefined;
     booking.driverId = undefined;
@@ -60,15 +62,11 @@ exports.create_Booking = async (req, res) => {
     booking.drop_location_lat = undefined;
     booking.drop_location_long = undefined;
     booking.userId = undefined;
-
     return res.status(constants.WEB_STATUS_CODE.CREATED).send({status:constants.STATUS_CODE.SUCCESS , message:"CREATE NEW BOOKING" , booking})
-   
   } catch (err) {
-
     console.log("Error(create_Booking)", err);
     return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
   }
-
 };
 
 
