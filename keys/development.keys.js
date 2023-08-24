@@ -11,3 +11,4 @@ module.exports = {
     'MONGODB_URI': 'mongodb+srv://root:akki909@cluster0.sm3rshd.mongodb.net/Eztruck',
     'BASEURL': 'http://localhost:4001/',
 }
+

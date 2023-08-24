@@ -3,151 +3,98 @@ const { SERVICE_KEY } = require("../keys/development.keys");
 const fcm = new FCM(SERVICE_KEY);
 const driver = require("../models/driver.model"); // Replace with the correct path to your Driver model
 const User = require("../models/user.model");
-const { CronJob } = require('cron');
 const retry = require('retry');
+const cron = require('node-cron');
 
 
+async function sendFCMNotificationsToRecipientsWithRetry(tokens, notificationDetails) {
+  const message = {
+    notification: {
+      title: notificationDetails.title,
+      body: notificationDetails.body,
+    },
+    data: {
+      ...notificationDetails.data,
+    },
+  };
 
-exports.calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const operation = retry.operation({
+    retries: 3, // Number of retry attempts
+    factor: 2, // Exponential backoff factor
+    minTimeout: 1000, // Minimum timeout in milliseconds
+    maxTimeout: 3000, // Maximum timeout in milliseconds
+  });
 
-  const R = 6371; 
-  const lat1Rad = toRadians(lat1);
-  const lat2Rad = toRadians(lat2);
-  const deltaLat = toRadians(lat2 - lat1);
-  const deltaLon = toRadians(lon2 - lon1);
-
-  const a =
-    Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-    Math.cos(lat1Rad) * Math.cos(lat2Rad) *
-    Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  const distance = R * c; // Distance in kilometers
-  return distance;
-}
-
-function toRadians(degrees) {
-  return degrees * (Math.PI / 180);
-}
-
-
-
-exports.sendNotificationToDrivers = async () => {
-  
-  try {
-    // Find active drivers from the database
-    const drivers = await driver.find();
-
-    // Extract deviceTokens from active drivers
-    const driverDeviceTokens = drivers.map(
-       (data) => data.device_token
-    );
-
-    // Example usage:
-    const notification_msg = {
-      title: "EZTRUCK LOGISTIC SERVICE",
-      body: "Good morning! 🌞 Your safety is our priority. Please remember to fasten your seatbelt during the ride. If you have any concerns, feel free to let me know.",
-    };
-    const message = {
-      registration_ids:  driverDeviceTokens,
-      data: notification_msg, // Include additional data here, e.g., bookingId
-    };
-
-    const operation = retry.operation({
-      retries: 3, // Number of retry attempts
-      factor: 2, // Exponential backoff factor
-      minTimeout: 1000, // Minimum time between retries (in milliseconds)
-    });
-
-    operation.attempt(async (currentAttempt) => {
+  return new Promise((resolve, reject) => {
+    operation.attempt(async () => {
       try {
-        const response = await sendNotification(message);
+        const promises = tokens.map((token) => {
+          return new Promise((innerResolve, innerReject) => {
+            message.to = token;
 
-        console.log(
-          `Notification sent successfully to all customers on attempt ${currentAttempt}`,
-          response
-        );
-      } catch (err) {
-        if (operation.retry(err)) {
-          console.error(
-            `Failed to send notification, retrying (attempt ${currentAttempt})`
-          );
-        } else {
-          console.error(
-            `Notification sending failed after ${currentAttempt} attempts:`,
-            err
-          );
+            fcm.send(message, function (err, response) {
+              if (err) {
+                console.error(`Error sending notification to token ${token}: ${err}`);
+                innerReject(err);
+              } else {
+                console.log(`Notification sent to token ${token}.`);
+                innerResolve(response);
+              }
+            });
+          });
+        });
+
+        await Promise.all(promises);
+        resolve(); // All notifications sent successfully
+      } catch (error) {
+        if (operation.retry(error)) {
+          console.warn('Retrying notification send...');
+          return;
         }
+        console.error('Max retry attempts reached.');
+        reject(error);
       }
     });
-  } catch (err) {
-    console.error("Error finding customers for notifications:", err);
-  }
-};
+  });
+}
 
 
-
-
-exports.sendNotificationToCustomers = async () => {
-
+// Define the schedule for sending notifications at 10 AM daily
+const scheduledJob = cron.schedule('0 10 * * *', async () => {
   try {
-    // Find active drivers from the database
-    const customers = await User.find();
+    // Retrieve customer and driver tokens from your database
+    const customerTokens = await User.find({ device_token: { $exists: true, $ne: null } }).distinct('device_token');
+    const driverTokens = await driver.find({ device_token: { $exists: true, $ne: null } }).distinct('device_token');
 
-    // Extract deviceTokens from active drivers
-    const customerDeviceTokens = customers.map(
-       (customer) => customer.device_token
-    );
-
-    // Example usage:
-    const notification_msg = {
-      title: "EZTRUCK LOGISTIC SERVICE",
-      body: "Good morning! 🌞 Your reliable ride is just a tap away. Here's your ride information for today:",
-    };
-    const message = {
-      registration_ids: customerDeviceTokens,
-      data: notification_msg, // Include additional data here, e.g., bookingId
+    const notificationDetails = {
+      title: 'Your Minute Notification',
+      body: 'This is your notification sent every minute.',
+      data: {
+        // Include additional data as needed
+      },
     };
 
-    const operation = retry.operation({
-      retries: 3, // Number of retry attempts
-      factor: 2, // Exponential backoff factor
-      minTimeout: 1000, // Minimum time between retries (in milliseconds)
-    });
+    // Send notifications to both customers and drivers
+    await sendFCMNotificationsToRecipients(customerTokens, notificationDetails);
+    await sendFCMNotificationsToRecipients(driverTokens, notificationDetails);
 
-    operation.attempt(async (currentAttempt) => {
-      try {
-        const response = await sendNotification(message);
-
-        console.log(
-          `Notification sent successfully to all customers on attempt ${currentAttempt}`,
-          response
-        );
-      } catch (err) {
-        if (operation.retry(err)) {
-          console.error(
-            `Failed to send notification, retrying (attempt ${currentAttempt})`
-          );
-        } else {
-          console.error(
-            `Notification sending failed after ${currentAttempt} attempts:`,
-            err
-          );
-        }
-      }
-    });
-  } catch (err) {
-    console.error("Error finding customers for notifications:", err);
+    console.log('Minute notifications sent successfully to both customers and drivers.');
+  } catch (error) {
+    console.error('Error sending minute notifications:', error);
   }
-};
+});
 
+// Start the scheduled job
+scheduledJob.start();
 
+// Optionally, you can listen for job completion events
+scheduledJob.on('complete', () => {
+  console.log('Scheduled job completed.');
+});
 
-
-
-// Schedule the cron job to run every day at 10:00 AM send notification driver and customer
-new CronJob ("0 10 * * *", () => {
-  sendNotificationToCustomers()
-  sendNotificationToDrivers()
-} , null, true, 'Asia/Kolkata');
+// Handle process termination gracefully (optional)
+process.on('SIGINT', () => {
+  // Stop the scheduled job before exiting
+  scheduledJob.stop();
+  process.exit();
+});

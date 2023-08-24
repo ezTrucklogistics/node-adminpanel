@@ -379,9 +379,10 @@ exports.booking_cancel_by_driver = async (req, res) => {
 exports.booking_confirm = async (req, res) => {
 
   try {
+    
     const { bookingId, driverId } = req.params;
 
-    await bookingooking.findByIdAndUpdate(
+    await booking.findByIdAndUpdate(
       bookingId,
       {
         booking_status: constants.BOOKING_STATUS.STATUS_CONFIRM,
@@ -402,7 +403,7 @@ exports.booking_confirm = async (req, res) => {
     .status(constants.WEB_STATUS_CODE.OK)
     .send({
       status: constants.STATUS_CODE.SUCCESS,
-      message: "CUSTOMER BOOKING SUCESSFULLY",
+      message: "CUSTOMER BOOKING CONFIRM SUCESSFULLY",
     });
 
 

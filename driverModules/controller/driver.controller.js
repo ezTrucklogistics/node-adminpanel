@@ -276,15 +276,15 @@ exports.update_driver_detalis = async (req, res) => {
 
   try {
 
-    const finddriver = req.drivers._id;
+    const findFDriver = req.drivers._id;
 
-    if (!finddriver) return sendResponse(res,
+    if (!findDriver) return sendResponse(res,
       constants.WEB_STATUS_CODE.BAD_REQUEST,
       constants.STATUS_CODE.FAIL,
       "DRIVER NOT FOUND "
     );
 
-    let driverdata = await driver.findOneAndUpdate({ _id: finddriver }, req.body, {
+    let driverdata = await driver.findOneAndUpdate({ _id: findDriver }, req.body, {
       new: true,
     });
 
