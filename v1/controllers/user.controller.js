@@ -101,7 +101,7 @@ exports.logout = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { mobile_number,token,device_type} = req.body;
+    const { mobile_number , token, device_type} = req.body;
 
     let user = await User.findOne({ mobile_number });
 
@@ -145,6 +145,7 @@ exports.login = async (req, res) => {
       msg: "CUSTOMER LOGIN SUCESSFULLY",
       user,
     });
+    
   } catch (err) {
     console.log("Error(Login)", err);
     return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
@@ -199,6 +200,7 @@ exports.update_Role = async (req, res) => {
     });
   }
 };
+
 
 exports.generate_auth_tokens = async (req, res) => {
   try {

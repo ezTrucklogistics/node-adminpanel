@@ -239,6 +239,7 @@ exports.List_of_Booking = async (req, res) => {
         msg: "SUCESSFULLY GET ALL BOOKINGS",
         customers,
       });
+      
     
   } catch (err) {
     console.log("Error(List_of_Booking)", err);

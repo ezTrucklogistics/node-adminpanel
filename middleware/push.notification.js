@@ -7,7 +7,9 @@ const retry = require('retry');
 const cron = require('node-cron');
 
 
-async function sendFCMNotificationsToRecipientsWithRetry(tokens, notificationDetails) {
+
+// Function to send FCM notifications to multiple recipients
+async function sendFCMNotificationsToRecipients(tokens, notificationDetails) {
   const message = {
     notification: {
       title: notificationDetails.title,
@@ -18,53 +20,32 @@ async function sendFCMNotificationsToRecipientsWithRetry(tokens, notificationDet
     },
   };
 
-  const operation = retry.operation({
-    retries: 3, // Number of retry attempts
-    factor: 2, // Exponential backoff factor
-    minTimeout: 1000, // Minimum timeout in milliseconds
-    maxTimeout: 3000, // Maximum timeout in milliseconds
-  });
+  const promises = tokens.map((token) => {
+    return new Promise((resolve, reject) => {
+      message.to = token;
 
-  return new Promise((resolve, reject) => {
-    operation.attempt(async () => {
-      try {
-        const promises = tokens.map((token) => {
-          return new Promise((innerResolve, innerReject) => {
-            message.to = token;
-
-            fcm.send(message, function (err, response) {
-              if (err) {
-                console.error(`Error sending notification to token ${token}: ${err}`);
-                innerReject(err);
-              } else {
-                console.log(`Notification sent to token ${token}.`);
-                innerResolve(response);
-              }
-            });
-          });
-        });
-
-        await Promise.all(promises);
-        resolve(); // All notifications sent successfully
-      } catch (error) {
-        if (operation.retry(error)) {
-          console.warn('Retrying notification send...');
-          return;
+      fcm.send(message, function (err, response) {
+        if (err) {
+          console.error(`Error sending notification to token ${token}: ${err}`);
+          reject(err); // Reject the promise if there's an error
+        } else {
+          console.log(`Notification sent to token ${token}.`);
+          resolve(response); // Resolve the promise if successful
         }
-        console.error('Max retry attempts reached.');
-        reject(error);
-      }
+      });
     });
   });
+
+  return Promise.all(promises);
 }
 
-
-// Define the schedule for sending notifications at 10 AM daily
+// Define the schedule for sending notifications every minute
 const scheduledJob = cron.schedule('0 10 * * *', async () => {
   try {
     // Retrieve customer and driver tokens from your database
     const customerTokens = await User.find({ device_token: { $exists: true, $ne: null } }).distinct('device_token');
     const driverTokens = await driver.find({ device_token: { $exists: true, $ne: null } }).distinct('device_token');
+
 
     const notificationDetails = {
       title: 'Your Minute Notification',

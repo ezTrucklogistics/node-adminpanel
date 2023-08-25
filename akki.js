@@ -7,9 +7,9 @@ const drivers = [
     { id: '3', latitude: 20.272610, longitude: 85.833122, isAvailable: true, deviceToken: 'ftmFi0IjT2KtO_bVmZ36Qp:APA91bG21yAVmLqB16ammyPwIjn8jfGYJmHVFwQgC6kXdMfH-az2W0yrUczRCL78KTIHkTCxkfLCUrYO_GoLlxRBQ1rambiAQQZmCBol4E8q-8VS7Ew3NakyxuUrLXaNkhw9S_N1Z4Bt' },
     // Add more driver data as needed
   ];
+
   let serverKey = "AAAAXaN35Ss:APA91bGHihxZ4wDVO2J-yZiXkEOGn0ymytR6STB7zaxM-pfn50CaBWUQI9llthgCZn2ab98CzGln7zEl-38WtztISHvXmsrxAWUBqlnRB3Fqy4X4GrmA64tXCijlhaA2bCLx6PbtsJUj"
   const FCM = require('fcm-node')
-  const fcm = new FCM(serverKey);
   const retry = require('retry');
   const driver = require("./models/driver.model")
   const cron = require('node-cron')
@@ -113,5 +113,5 @@ const drivers = [
       console.error('Error sending notifications:', error);
     });
   
-
-
+  
+  
