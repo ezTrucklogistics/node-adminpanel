@@ -63,7 +63,9 @@ const drivers = [
     return driversWithinRadius;
   }
   
+
   async function sendNotificationsToDrivers(pickupLat, pickupLon, maxRadius) {
+    
     let currentRadius = 0;
   
     while (currentRadius <= maxRadius) {
