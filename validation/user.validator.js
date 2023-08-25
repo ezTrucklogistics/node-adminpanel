@@ -62,6 +62,23 @@ const login_validator = [
       return true;
     })
     .trim(),
+
+    body("token")
+    .not()
+    .isEmpty()
+    .withMessage('token is required')
+    .isString()
+    .withMessage('token should be string')
+    .trim(),
+
+    body("device_type")
+    .not()
+    .isEmpty()
+    .withMessage('device_type is required')
+    .isNumeric()
+    .withMessage('device_type should be number')
+    .trim(),
+
 ];
 
 const update_customer_validator = [

@@ -145,7 +145,7 @@ exports.login = async (req, res) => {
       msg: "CUSTOMER LOGIN SUCESSFULLY",
       user,
     });
-    
+
   } catch (err) {
     console.log("Error(Login)", err);
     return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
@@ -235,6 +235,7 @@ exports.generate_auth_tokens = async (req, res) => {
     });
   }
 };
+
 
 exports.get_all_customer = async (req, res) => {
   try {
