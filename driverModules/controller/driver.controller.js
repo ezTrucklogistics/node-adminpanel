@@ -15,7 +15,6 @@ const { isArrayofObjectsJSON } = require('../../middleware/common.function')
 
 
 
-
 exports.signup = async (req, res) => {
 
   try {
@@ -47,9 +46,7 @@ exports.signup = async (req, res) => {
     reqBody.device_token = reqBody.device_token ? reqBody.device_token : null;
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
-
     const drivers = await driver.create(reqBody)
-
     drivers.deleted_at = undefined;
     drivers.vehical_number = undefined;
     drivers.account_number = undefined;

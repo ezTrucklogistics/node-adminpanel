@@ -33,7 +33,6 @@ function calculateTotalPrice(distanceInKm, truckType) {
   }
 
   const totalCost = distanceInKm <= 30 ? baseCostPerKm * distanceInKm : baseCostPerKm2 * distanceInKm;
- console.log(totalCost)
   // Calculate the commission (15%)
   const commissionAmount = (totalCost * 15) / 100;
   const costAfterCommission = totalCost + commissionAmount;

@@ -1,20 +1,14 @@
 // Sample driver data (replace with your actual driver data)
-
-
 const drivers = [
-    { id: '1', latitude: 20.272610, longitude: 85.833122, isAvailable: true, deviceToken: 'ftmFi0IjT2KtO_bVmZ36Qp:APA91bG21yAVmLqB16ammyPwIjn8jfGYJmHVFwQgC6kXdMfH-az2W0yrUczRCL78KTIHkTCxkfLCUrYO_GoLlxRBQ1rambiAQQZmCBol4E8q-8VS7Ew3NakyxuUrLXaNkhw9S_N1Z4Bt' },
-    { id: '2', latitude: 20.272610, longitude: 85.833122, isAvailable: true, deviceToken: 'ftmFi0IjT2KtO_bVmZ36Qp:APA91bG21yAVmLqB16ammyPwIjn8jfGYJmHVFwQgC6kXdMfH-az2W0yrUczRCL78KTIHkTCxkfLCUrYO_GoLlxRBQ1rambiAQQZmCBol4E8q-8VS7Ew3NakyxuUrLXaNkhw9S_N1Z4Bt' },
-    { id: '3', latitude: 20.272610, longitude: 85.833122, isAvailable: true, deviceToken: 'ftmFi0IjT2KtO_bVmZ36Qp:APA91bG21yAVmLqB16ammyPwIjn8jfGYJmHVFwQgC6kXdMfH-az2W0yrUczRCL78KTIHkTCxkfLCUrYO_GoLlxRBQ1rambiAQQZmCBol4E8q-8VS7Ew3NakyxuUrLXaNkhw9S_N1Z4Bt' },
+    { id: '1', latitude: 20.31009, longitude: 85.82009, isAvailable: true, deviceToken: 'ftmFi0IjT2KtO_bVmZ36Qp:APA91bG21yAVmLqB16ammyPwIjn8jfGYJmHVFwQgC6kXdMfH-az2W0yrUczRCL78KTIHkTCxkfLCUrYO_GoLlxRBQ1rambiAQQZmCBol4E8q-8VS7Ew3NakyxuUrLXaNkhw9S_N1Z4Bt' },
     // Add more driver data as needed
   ];
+  
+  const FCM = require('fcm-node');
+  const serverKey = 'AAAAXaN35Ss:APA91bGHihxZ4wDVO2J-yZiXkEOGn0ymytR6STB7zaxM-pfn50CaBWUQI9llthgCZn2ab98CzGln7zEl-38WtztISHvXmsrxAWUBqlnRB3Fqy4X4GrmA64tXCijlhaA2bCLx6PbtsJUj'; // Replace with your actual FCM server key
+  const fcm = new FCM(serverKey);
 
-  let serverKey = "AAAAXaN35Ss:APA91bGHihxZ4wDVO2J-yZiXkEOGn0ymytR6STB7zaxM-pfn50CaBWUQI9llthgCZn2ab98CzGln7zEl-38WtztISHvXmsrxAWUBqlnRB3Fqy4X4GrmA64tXCijlhaA2bCLx6PbtsJUj"
-  const FCM = require('fcm-node')
-  const retry = require('retry');
-  const driver = require("./models/driver.model")
-  const cron = require('node-cron')
-
-
+  
   function calculateDistance(lat1, lon1, lat2, lon2) {
     const earthRadius = 6371; // Radius of the Earth in kilometers
     const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -26,32 +20,28 @@ const drivers = [
     return earthRadius * c;
   }
   
-  async function sendFCMNotificationToDriver(driverToken, bookingDetails) {
+  function sendFCMNotificationToDriver(driverToken, bookingDetails) {
     // Construct the notification message
     const message = {
-        to: driverToken,
-        notification: {
-          title: 'New Booking Request',
-          body: 'You have a new booking request.',
-        },
-        data: {
-          // Include booking details here
-          ...bookingDetails,
-        },
-      };
-    
-      // Send the notification
-      try {
-        fcm.send(message, function (err, response) {
-          if (err) {
-            console.error(`Error sending notification to driver: ${err}`);
-          } else {
-            console.log(`Notification sent to driver.`);
-          }
-        });
-      } catch (error) {
-        console.error(`Error sending notification to driver: ${error}`);
+      to: driverToken,
+      notification: {
+        title: 'New Booking Request',
+        body: 'You have a new booking request.',
+      },
+      data: {
+        // Include booking details here
+        ...bookingDetails,
+      },
+    };
+  
+    // Send the notification
+    fcm.send(message, function (err, response) {
+      if (err) {
+        console.error(`Error sending notification to driver: ${err}`);
+      } else {
+        console.log(`Notification sent to driver.`);
       }
+    });
   }
   
   function findDriversWithinRadius(pickupLat, pickupLon, radius) {
@@ -63,9 +53,7 @@ const drivers = [
     return driversWithinRadius;
   }
   
-
   async function sendNotificationsToDrivers(pickupLat, pickupLon, maxRadius) {
-    
     let currentRadius = 0;
   
     while (currentRadius <= maxRadius) {
@@ -115,5 +103,7 @@ const drivers = [
       console.error('Error sending notifications:', error);
     });
   
-  
-  
+
+
+
+

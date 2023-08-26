@@ -101,7 +101,7 @@ exports.logout = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { mobile_number , token, device_type} = req.body;
+    const { mobile_number , token ,  device_type} = req.body;
 
     let user = await User.findOne({ mobile_number });
 

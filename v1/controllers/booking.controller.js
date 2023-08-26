@@ -4,21 +4,26 @@ const {
   getDistanceAndTime,
   generateOtp,
   isArrayofObjectsJSON,
-  isJSONString
+  isJSONString,
 } = require("../../middleware/common.function");
 const dateFormat = require("../../helper/dateformat.helper");
 const constants = require("../../config/constants");
 const booking = require("../../models/booking.model");
 const { calculateTotalPrice } = require("../../middleware/earning.system");
 const distances = require("../../models/driver_distance_calculate.model");
-const { sendNotificationsToDrivers } = require('../../middleware/check_available_drivers')
+const {
+  sendNotificationsToDrivers,
+  findDriversWithinRadius,
+  findDriver,
+  calculateDistance,
+  findDriverCurrentLocation
+} = require("../../middleware/check_available_drivers");
 
 
 
 exports.create_Booking = async (req, res) => {
 
   try {
-
     const reqBody = req.body;
     const user = req.user;
     const pickup_location = await geocoder.geocode(reqBody.pickup_location);
@@ -46,15 +51,26 @@ exports.create_Booking = async (req, res) => {
       distanceNumber.toFixed(2),
       reqBody.truck_type
     );
-
+    findDriver();
     reqBody.userId = user._id;
     reqBody.customer_mobile_number = user.mobile_number;
     reqBody.OTP = generateOtp();
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
     const booking = await Bookingsave(reqBody);
-    sendNotificationsToDrivers(booking.pickup_location_lat , booking.pickup_location_long , 10000);
-    isJSONString(booking)
+    findDriverCurrentLocation(booking.pickup_location_long, booking.pickup_location_long);
+  //   findDriversWithinRadius(booking.pickup_location_long, booking.pickup_location_long, 0);
+  //   sendNotificationsToDrivers(booking.pickup_location_long, booking.pickup_location_long, 30).then(() => {
+      
+  //     console.log("send notification sucessfully");
+  //  })
+  //  .catch((error) => {
+
+  //    console.error('Error sending notifications:', error);
+
+  //  });
+
+    // isJSONString(booking);
     booking.deleted_at = undefined;
     booking.driverId = undefined;
     booking.pickup_location_lat = undefined;
@@ -62,18 +78,26 @@ exports.create_Booking = async (req, res) => {
     booking.drop_location_lat = undefined;
     booking.drop_location_long = undefined;
     booking.userId = undefined;
-    return res.status(constants.WEB_STATUS_CODE.CREATED).send({status:constants.STATUS_CODE.SUCCESS , message:"CREATE NEW BOOKING" , booking})
+    return res
+      .status(constants.WEB_STATUS_CODE.CREATED)
+      .send({
+        status: constants.STATUS_CODE.SUCCESS,
+        message: "CREATE NEW BOOKING",
+        booking,
+      });
   } catch (err) {
     console.log("Error(create_Booking)", err);
-    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , msg:"Something went wrong. Please try again later."})
+    return res
+      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
+      .send({
+        status: constants.STATUS_CODE.FAIL,
+        msg: "Something went wrong. Please try again later.",
+      });
   }
 };
 
-
 exports.Booking_otp_verify = async (req, res) => {
-
   try {
-
     const { OTP } = req.body;
 
     const bookings = await booking.findOne({ OTP: OTP });
@@ -85,39 +109,29 @@ exports.Booking_otp_verify = async (req, res) => {
     }
 
     if (bookings.OTP !== OTP) {
-      return res
-        .status(constants.WEB_STATUS_CODE.BAD_REQUEST)
-        .send({
-          status: constants.STATUS_CODE.FAIL,
-          message: "OTP NOT MATCH , PLEASE ENTER VALID OTP",
-        });
+      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
+        status: constants.STATUS_CODE.FAIL,
+        message: "OTP NOT MATCH , PLEASE ENTER VALID OTP",
+      });
     }
 
     bookings.OTP = null;
     await bookings.save();
-    return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        message: "OTP VERIFY SUCESSFULLY",
-      });
-
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      message: "OTP VERIFY SUCESSFULLY",
+    });
   } catch (err) {
     console.log("Error(Booking_otp_verify)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "GENERAL.general_error_content",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      message: "GENERAL.general_error_content",
+    });
   }
 };
-
 
 exports.List_of_Booking_by_customers = async (req, res) => {
-
   try {
-
     const {
       userId,
       page = 1,
@@ -127,20 +141,25 @@ exports.List_of_Booking_by_customers = async (req, res) => {
       sortOrder = "truck_type",
     } = req.query;
 
-
     // Calculate skip for pagination
     const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
 
-    const customers = await booking.find({User : userId }, {
-      user_type: 0,
-      device_token: 0,
-      device_type: 0,
-      refresh_tokens: 0,
-      authTokens: 0,
-      deleted_at: 0,
-      __v: 0,
-      _id: 0,
-    }).populate('User' , 'mobile_number email customer_name').populate('driver' , 'driver_mobile_number driver_name driver_email')
+    const customers = await booking
+      .find(
+        { User: userId },
+        {
+          user_type: 0,
+          device_token: 0,
+          device_type: 0,
+          refresh_tokens: 0,
+          authTokens: 0,
+          deleted_at: 0,
+          __v: 0,
+          _id: 0,
+        }
+      )
+      .populate("User", "mobile_number email customer_name")
+      .populate("driver", "driver_mobile_number driver_name driver_email")
       .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -157,24 +176,17 @@ exports.List_of_Booking_by_customers = async (req, res) => {
         msg: "Unexpected data format: Not an array.",
       });
     }
-
   } catch (err) {
     console.log("Error(List_of_Booking_by_customers)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "GENERAL.general_error_content",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      message: "GENERAL.general_error_content",
+    });
   }
 };
 
-
-
 exports.List_of_Booking_by_drivers = async (req, res) => {
-
   try {
-
     const {
       userId,
       page = 1,
@@ -184,20 +196,25 @@ exports.List_of_Booking_by_drivers = async (req, res) => {
       sortOrder = "truck_type",
     } = req.query;
 
-
     // Calculate skip for pagination
     const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
 
-    const customers = await booking.find({User : userId }, {
-      user_type: 0,
-      device_token: 0,
-      device_type: 0,
-      refresh_tokens: 0,
-      authTokens: 0,
-      deleted_at: 0,
-      __v: 0,
-      _id: 0,
-    }).populate('User' , 'mobile_number email customer_name').populate('driver' , 'driver_mobile_number driver_name driver_email')
+    const customers = await booking
+      .find(
+        { User: userId },
+        {
+          user_type: 0,
+          device_token: 0,
+          device_type: 0,
+          refresh_tokens: 0,
+          authTokens: 0,
+          deleted_at: 0,
+          __v: 0,
+          _id: 0,
+        }
+      )
+      .populate("User", "mobile_number email customer_name")
+      .populate("driver", "driver_mobile_number driver_name driver_email")
       .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -214,54 +231,40 @@ exports.List_of_Booking_by_drivers = async (req, res) => {
         msg: "Unexpected data format: Not an array.",
       });
     }
-
   } catch (err) {
     console.log("Error(List_of_Booking_by_drivers)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "GENERAL.general_error_content",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      message: "GENERAL.general_error_content",
+    });
   }
 };
-
 
 exports.List_of_Booking = async (req, res) => {
-
   try {
-    
+    const customers = await booking.find();
 
-    const customers = await booking.find()
-
-      return res.status(constants.WEB_STATUS_CODE.OK).send({
-        status: constants.STATUS_CODE.SUCCESS,
-        msg: "SUCESSFULLY GET ALL BOOKINGS",
-        customers,
-      });
-      
-    
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      msg: "SUCESSFULLY GET ALL BOOKINGS",
+      customers,
+    });
   } catch (err) {
     console.log("Error(List_of_Booking)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "GENERAL.general_error_content",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      message: "GENERAL.general_error_content",
+    });
   }
 };
 
-
-
 exports.booking_By_Id = async (req, res) => {
-
   try {
-
     const { bookingId } = req.query;
     const booking_data = await booking
       .findOne({ _id: bookingId })
-      .populate('User' , 'mobile_number email customer_name').populate('driver' , 'driver_mobile_number driver_name driver_email')
+      .populate("User", "mobile_number email customer_name")
+      .populate("driver", "driver_mobile_number driver_name driver_email")
       .exec();
 
     booking_data.deleted_at = undefined;
@@ -272,18 +275,14 @@ exports.booking_By_Id = async (req, res) => {
     booking_data.drop_location_long = undefined;
     booking_data.userId = undefined;
 
-   return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        message: "SUCESSFULLY GET ALL BOOKINGS", booking_data
-      });
-
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      message: "SUCESSFULLY GET ALL BOOKINGS",
+      booking_data,
+    });
   } catch (err) {
     console.log("Error(booking_By_Id)", err);
-    return res
-    .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-    .send({
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
       status: constants.STATUS_CODE.FAIL,
       message: "GENERAL.general_error_content",
     });
@@ -291,10 +290,8 @@ exports.booking_By_Id = async (req, res) => {
 };
 
 exports.booking_cancel_by_customer = async (req, res) => {
-
   try {
-
-        await booking.findOneAndUpdate(
+    await booking.findOneAndUpdate(
       { User: req.user._id },
       {
         $set: { booking_status: constants.BOOKING_STATUS.STATUS_CANCEL },
@@ -302,9 +299,13 @@ exports.booking_cancel_by_customer = async (req, res) => {
       { returnOriginal: false }
     );
 
-   let booking_cancel =  await booking.findOneAndUpdate({User: req.user._id} , req.body , {new:true});
+    let booking_cancel = await booking.findOneAndUpdate(
+      { User: req.user._id },
+      req.body,
+      { new: true }
+    );
 
-    console.log(booking_cancel)
+    console.log(booking_cancel);
     booking_cancel.deleted_at = undefined;
     booking_cancel.driverId = undefined;
     booking_cancel.pickup_location_lat = undefined;
@@ -313,36 +314,32 @@ exports.booking_cancel_by_customer = async (req, res) => {
     booking_cancel.drop_location_long = undefined;
     booking_cancel.userId = undefined;
 
-    return res
-      .status(constants.WEB_STATUS_CODE.OK)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        message: "BOOKING CANCEL BY CUSTOMER", booking_cancel
-      });
-
-    
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      message: "BOOKING CANCEL BY CUSTOMER",
+      booking_cancel,
+    });
   } catch (err) {
     console.log("Error(booking_cancel_by_customer)", err);
-    return res
-    .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-    .send({
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
       status: constants.STATUS_CODE.FAIL,
       message: "GENERAL.general_error_content",
     });
   }
 };
 
-
 exports.booking_cancel_by_driver = async (req, res) => {
-
   try {
-
-    console.log(req.drivers)
-    const booking_cancel  = await booking.findOneAndUpdate({ driver: req.drivers._id }, req.body, {
+    console.log(req.drivers);
+    const booking_cancel = await booking.findOneAndUpdate(
+      { driver: req.drivers._id },
+      req.body,
+      {
         new: true,
-    });
+      }
+    );
 
-      await booking.findOneAndUpdate(
+    await booking.findOneAndUpdate(
       { driver: req.drivers._id },
       {
         $set: { booking_status: constants.BOOKING_STATUS.STATUS_CANCEL },
@@ -358,29 +355,22 @@ exports.booking_cancel_by_driver = async (req, res) => {
     booking_cancel.drop_location_long = undefined;
     booking_cancel.userId = undefined;
 
-    return res
-    .status(constants.WEB_STATUS_CODE.OK)
-    .send({
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
       status: constants.STATUS_CODE.SUCCESS,
-      message: "BOOKING CANCEL BY DRIVER", booking_cancel
+      message: "BOOKING CANCEL BY DRIVER",
+      booking_cancel,
     });
-
   } catch (err) {
     console.log("Error(booking_cancel_by_driver)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "GENERAL.general_error_content",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      message: "GENERAL.general_error_content",
+    });
   }
 };
 
-
 exports.booking_confirm = async (req, res) => {
-
   try {
-    
     const { bookingId, driverId } = req.params;
 
     await booking.findByIdAndUpdate(
@@ -400,34 +390,24 @@ exports.booking_confirm = async (req, res) => {
     booking_cancel.drop_location_long = undefined;
     booking_cancel.userId = undefined;
 
-    return res
-    .status(constants.WEB_STATUS_CODE.OK)
-    .send({
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
       status: constants.STATUS_CODE.SUCCESS,
       message: "CUSTOMER BOOKING CONFIRM SUCESSFULLY",
     });
-
-
   } catch (err) {
     console.log("Error(booking_confirm)", err);
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "GENERAL.general_error_content",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      message: "GENERAL.general_error_content",
+    });
   }
 };
 
-
-
 exports.customer_to_driver_distance = async (req, res) => {
-
   try {
-
     const reqBody = req.body;
     const userId = req.user._id;
-   console.log(userId)
+    console.log(userId);
     const locations = await booking.findOne({ User: userId });
 
     const { distance, duration } = await getDistanceAndTime(
@@ -439,24 +419,17 @@ exports.customer_to_driver_distance = async (req, res) => {
     reqBody.duration = duration;
     const distanceNumber = parseFloat(distance);
     const distance_by_driver_customer = await distances.create(reqBody);
-    return res
-      .status(constants.WEB_STATUS_CODE.CREATED)
-      .send({
-        status: constants.STATUS_CODE.SUCCESS,
-        message: "DISTANCE BY DRIVER AND CUSTOMER",
-        distance_by_driver_customer,
-      });
-
+    return res.status(constants.WEB_STATUS_CODE.CREATED).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      message: "DISTANCE BY DRIVER AND CUSTOMER",
+      distance_by_driver_customer,
+    });
   } catch (err) {
-
     console.log("Error(customer_to_driver_distance)", err);
 
-    return res
-      .status(constants.WEB_STATUS_CODE.SERVER_ERROR)
-      .send({
-        status: constants.STATUS_CODE.FAIL,
-        message: "Something went wrong. Please try again later.",
-      });
+    return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({
+      status: constants.STATUS_CODE.FAIL,
+      message: "Something went wrong. Please try again later.",
+    });
   }
 };
-
