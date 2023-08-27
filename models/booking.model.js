@@ -81,7 +81,12 @@ const bookingSchema = new Schema({
     },
 });
 
-
+//Output data to JSON
+bookingSchema.methods.toJSON = function () {
+    const user = this;
+    const userObject = user.toObject();
+    return userObject;
+};
 
 //Define user model
 const booking = mongoose.model('booking', bookingSchema);

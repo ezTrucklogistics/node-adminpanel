@@ -51,15 +51,6 @@ exports.isArrayofObjectsJSON = (arr) => {
 }
 
 
-exports.isJSONString = (str) => {
-  try {
-    JSON.parse(str);
-    return true; // The string is valid JSON
-  } catch (error) {
-    return console.log('Not valid json type'); // The string is not valid JSON
-  }
-}
-
 
 
 

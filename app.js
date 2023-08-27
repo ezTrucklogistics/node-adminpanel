@@ -10,13 +10,12 @@ const swaggerJsDoc = require("swagger-jsdoc");
 const cors = require("cors")
 const usersRouter = require("./v1/routes/users");
 const bookRouter = require("./v1/routes/booking");
-const driverRouter = require("./Driver_modules/routes/driver");
-const paymentRouter = require("./Driver_modules/routes/payment")
+const driverRouter = require("./driverModules/routes/driver");
+const paymentRouter = require("./driverModules/routes/payment")
 const ratingRouter = require('./v1/routes/rating')
 const rateLimit = require('express-rate-limit');
 
-
-var app = express();
+const app = express();
 app.use(flash());
 
 

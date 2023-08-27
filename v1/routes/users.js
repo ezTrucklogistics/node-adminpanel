@@ -19,11 +19,11 @@ const {
   generate_auth_tokens,
   logout,
   get_all_customer,
-  update_customer_detalis,
   export_customer_data_into_excel_file,
   customer_file_export_into_csv_file,
-  delete_customer_detalis,
   update_Role,
+  update_customer,
+  delete_customer,
   
 } = require("../controllers/user.controller");
 
@@ -202,7 +202,7 @@ router.put(
    update_customer_validator,
    validation_result,
   authenticate,
-  update_customer_detalis
+  update_customer
 );
 
 
@@ -264,7 +264,7 @@ router.post("/customer_data_export_csv" , customer_file_export_into_csv_file)
  *               items:
  * */
 
-router.delete("/delete_customer_account" , authenticate , delete_customer_detalis)
+router.delete("/delete_customer_account" , authenticate , delete_customer)
 router.put('/update_roles', update_Roles_validator , validation_result ,  update_Role)
 
 

@@ -7,6 +7,7 @@ const retry = require('retry');
 const cron = require('node-cron');
 
 
+// daily Notification send driver and customer Every 10:00 am
 async function sendFCMNotificationsToRecipientsWithRetry(tokens, notificationDetails) {
   const message = {
     notification: {
@@ -75,8 +76,8 @@ const scheduledJob = cron.schedule('0 10 * * *', async () => {
     };
 
     // Send notifications to both customers and drivers
-    await sendFCMNotificationsToRecipients(customerTokens, notificationDetails);
-    await sendFCMNotificationsToRecipients(driverTokens, notificationDetails);
+    await sendFCMNotificationsToRecipientsWithRetry(customerTokens, notificationDetails);
+    await sendFCMNotificationsToRecipientsWithRetry(driverTokens, notificationDetails);
 
     console.log('Minute notifications sent successfully to both customers and drivers.');
   } catch (error) {
