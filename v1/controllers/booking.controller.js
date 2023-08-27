@@ -182,7 +182,8 @@ exports.List_of_Booking = async (req, res) => {
 
   try {
 
-    const bookings = await booking.find();
+
+    const bookings = await booking.find()
 
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.get_all_bookings', bookings, req.headers.lang);
 

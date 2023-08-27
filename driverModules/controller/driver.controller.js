@@ -15,7 +15,6 @@ const { isArrayofObjectsJSON } = require('../../middleware/common.function')
 
 
 
-
 exports.signup = async (req, res) => {
 
   try {
@@ -47,9 +46,7 @@ exports.signup = async (req, res) => {
     reqBody.device_token = reqBody.device_token ? reqBody.device_token : null;
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
-
     const drivers = await driver.create(reqBody)
-
     drivers.deleted_at = undefined;
     drivers.vehical_number = undefined;
     drivers.account_number = undefined;
@@ -128,7 +125,7 @@ exports.login = async (req, res) => {
     let driverId = driverdata._id
     await driver.findOneAndUpdate({ _id : driverId} , {$set : {driver_status: constants.DRIVER_STATUS.STATUS_1}})
     driverdata.device_token = token;
-    user.device_type = device_type
+    driverdata.device_type = device_type;
     await driverdata.save();
     driverdata.user_type = undefined;
     driverdata.device_token = undefined;

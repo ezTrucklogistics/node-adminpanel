@@ -78,7 +78,11 @@ exports.logout = async (req, res) => {
 exports.login = async (req, res) => {
 
   try {
+<<<<<<< HEAD
     const { mobile_number, token, device_type } = req.body;
+=======
+    const { mobile_number , token ,  device_type} = req.body;
+>>>>>>> 40d7b2aaac5aaa8babedc00a0025a5db58665699
 
     let user = await User.findOne({ mobile_number });
 
@@ -110,7 +114,16 @@ exports.login = async (req, res) => {
     users.__v = undefined;
     users._id = undefined;
 
+<<<<<<< HEAD
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.login_success', users, req.headers.lang)
+=======
+    return res.status(constants.WEB_STATUS_CODE.OK).send({
+      status: constants.STATUS_CODE.SUCCESS,
+      msg: "CUSTOMER LOGIN SUCESSFULLY",
+      user,
+    });
+
+>>>>>>> 40d7b2aaac5aaa8babedc00a0025a5db58665699
   } catch (err) {
     console.log("Error(Login)", err);
     sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
@@ -151,6 +164,7 @@ exports.update_Role = async (req, res) => {
     sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
   }
 };
+
 
 exports.generate_auth_tokens = async (req, res) => {
   try {
