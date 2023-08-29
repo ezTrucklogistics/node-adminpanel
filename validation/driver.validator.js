@@ -1,109 +1,137 @@
 
 const { body, validationResult } = require("express-validator");
-const {DRIVER_VALIDATION} = require("../lang/en/validationMessage");
 
 
 
 const driver_validator = [
 
      body('driver_name')
+     .not()
     .isEmpty()
-    .withMessage(DRIVER_VALIDATION.driver_name)
+    .withMessage('driver_name is required')
     .isString()
-    .withMessage(DRIVER_VALIDATION.driver_name_is_string)
+    .withMessage('driver_name must be a string')
     .trim(),
 
     body('driver_email')
+    .not()
     .isEmpty()
-    .withMessage(DRIVER_VALIDATION.driver_email)
+    .withMessage('driver_email is required')
     .isString()
-    .withMessage(DRIVER_VALIDATION.driver_email_is_string)
+    .withMessage('driver_email must be a string')
     .isEmail()
-    .withMessage(DRIVER_VALIDATION.valid_email)
+    .withMessage('please enter a valid email')
     .trim(),
 
     body('driver_mobile_number')
+    .not()
     .isEmpty()
-    .withMessage(DRIVER_VALIDATION.driver_mobile_number)
+    .withMessage('driver_mobile_numbe is required')
     .isString()
-    .withMessage(DRIVER_VALIDATION.driver_mobile_number_is_string)
-    .isLength({min:10})
-    .withMessage(DRIVER_VALIDATION.mobile_number_length)
+    .withMessage('driver_mobile number should be string')
+    .isMobilePhone()
+    .withMessage("Enter valid Mobile number ")
+    .custom((value) => {
+      // Custom validation function to check the country code
+      if (!value.startsWith('+91')) {
+        throw new Error('Mobile number must start with +91');
+      }
+      return true;
+    })
     .trim(),
 
     body('vehical_number')
+    .not()
     .isEmpty()
-    .withMessage(DRIVER_VALIDATION.vehical_number_required)
+    .withMessage('vehical_number is required')
     .isString()
-    .withMessage(DRIVER_VALIDATION.vehical_number_is_string)
+    .withMessage('vehical_number must be a string')
     .isLength({min:8})
-    .withMessage(DRIVER_VALIDATION.vehical_number_length)
+    .withMessage('vehical_number length mus be  min 8 and max 10')
     .matches(/^[a-zA-Z0-9_.]$/i)
-    .withMessage(DRIVER_VALIDATION.valid_vehical_number)
+    .withMessage('please enter valid vehical_number')
     .trim(),
 
     body('brand')
+     .not()
     .isEmpty()
-    .withMessage(DRIVER_VALIDATION.brand_required)
+    .withMessage('brand is required')
     .isString()
-    .withMessage(DRIVER_VALIDATION.brand_number_is_string)
+    .withMessage('brand must be a string')
     .trim(),
 
     body('truck_type')
+    .not()
     .isEmpty()
-    .withMessage(DRIVER_VALIDATION.truck_type_required)
+    .withMessage('truck_type is required')
     .isString()
-    .withMessage(DRIVER_VALIDATION.truck_type_is_string)
+    .withMessage('truck_type must be a string')
+    .trim(),
+
+    body('driver_img')
+    .not()
+    .isEmpty()
+    .withMessage('driver_img is required')
+    .isString()
+    .withMessage('driver_img must be a string')
     .trim(),
 
     body('account_number')
+    .not()
     .isEmpty()
-    .withMessage(DRIVER_VALIDATION.truck_type_required)
+    .withMessage('account_number is required')
     .isString()
-    .withMessage(DRIVER_VALIDATION.truck_type_is_string)
+    .withMessage('account_number must be a number')
     .isLength({min:11})
-    .withMessage(DRIVER_VALIDATION.account_number_length)
+    .withMessage('account_number length mus be a number')
     .trim(),
 
     body('ifsc_code')
+    .not()
     .isEmpty()
-    .withMessage(DRIVER_VALIDATION.ifsc_code_required)
+    .withMessage('ifsc_code is required')
     .isString()
-    .withMessage(DRIVER_VALIDATION.ifsc_code_is_string)
+    .isNumeric()
+    .withMessage('ifsc_code must be a string and number')
     .isLength({min:11})
-    .withMessage(DRIVER_VALIDATION.ifsc_code_length)
-    .isUppercase()
-    .withMessage(DRIVER_VALIDATION.ifsc_code_capital)
+    .withMessage('ifsc_code length min is 11')
+    .matches(/^[^\s]{4}\d{7}$/)
+    .withMessage('please enter a valid ifsc-code')
     .trim(),
 
     body('Aadhar_card_number')
+    .not()
     .isEmpty()
-    .withMessage(DRIVER_VALIDATION.Aadhar_card_numberrequired)
+    .withMessage('Aadhar_card_number is required')
     .isString()
-    .withMessage(DRIVER_VALIDATION.Aadhar_card_number_is_number)
+    .withMessage('Aadhar_card_number must be a string')
     .isLength({min:12})
-    .withMessage(DRIVER_VALIDATION.Aadhar_card_number_length)
+    .withMessage('Aadhar_card_number min length is 12')
     .trim(),
 
     
     body('pan_card_number')
+    .not()
     .isEmpty()
-    .withMessage(DRIVER_VALIDATION.pan_card_numberr_equired)
+    .withMessage('pan_card_number is required')
     .isString()
-    .withMessage(DRIVER_VALIDATION.pan_card_number_is_number)
-    .isLength({min:10})
-    .withMessage(DRIVER_VALIDATION.pan_card_number_length)
+    .isNumeric()
+    .withMessage('pan_card_number must be a string and number')
+    .isLength({min:12})
+    .withMessage('pan_card_number min length is 12')
     .trim(),
 
     body('driving_licence')
+    .not()
     .isEmpty()
-    .withMessage(DRIVER_VALIDATION.driving_licence_equired)
+    .withMessage('driving_licence is required')
     .isString()
-    .withMessage(DRIVER_VALIDATION.driving_licence_is_string)
+    .isNumeric()
+    .withMessage('driving_licence mus be a string and number')
     .isLength({min:15})
-    .isUppercase()
-    .withMessage('letter should be uppercase')
-    .withMessage(DRIVER_VALIDATION.driving_licence_length)
+    .withMessage('pan_card_number min length is 15')
+    .matches(/^[A-Z]{2}\d{6}$/)
+    .withMessage('please enter a valid driving licence')
     .trim(),
 
 ]
@@ -111,23 +139,70 @@ const driver_validator = [
 
 const login_validator = [
 
-  body("driver_mobile_number")
+  body('driver_mobile_number')
+  .not()
+  .isEmpty()
+  .withMessage('driver_mobile_numbe is required')
+  .isString()
+  .withMessage('driver_mobile number should be string')
+  .isMobilePhone()
+  .withMessage("Enter valid Mobile number ")
+  .custom((value) => {
+    // Custom validation function to check the country code
+    if (!value.startsWith('+91')) {
+      throw new Error('Mobile number must start with +91');
+    }
+    return true;
+  })
+  .trim(),
+
+  body("token")
     .not()
     .isEmpty()
-    .withMessage("driver_mobile_number is required")
+    .withMessage('token is required')
     .isString()
-    .withMessage("driver_mobile_number is String")
-    .isLength({min:10})
-    .withMessage("Length should be 10")
-    .isMobilePhone()
-    .withMessage("Enter Valid Mobile number")
-    .matches(/((\+*)((0[ -]*)*|((91 )*))((\d{12})+|(\d{10})+))|\d{5}([- ]*)\d{6}/)
-    .withMessage("Enter Valid Mobile number")
+    .withMessage('token should be string')
     .trim(),
+
+    body("device_type")
+    .not()
+    .isEmpty()
+    .withMessage('device_type is required')
+    .isNumeric()
+    .withMessage('device_type should be number')
+    .trim(),
+  
 ];
 
 
+const update_current_location_validator = [
 
+     body('driverId')
+     .not()
+     .notEmpty()
+     .withMessage('driverId is required')
+     .isString()
+     .withMessage('driverId must be a string')
+     .isMongoId()
+     .withMessage('please enter a valid driverId')
+     .trim(),
+
+     body('driver_lat')
+     .not()
+     .isEmpty()
+     .withMessage('driver_lat is required')
+     .isNumeric()
+     .withMessage('driver_lat mus be a number')
+     .trim() ,
+
+     body('driver_long')
+     .not()
+     .isEmpty()
+     .withMessage('driver_long is required')
+     .isNumeric()
+     .withMessage('driver_long mus be a number')
+     .trim()
+]
 
 
 const validation_result = (req, res, next) => {
@@ -145,5 +220,6 @@ const validation_result = (req, res, next) => {
 
 module.exports = {
     driver_validator,
-    validation_result,login_validator
+    validation_result,login_validator,
+    update_current_location_validator
 }

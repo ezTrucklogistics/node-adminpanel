@@ -6,6 +6,7 @@ const Schema = mongoose.Schema;
 const jwt = require("jsonwebtoken")
 const dateFormat = require("../helper/dateformat.helper")
 
+
 //Define Booing schema
 const driverSchema = new Schema({
     
@@ -25,6 +26,9 @@ const driverSchema = new Schema({
         type: String,
     },
     driver_email: {
+        type:String,
+    },
+    driver_img: {
         type:String,
     },
     driver_mobile_number: {

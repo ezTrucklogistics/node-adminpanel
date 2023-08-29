@@ -14,6 +14,7 @@ const driver = require("../../models/driver.model");
 const User = require("../../models/user.model");
 
 
+
 exports.create_Booking = async (req, res) => {
 
   try {
@@ -128,6 +129,9 @@ exports.List_of_Booking_by_customers = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit));
 
+    if (!customers)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang);
+
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.get_booking_by_customer', customers, req.headers.lang);
 
   } catch (err) {
@@ -169,6 +173,10 @@ exports.List_of_Booking_by_drivers = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit));
 
+    if (!drivers)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
+
+
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.get_booking_by_driver', drivers, req.headers.lang);
 
   } catch (err) {
@@ -182,8 +190,11 @@ exports.List_of_Booking = async (req, res) => {
 
   try {
 
+    const bookings = await booking.find({}, { pickup_location: 1, drop_location: 1, truck_type: 1, distance: 1, duration: 1, trip_cost: 1, booking_status: 1 })
 
-    const bookings = await booking.find()
+    if (!bookings)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
+
 
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.get_all_bookings', bookings, req.headers.lang);
 
@@ -202,8 +213,10 @@ exports.booking_By_Id = async (req, res) => {
     const { bookingId } = req.query;
     const booking_data = await booking
       .findOne({ _id: bookingId })
-      .populate('User', 'mobile_number email customer_name').populate('driver', 'driver_mobile_number driver_name driver_email')
-      .exec();
+
+    if (!booking_data)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
+
 
     booking_data.deleted_at = undefined;
     booking_data.driverId = undefined;
@@ -212,6 +225,9 @@ exports.booking_By_Id = async (req, res) => {
     booking_data.drop_location_lat = undefined;
     booking_data.drop_location_long = undefined;
     booking_data.userId = undefined;
+    booking_data.created_at = undefined;
+    booking_data.updated_at = undefined;
+    booking_data.OTP = undefined;
 
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.get_bookings', booking_data, req.headers.lang);
 
@@ -226,7 +242,7 @@ exports.booking_cancel_by_customer = async (req, res) => {
 
   try {
 
-    await booking.findOneAndUpdate(
+    let users = await booking.findOneAndUpdate(
       { User: req.user._id },
       {
         $set: { booking_status: constants.BOOKING_STATUS.STATUS_CANCEL },
@@ -234,9 +250,16 @@ exports.booking_cancel_by_customer = async (req, res) => {
       { returnOriginal: false }
     );
 
+    if (!users)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang);
+
+
     let booking_cancel = await booking.findOneAndUpdate({ User: req.user._id }, req.body, { new: true });
 
-    console.log(booking_cancel)
+    if (!booking_cancel)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
+
+
     booking_cancel.deleted_at = undefined;
     booking_cancel.driverId = undefined;
     booking_cancel.pickup_location_lat = undefined;
@@ -259,18 +282,25 @@ exports.booking_cancel_by_driver = async (req, res) => {
 
   try {
 
-    console.log(req.drivers)
-    const booking_cancel = await booking.findOneAndUpdate({ driver: req.drivers._id }, req.body, {
+    const drivers = await booking.findOneAndUpdate({ driver: req.drivers._id }, req.body, {
       new: true,
     });
 
-    await booking.findOneAndUpdate(
+    if (!drivers)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
+
+
+
+    let booking_cancel = await booking.findOneAndUpdate(
       { driver: req.drivers._id },
       {
         $set: { booking_status: constants.BOOKING_STATUS.STATUS_CANCEL },
       },
       { returnOriginal: false }
     );
+
+    if (!booking_cancel)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
 
     booking_cancel.deleted_at = undefined;
     booking_cancel.driverId = undefined;
@@ -296,10 +326,21 @@ exports.booking_confirm = async (req, res) => {
     const { bookingId, driverId } = req.params;
 
     let bookings = await booking.findOne({ _id: bookingId });
+
+    if (!bookings)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
+
     bookings.driver = driverId;
     await bookings.save();
     const users = await User.findOne({ _id: bookings.User });
+    if (!users)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang);
+
     const drivers = await driver.findOne({ _id: bookings.driver })
+
+    if (!drivers)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
+
     let driverData = {
       driver_name: drivers.driver_name,
       mobile_number: drivers.driver_mobile_number,
@@ -338,7 +379,7 @@ exports.customer_to_driver_distance = async (req, res) => {
 
     const reqBody = req.body;
     const userId = req.user._id;
-    console.log(userId)
+
     const locations = await booking.findOne({ User: userId });
 
     const { distance, duration } = await getDistanceAndTime(

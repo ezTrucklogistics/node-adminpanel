@@ -1,5 +1,4 @@
 const { body, validationResult , param , query  } = require("express-validator");
-const { USER_VALIDATION } = require("../lang/en/validationMessage");
 
 
 //validate user form detail

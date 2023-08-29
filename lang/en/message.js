@@ -10,7 +10,8 @@ module.exports = {
         customer_data_updated:'successfully updated customer data',
         customer_data_deleted:'successfully deleted customer data',
         create_new_excel_file :'successfully created new excel file',
-        create_new_excel_file :'successfully created new excel file'
+        create_new_excel_file :'successfully created new excel file',
+        customer_not_found : 'customer data not found'
     },
     
     'GENERAL': {
@@ -35,16 +36,24 @@ module.exports = {
         booking_cancel_by_customer:'booking cancel by customer',
         booking_cancel_by_driver:'booking cancel by driver',
         driver_booking_confirm : 'successfully driver booking confirmed',
-        customer_to_driver_distance:'successfully calculate driver to customer distance'
+        customer_to_driver_distance:'successfully calculate driver to customer distance',
+        booking_data_not_found:'booking data not found'
     },
 
     'DRIVER': {
 
-        add_driver : 'driver detalis add sucessfully',
+        driver_signup : 'driver signup sucessfully',
+        driver_login : 'driver login sucessfully',
+        driver_logout : 'driver logout sucessfully',
         List_of_booking : 'successfully get List of Booking ',
         booking_cancel: 'Booking canceled',
         booking_confirm: 'Booking confirm',
-        List_of_driver : 'successfully get all the drivers'
+        List_of_driver : 'successfully get all the drivers',
+        driver_not_found : 'driver data nt found',
+        check_driver_and_customer : 'your are not driver',
+        mobile_number_check :'mobile number already exist',
+        driver_current_location_update :'driver current location updated sucessfully',
+        driver_current_location_not_found : 'driver current location updated sucessfully'
     }
 
 
