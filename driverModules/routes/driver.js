@@ -13,7 +13,7 @@ const {signup,
   delete_driver_detalis,
   update_current_location,
 } = require("../controller/driver.controller");
- const {login_validator , update_current_location_validator, validation_result} = require("../../validation/driver.validator")
+ const {login_validator , update_current_location_validator, validation_result , new_token_generated} = require("../../validation/driver.validator")
 var router = express.Router();
 const { driver_authenticate  } = require("../../middleware/authenticate");
 
@@ -114,7 +114,7 @@ router.get("/logout", driver_authenticate, logout);
  */
 
 
-router.get("/auth_tokens/:refresh_tokens", generate_auth_tokens);
+router.get("/auth_tokens/:refresh_tokens",new_token_generated , validation_result, generate_auth_tokens);
 
 /**
  * @swagger
@@ -278,8 +278,6 @@ router.post("/driver_data_export_csv" , driver_file_export_into_csv_file)
  *         description: Unauthorized - Token not provided or invalid
  */
 
-router.post("/driver_total_earning" ,driver_authenticate, driver_total_earning)
-router.post("/driver_daily_earning" , driver_daily_earning)
 router.delete("/driver_account_deleted" , driver_authenticate, delete_driver_detalis)
 router.put('/driver_current_location_update' , update_current_location_validator, validation_result , update_current_location)
 

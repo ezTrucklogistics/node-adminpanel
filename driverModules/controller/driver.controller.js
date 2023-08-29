@@ -9,7 +9,6 @@ const ExcelJs = require("exceljs");
 const fs = require("fs");
 const driver = require("../../models/driver.model");
 const booking = require("../../models/booking.model")
-const { totalEarningbyDriver } = require("../../middleware/earning.system")
 const cron = require('node-cron');
 
 
@@ -40,15 +39,15 @@ exports.signup = async (req, res) => {
 
     const check_mobile_number = await driver_current_location.findOne({ driver_mobile_number })
 
-    if(check_mobile_number)
-    return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'DRIVER.mobile_number_check', {} , req.headers.lang);
+    if (check_mobile_number)
+      return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'DRIVER.mobile_number_check', {}, req.headers.lang);
 
     reqBody.device_type = reqBody.device_type ? reqBody.device_type : null;
     reqBody.device_token = reqBody.device_token ? reqBody.device_token : null;
 
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
-   
+
     const drivers = await driver.create(reqBody)
 
     drivers.deleted_at = undefined;
@@ -64,7 +63,7 @@ exports.signup = async (req, res) => {
     drivers.device_token = undefined;
     drivers.device_type = undefined;
 
-    return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'DRIVER.driver_signup', drivers , req.headers.lang);
+    return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'DRIVER.driver_signup', drivers, req.headers.lang);
 
   } catch (err) {
     console.log("Error(driver_signup)", err);
@@ -80,8 +79,8 @@ exports.logout = async (req, res) => {
     const driverId = req.drivers._id;
     let driverData = await driver.findById(driverId);
 
-    if(!driverData)
-    return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {} , req.headers.lang);
+    if (!driverData)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
 
     driverData.authTokens = null;
     driverData.refresh_tokens = null;
@@ -105,12 +104,12 @@ exports.login = async (req, res) => {
 
     let driverdata = await driver.findOne({ driver_mobile_number });
 
-     if(!driverdata)
-     return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {} , req.headers.lang);
+    if (!driverdata)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
 
 
     if (driverdata.user_type == 2)
-    return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.check_driver_and_customer', {} , req.headers.lang);
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.check_driver_and_customer', {}, req.headers.lang);
 
 
     let newToken = await driverdata.generateAuthToken();
@@ -130,7 +129,7 @@ exports.login = async (req, res) => {
     driverdata.__v = undefined;
     driverdata._id = undefined;
 
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DRIVER.driver_login', {}, req.headers.lang);
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DRIVER.driver_login', driverdata , req.headers.lang);
   } catch (err) {
     console.log("Error(driver_Login)", err);
     return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
@@ -142,10 +141,10 @@ exports.update_current_location = async () => {
 
   try {
 
-   const { driverId, driver_lat, driver_long } = req.body;
-   let update_location =  await driver.findOneAndUpdate({ driverId }, { driver_lat, driver_long });
-   if(!update_location)
-   return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_current_location_not_found', {}, req.headers.lang);
+    const { driverId, driver_lat, driver_long } = req.body;
+    let update_location = await driver.findOneAndUpdate({ driverId }, { driver_lat, driver_long });
+    if (!update_location)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_current_location_not_found', {}, req.headers.lang);
 
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DRIVER.driver_current_location_update', {}, req.headers.lang);
 
@@ -233,19 +232,12 @@ exports.get_all_driver = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit));
 
-    if (isArrayofObjectsJSON(drivers)) {
       return res.status(constants.WEB_STATUS_CODE.OK).send({
         status: constants.STATUS_CODE.SUCCESS,
         msg: "SUCCESSFULLY SEARCHED DRIVERS",
         totalCustomers,
         drivers,
-      });
-    } else {
-      return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({
-        status: constants.STATUS_CODE.FAIL,
-        msg: "Unexpected data format: Not an array.",
-      });
-    }
+    })
 
 
   } catch (err) {
@@ -429,68 +421,6 @@ exports.driver_file_export_into_csv_file = async (req, res) => {
 };
 
 
-
-exports.driver_total_earning = async (req, res) => {
-
-  try {
-
-    const driverId = req.drivers._id;
-
-    const drivers = await booking.find({ driverId })
-
-    let sum = 0;
-
-    for (let i = 0; i < drivers.length; i++) {
-
-      let data = totalEarningbyDriver(drivers[i].trip_cost)
-      sum += data;
-    }
-
-    const total_earning = Math.floor(sum);
-    const driverdata = await driver.findById(driverId)
-
-    driverdata.total_earning = total_earning;
-    await driverdata.save()
-
-    return res.status(constants.WEB_STATUS_CODE.OK).send({ status: constants.STATUS_CODE.SUCCESS, msg: "DRIVER TOTAL EARNING IS :", total_earning })
-
-
-  } catch (err) {
-    console.log("Error(driver_total_earning)", err);
-    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
-
-
-
-exports.driver_daily_earning = async (req, res) => {
-
-  try {
-
-    const driverId = req.drivers._id;
-
-    const drivers = await booking.find({ driverId })
-
-    let sum = 0;
-
-    for (let i = 0; i < drivers.length; i++) {
-
-      let data = totalEarningbyDriver(drivers[i].trip_cost)
-      sum += data;
-    }
-
-    const total_earning = Math.floor(sum);
-    const driverdata = await driver.findOneAndUpdate({ driverId }, { $set: { daily_earning: total_earning } });
-    cron.schedule('0 0-11 * * *', driverdata)
-    await driverdata.save()
-    return res.status(constants.WEB_STATUS_CODE.OK).send({ status: constants.STATUS_CODE.SUCCESS, msg: "DRIVER DAILY EARNING IS :", daily_earning })
-
-  } catch (err) {
-
-    console.log("Error(driver_daily_earning)", err);
-    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
 
 
 

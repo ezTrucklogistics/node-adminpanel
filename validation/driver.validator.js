@@ -204,6 +204,29 @@ const update_current_location_validator = [
      .trim()
 ]
 
+const new_token_generated = [
+
+     body('refresh_tokens')
+     .not()
+     .notEmpty()
+     .withMessage('refresh_tokens is required')
+     .isString()
+     .withMessage('refresh_tokens must be a string')
+     .matches(/^[A-Za-z0-9_-]+$/)
+     .withMessage('please enter a valid refresh_tokens')
+     .trim(),
+]
+
+
+
+
+
+
+
+
+
+
+
 
 const validation_result = (req, res, next) => {
     const result = validationResult(req);
@@ -221,5 +244,6 @@ const validation_result = (req, res, next) => {
 module.exports = {
     driver_validator,
     validation_result,login_validator,
-    update_current_location_validator
+    update_current_location_validator,
+    new_token_generated
 }
