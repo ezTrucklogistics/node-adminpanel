@@ -9,7 +9,8 @@ const {
   user_validator, 
   refresh_token__validator,
   get_all_customer_validator,
-  update_Roles_validator
+  update_Roles_validator,
+  account_verify_validator
 } = require("../../validation/user.validator");
 
 
@@ -24,8 +25,10 @@ const {
   update_Role,
   update_customer,
   delete_customer,
+  accountVerify,
   
 } = require("../controllers/user.controller");
+
 
 
 
@@ -266,6 +269,6 @@ router.post("/customer_data_export_csv" , customer_file_export_into_csv_file)
 
 router.delete("/delete_customer_account" , authenticate , delete_customer)
 router.put('/update_roles', update_Roles_validator , validation_result ,  update_Role)
-
+router.get('/account_verify' , account_verify_validator , validation_result, accountVerify)
 
 module.exports = router;

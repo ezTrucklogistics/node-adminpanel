@@ -89,6 +89,31 @@ exports.logout = async (req, res) => {
 };
 
 
+exports.accountVerify = async (req , res ) => {
+
+  try {
+    
+    const { email } = req.query
+    const user = await User.findOneAndUpdate({ email } , {$set:{ verifyToken: true }} , {new:true})
+    console.log(user)
+
+    if (!user)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang)
+
+    // if (user == 1) {
+    //     res.redirect(Keys.BASEURL + `v1/users/email-verify/verify?user_id=${userId}`)
+    // } else {
+    //     res.redirect(Keys.BASEURL + `v1/users/email-verify/unverify?user_id=${userId}`)
+    // }
+
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.verify_account', {}, req.headers.lang)
+ } catch (err) {
+    console.log(err)
+    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+  }
+}
+
+
 
 exports.login = async (req, res) => {
 
@@ -102,17 +127,12 @@ exports.login = async (req, res) => {
 
       // if(user.verifyToken == false)
       // return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.account_verify', {}, req.headers.lang)
+      
+      if (user.status === constants.STATUS.ACCOUNT_DEACTIVE ) return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_in_active', {}, req.headers.lang);
+      if (user.deleted_at != null) return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_in_active', {}, req.headers.lang);
 
       let newToken = await user.generateAuthToken();
       let refreshToken = await user.generateRefreshToken();
-
-    await User.findByIdAndUpdate(
-      user._id,
-      {
-        $set: { status: constants.STATUS.ACCOUNT_ACTIVE },
-      },
-      { new: true }
-    );
 
     await User.findByIdAndUpdate(
       user._id,

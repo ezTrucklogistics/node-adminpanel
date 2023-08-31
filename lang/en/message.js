@@ -15,7 +15,9 @@ module.exports = {
         customer_not_found : 'customer data not found',
         check_customer_or_driver: 'your are not customers',
         check_mobile_number : 'mobile number already exist',
-        account_verify : 'customer account not verified'
+        account_verify : 'customer account not verified',
+        customer_in_active : 'customer account in active',
+        verify_account:'customer acccount verify sucessfully'
     },
     
     'GENERAL': {

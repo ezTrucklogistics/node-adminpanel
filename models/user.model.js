@@ -30,7 +30,7 @@ const userSchema = new Schema({
     },
     status: {
         type: String,
-        default: constants.STATUS.ACCOUNT_DEACTIVE
+        default: constants.STATUS.ACCOUNT_ACTIVE
     },
     termConditions:{
        type:Boolean,

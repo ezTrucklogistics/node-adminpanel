@@ -163,6 +163,19 @@ body("customer_name")
   .trim(),
 ]
 
+const account_verify_validator = [
+
+  query("email")
+  .not()
+  .isEmpty()
+  .withMessage('email is required')
+  .isString()
+  .withMessage('email should be string')
+  .isEmail()
+  .withMessage('Enter a valid emai')
+  .trim(),
+]
+
 
 const validation_result = (req, res, next) => {
   const result = validationResult(req);
@@ -184,5 +197,6 @@ module.exports = {
   validation_result,
   refresh_token__validator,
   update_Roles_validator,
-  get_all_customer_validator
+  get_all_customer_validator,
+  account_verify_validator
 };
