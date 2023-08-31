@@ -8,8 +8,6 @@ const constants = require('../config/constants');
 const Schema = mongoose.Schema;
 
 
-
-
 //Define user schema
 const userSchema = new Schema({
 
@@ -27,11 +25,20 @@ const userSchema = new Schema({
         default: null
     },
     user_type: {
-        type: Number, //1-driver 2-customer
+        type: Number, 
+        default:2 //1-driver 2-customer
     },
     status: {
         type: String,
         default: constants.STATUS.ACCOUNT_DEACTIVE
+    },
+    termConditions:{
+       type:Boolean,
+       default:false
+    },
+    accountActivitions:{
+        type:Boolean,
+        default:false
     },
     device_token: {
         type: String,
@@ -46,6 +53,14 @@ const userSchema = new Schema({
         default:null
     },
     authTokens: {
+        type: String,
+        default:null
+    },
+    verifyToken:{
+        type:Boolean,
+        default:false
+    },
+    tokens: {
         type: String,
         default:null
     },

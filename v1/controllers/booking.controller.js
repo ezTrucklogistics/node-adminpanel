@@ -9,7 +9,7 @@ const constants = require("../../config/constants");
 const booking = require("../../models/booking.model");
 const { calculateTotalPrice } = require("../../middleware/earning.system");
 const distances = require("../../models/driver_distance_calculate.model");
-const { sendNotificationsToDrivers, sendFCMNotificationToCustomer } = require('../../middleware/check_available_drivers')
+const { sendFCMNotificationToDriver } = require('../../middleware/check_available_drivers')
 const driver = require("../../models/driver.model");
 const User = require("../../models/user.model");
 
@@ -53,21 +53,36 @@ exports.create_Booking = async (req, res) => {
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
     const bookings = await booking.create(reqBody);
-    sendNotificationsToDrivers(bookings.pickup_location_lat, bookings.pickup_location_long, 30, bookings)
+
+    const findUsers = await User.findOne({_id : reqBody.userId})
+
+    let objects = {
+
+        pickupLocations_Lat:bookings.pickup_location_lat,
+        pickupLocation_Long:bookings.pickup_location_long,
+        dropupLocations_Lat:bookings.drop_location_lat,
+        dropupLocations_Long:bookings.drop_location_long,
+        name:findUsers.customer_name,
+        mobile_number:findUsers.mobile_number
+    }
+
+       sendFCMNotificationToDriver(objects)
       .then(() => {
         console.log('Notification send successfully')
       })
       .catch((error) => {
         console.error('Error sending notifications:', error);
       });
-    bookings.deleted_at = undefined;
+
+    bookings.deleted_at = undefined;``
     bookings.driverId = undefined;
     bookings.pickup_location_lat = undefined;
     bookings.pickup_location_long = undefined;
     bookings.drop_location_lat = undefined;
     bookings.drop_location_long = undefined;
     bookings.userId = undefined;
-    return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking_created', booking, req.headers.lang);
+
+    return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking_created', bookings , req.headers.lang);
   } catch (err) {
     console.log("Error(create_Booking)", err);
     return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)

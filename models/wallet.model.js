@@ -3,11 +3,10 @@ const Schema = mongoose.Schema;
 
 
 
-
 //Define user schema
 const walletSchema = new Schema({
 
-    driverId: {
+    driver: {
         type:mongoose.Schema.Types.ObjectId,
         ref:'driver'
     },

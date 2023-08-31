@@ -3,18 +3,13 @@ const { SERVICE_KEY } = require("../keys/development.keys");
 const fcm = new FCM(SERVICE_KEY);
 const driver = require("../models/driver.model"); // Replace with the correct path to your Driver model
 const User = require("../models/user.model");
-const retry = require('retry');
 const cron = require('node-cron');
 
 
-<<<<<<< HEAD
-// daily Notification send driver and customer Every 10:00 am
-async function sendFCMNotificationsToRecipientsWithRetry(tokens, notificationDetails) {
-=======
 
 // Function to send FCM notifications to multiple recipients
 async function sendFCMNotificationsToRecipients(tokens, notificationDetails) {
->>>>>>> 40d7b2aaac5aaa8babedc00a0025a5db58665699
+
   const message = {
     notification: {
       title: notificationDetails.title,
@@ -44,7 +39,7 @@ async function sendFCMNotificationsToRecipients(tokens, notificationDetails) {
   return Promise.all(promises);
 }
 
-// Define the schedule for sending notifications every minute
+// Define the schedule for sending notifications every day 10:00 AM 
 const scheduledJob = cron.schedule('0 10 * * *', async () => {
   try {
     // Retrieve customer and driver tokens from your database
@@ -61,8 +56,8 @@ const scheduledJob = cron.schedule('0 10 * * *', async () => {
     };
 
     // Send notifications to both customers and drivers
-    await sendFCMNotificationsToRecipientsWithRetry(customerTokens, notificationDetails);
-    await sendFCMNotificationsToRecipientsWithRetry(driverTokens, notificationDetails);
+    await sendFCMNotificationsToRecipients(customerTokens, notificationDetails);
+    await sendFCMNotificationsToRecipients(driverTokens, notificationDetails);
 
     console.log('Minute notifications sent successfully to both customers and drivers.');
   } catch (error) {
@@ -83,4 +78,7 @@ process.on('SIGINT', () => {
   // Stop the scheduled job before exiting
   scheduledJob.stop();
   process.exit();
+
 });
+
+

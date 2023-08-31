@@ -1,94 +1,57 @@
 const driver = require('../models/driver.model');
 const FCM = require("fcm-node");
 const { SERVICE_KEY } = require("../keys/development.keys");
-const { database } = require('firebase-admin');
 const fcm = new FCM(SERVICE_KEY);
 
 
-function calculateDistance(lat1, lon1, lat2, lon2) {
-  const earthRadius = 6371; // Radius of the Earth in kilometers
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return earthRadius * c;
-}
 
 
-async function sendFCMNotificationToDriver(driverToken, bookingDetails) {
-  // Construct the notification message
-  const message = {
-      to: driverToken,
+exports.sendFCMNotificationToDriver = async (bookingDetails) => {
+  
+  try {
+   
+    // const drivers = await driver.find({}, 'device_token'); // Assuming 'device_token' is the field that stores registration tokens
+
+    // if (drivers.length === 0) {
+    //   console.log("No drivers found.");
+    //   return;
+    // }
+
+    // // Extract driver tokens into an array
+    // const driverTokens = drivers.map((driverData) => driverData.device_token);
+
+    const driverTokens = [
+      "dAS0FSg1Q2SAQG-V1DE7th:APA91bHpjjRbxRw9UIdKLkupn7hDET8yKEEO2zK1qHpLVCfcdSPCKSPLSh5b766-xjgnqAYB6w688yI5BnGYSFcO1H63jKu_ayBqSWcgd6RJngOs9wk7f0_9Ix6V8ieu-uxy0tHoQl1T"
+    ];
+
+    const message = {
+      registration_ids: driverTokens, // Send to all driver tokens
       notification: {
         title: 'New Booking Request',
         body: 'You have a new booking request.',
       },
       data: {
-        // Include booking details here
-        ...bookingDetails,
+        customData:bookingDetails
       },
+      collapse_key:""
     };
-  console.log(message.data)
-    // Send the notification
-    try {
-      fcm.send(message, function (err, response) {
-        if (err) {
-          console.error(`Error sending notification to driver: ${err}`);
-        } else {
-          console.log(`Notification sent to driver.`);
-        }
-      });
-    } catch (error) {
-      console.error(`Error sending notification to driver: ${error}`);
-    }
-}
 
-async function findDriversWithinRadius(pickupLat, pickupLon, radius) {
-  const drivers = await driver.find();
-  const driversWithinRadius = drivers.map((driver) => {
-    const distance = calculateDistance(pickupLat, pickupLon, driver.latitude, driver.longitude);
-    if(driver.driver_status === "available"){
-       return driver.driver_status && distance <= radius;
-    }
-  });
-
-  return driversWithinRadius;
-
-}
-
-exports.sendNotificationsToDrivers  = async (pickupLat, pickupLon, maxRadius , bookingDetails) => {
-
-  let currentRadius = 0;
-  while (currentRadius <= maxRadius) {
-    const driversWithinRadius = findDriversWithinRadius(pickupLat, pickupLon, currentRadius);
-
-    if (driversWithinRadius.length > 0) {
-      console.log(`Found drivers within ${currentRadius} km radius, sending notifications.`);
-
-      // Send notifications to each driver found
-      for (const driver of driversWithinRadius) {
-        const driverToken = driver.deviceToken;
-        await sendFCMNotificationToDriver(driverToken, bookingDetails);
+    console.log(message.data)
+    // Send the notification to all drivers
+    fcm.send(message, function (err, response) {
+      if (err) {
+        console.error(`Error sending notification to drivers: ${err}`);
+      } else {
+        console.log(`Notification sent to drivers.`);
       }
-
-      // Drivers found, exit the loop
-      break;
-    } else {
-      console.log(`No drivers found within ${currentRadius} km radius.`);
-
-      // Increase the search radius by 5 km, up to the maximum specified
-      currentRadius += 5;
-
-      if (currentRadius > maxRadius) {
-        console.log(`No drivers found within the maximum radius of ${maxRadius} km.`);
-        // Handle the case where no drivers are found even within the maximum radius.
-        break;
-      }
-    }
+    });
+  } catch (error) {
+    console.error(`Error sending notification to drivers: ${error}`);
   }
 }
+
+
+
 
 
 exports.sendFCMNotificationToCustomer = async (customerToken, driverData) => {

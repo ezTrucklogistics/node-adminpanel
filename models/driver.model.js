@@ -51,17 +51,13 @@ const driverSchema = new Schema({
         type:String,
         default:constants.STATUS.ACCOUNT_DEACTIVE
     },
-    total_earning:{
+    earning:{
         type:Number,
         default:0
     },
     driver_status:{
         type:String,
         default:constants.DRIVER_STATUS.STATUS_2
-    },
-    daily_earning:{
-        type:Number,
-        default:0
     },
     account_number: {
         type: Number,

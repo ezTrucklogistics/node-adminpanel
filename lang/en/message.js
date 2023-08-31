@@ -1,3 +1,4 @@
+
 module.exports = {
 
     'CUSTOMER': {
@@ -11,7 +12,10 @@ module.exports = {
         customer_data_deleted:'successfully deleted customer data',
         create_new_excel_file :'successfully created new excel file',
         create_new_excel_file :'successfully created new excel file',
-        customer_not_found : 'customer data not found'
+        customer_not_found : 'customer data not found',
+        check_customer_or_driver: 'your are not customers',
+        check_mobile_number : 'mobile number already exist',
+        account_verify : 'customer account not verified'
     },
     
     'GENERAL': {
@@ -54,6 +58,13 @@ module.exports = {
         mobile_number_check :'mobile number already exist',
         driver_current_location_update :'driver current location updated sucessfully',
         driver_current_location_not_found : 'driver current location updated sucessfully'
+    },
+
+    'WALLET':{
+
+        wallet_created : 'sucessfully create wallet',
+        get_wallet : 'successfully seached driver wallet',
+
     }
 
 

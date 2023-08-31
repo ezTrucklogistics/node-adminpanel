@@ -1,6 +1,7 @@
 const { body, validationResult , param , query  } = require("express-validator");
 
 
+
 //validate user form detail
 const user_validator = [
 
@@ -14,12 +15,20 @@ const user_validator = [
     .withMessage('Enter a valid emai')
     .trim(),
 
+    body("termConditions")
+    .not()
+    .isEmpty()
+    .withMessage('termConditions is required')
+    .isBoolean()
+    .withMessage('termConditions should be booleans')
+    .trim(),
+
   body("customer_name")
     .not()
     .isEmpty()
     .withMessage('customer Name is required')
     .isString()
-    .withMessage('customer should be string')
+    .withMessage('customer Name should be string')
     .trim(),
 
   body("mobile_number")
@@ -37,6 +46,8 @@ const user_validator = [
       }
       return true;
     })
+    .isLength({min:13})
+    .withMessage('please number length should be 12')
     .trim(),
 
 ];
@@ -59,22 +70,8 @@ const login_validator = [
       }
       return true;
     })
-    .trim(),
-
-    body("token")
-    .not()
-    .isEmpty()
-    .withMessage('token is required')
-    .isString()
-    .withMessage('token should be string')
-    .trim(),
-
-    body("device_type")
-    .not()
-    .isEmpty()
-    .withMessage('device_type is required')
-    .isNumeric()
-    .withMessage('device_type should be number')
+    .isLength({min:13})
+    .withMessage('please number length should be 12')
     .trim(),
 
 ];

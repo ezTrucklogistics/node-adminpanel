@@ -8,26 +8,26 @@ const constants = require("../../config/constants");
 const { JWT_SECRET } = require("../../keys/keys");
 const driver = require("../../models/driver.model");
 const { sendResponse } = require("../../services/common.service")
+const { createUser } = require('../../middleware/earning.system')
+
+
 
 
 exports.signUp = async (req, res) => {
 
   try {
+
     const reqBody = req.body;
     const checkMail = await isValid(reqBody.email);
-
     if (checkMail == false)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'GENERAL.blackList_mail', {}, req.headers.lang);
 
-    const existMobile = await User.findOne({ mobile_number });
-
+    const existMobile = await User.findOne({ mobile_number : reqBody.mobile_number });
     if (existMobile) {
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'mobile number already exist', {}, req.headers.lang);
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.check_mobile_number', {}, req.headers.lang);
     }
 
-    reqBody.created_at = await dateFormat.set_current_timestamp();
-    reqBody.updated_at = await dateFormat.set_current_timestamp();
-    reqBody.authTokens = await jwt.sign(
+    reqBody.tokens = await jwt.sign(
       {
         data: reqBody.email,
       },
@@ -37,10 +37,15 @@ exports.signUp = async (req, res) => {
       }
     );
 
+    reqBody.created_at = await dateFormat.set_current_timestamp();
+    reqBody.updated_at = await dateFormat.set_current_timestamp();
+   
     reqBody.device_type = reqBody.device_type ? reqBody.device_type : null;
     reqBody.device_token = reqBody.device_token ? reqBody.device_token : null;
-
+    createUser(reqBody.mobile_number);
     const user = await User.create(reqBody);
+    if(user.user_type !== 2)
+    return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.check_customer_or_driver', {} , req.headers.lang);
     user.user_type = undefined;
     user.refresh_tokens = undefined;
     user.authTokens = undefined;
@@ -48,12 +53,14 @@ exports.signUp = async (req, res) => {
     user.__v = undefined;
     user._id = undefined;
 
-    return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.signUp_success', {}, req.headers.lang);
+    return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.signUp_success', user, req.headers.lang);
   } catch (err) {
     console.log("Error(Signup)", err);
     return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
   }
 };
+
+
 
 
 exports.logout = async (req, res) => {
@@ -65,6 +72,13 @@ exports.logout = async (req, res) => {
     UserData.authTokens = null;
     UserData.refresh_tokens = null;
 
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: { accountActivitions: false },
+      },
+      { new: true }
+    );
     await UserData.save();
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.logout_success', {}, req.headers.lang)
 
@@ -75,27 +89,35 @@ exports.logout = async (req, res) => {
 };
 
 
+
 exports.login = async (req, res) => {
 
   try {
 
     const { mobile_number, token, device_type } = req.body;
-
     let user = await User.findOne({ mobile_number });
 
     if (!user)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'customer not found', {}, req.headers.lang)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang)
 
-    if (user.user_type == 1)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'your not customer', {}, req.headers.lang)
+      // if(user.verifyToken == false)
+      // return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.account_verify', {}, req.headers.lang)
 
-    let newToken = await user.generateAuthToken();
-    let refreshToken = await user.generateRefreshToken();
+      let newToken = await user.generateAuthToken();
+      let refreshToken = await user.generateRefreshToken();
 
     await User.findByIdAndUpdate(
       user._id,
       {
         $set: { status: constants.STATUS.ACCOUNT_ACTIVE },
+      },
+      { new: true }
+    );
+
+    await User.findByIdAndUpdate(
+      user._id,
+      {
+        $set: { accountActivitions: true },
       },
       { new: true }
     );
@@ -117,6 +139,8 @@ exports.login = async (req, res) => {
     sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
   }
 };
+
+
 
 exports.update_Role = async (req, res) => {
 
@@ -179,6 +203,7 @@ exports.generate_auth_tokens = async (req, res) => {
     sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
   }
 };
+
 
 
 exports.get_all_customer = async (req, res) => {
