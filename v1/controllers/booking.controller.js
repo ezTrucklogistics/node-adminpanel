@@ -334,7 +334,7 @@ exports.booking_confirm = async (req, res) => {
 
     const { bookingId, driverId } = req.params;
 
-    let bookings = await booking.findOne({ _id: bookingId });
+    let bookings = await booking.findOneAndUpdate({ _id: bookingId } , {$set:{booking_status: constants.BOOKING_STATUS.STATUS_CONFIRM}});
 
     if (!bookings)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
