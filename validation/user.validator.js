@@ -95,37 +95,9 @@ body("customer_name")
   .isString()
   .withMessage('customer should be string')
   .trim(),
-
-body("mobile_number")
-  .not()
-  .isEmpty()
-  .withMessage('mobile_numbe is required')
-  .isString()
-  .withMessage('mobile number should be string')
-  .isMobilePhone()
-  .withMessage("Enter valid Mobile number")
-  .custom((value) => {
-    // Custom validation function to check the country code
-    if (!value.startsWith('+91')) {
-      throw new Error('Mobile number must start with +91');
-    }
-    return true;
-  })
-  .trim(),
-];
+]
 
 
-
-const refresh_token__validator = [
-
-  param("refresh_tokens")
-    .not()
-    .isEmpty()
-    .withMessage('refresh_tokens is required')
-    .isString()
-    .withMessage('refresh_tokens should be a string')
-    .trim(),
-];
 
 const  update_Roles_validator = [
 
@@ -140,28 +112,7 @@ const  update_Roles_validator = [
     .trim(),
 ]
 
-get_all_customer_validator = [
 
-  body("email")
-  .optional()
-  .not()
-  .isEmpty()
-  .withMessage('email or customer_name is required')
-  .isString()
-  .withMessage('email should be string')
-  .isEmail()
-  .withMessage('Enter a valid email')
-  .trim(),
-
-body("customer_name")
-  .optional()
-  .not()
-  .isEmpty()
-  .withMessage('email or customer Name is required')
-  .isString()
-  .withMessage('customer name should be string')
-  .trim(),
-]
 
 const account_verify_validator = [
 
@@ -193,10 +144,7 @@ module.exports = {
   user_validator,
   login_validator,
   update_customer_validator,
-  update_customer_validator,
   validation_result,
-  refresh_token__validator,
   update_Roles_validator,
-  get_all_customer_validator,
   account_verify_validator
 };

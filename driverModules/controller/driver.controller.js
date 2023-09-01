@@ -37,7 +37,7 @@ exports.signup = async (req, res) => {
       reqBody.driver_long = item.longitude;
     });
 
-    const check_mobile_number = await driver_current_location.findOne({ driver_mobile_number })
+    const check_mobile_number = await driver.findOne({ driver_mobile_number: reqBody.driver_mobile_number })
 
     if (check_mobile_number)
       return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'DRIVER.mobile_number_check', {}, req.headers.lang);
@@ -158,108 +158,26 @@ exports.update_current_location = async () => {
 
 
 
-exports.generate_auth_tokens = async (req, res) => {
-
-  try {
-
-    const { refresh_tokens } = req.params;
-    const verified = jwt.verify(refresh_tokens, JWT_SECRET);
-    console.log(verified)
-
-    let drivers = await driver.findById(verified._id);
-    drivers.authTokens = await jwt.sign(
-      {
-        data: drivers.email,
-      },
-      JWT_SECRET,
-      {
-        expiresIn: constants.URL_EXPIRE_TIME,
-      }
-    );
-
-    await drivers.save();
-
-    return res.status(constants.WEB_STATUS_CODE.CREATED).send({ status: constants.STATUS_CODE.SUCCESS, msg: "CREATE NEW AUTH TOKEN" })
-
-  } catch (err) {
-    console.log(err);
-    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
-
-
-exports.get_all_driver = async (req, res) => {
-
-  try {
-
-    const {
-      driver_email,
-      driver_name,
-      page = 1,
-      limit = 10,
-      offset = 0,
-      sortBy = "created_at",
-      sortOrder = "driver_email",
-    } = req.query;
-
-    const query = {};
-
-    if (driver_email) {
-      query.driver_email = { $regex: driver_email, $options: "i" }; // Case-insensitive search by email
-    }
-
-    if (driver_name) {
-      query.driver_name = { $regex: driver_name, $options: "i" }; // Case-insensitive search by customer name
-    }
-
-    // Calculate skip for pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
-
-    // Count total matching customers
-    const totalCustomers = await driver.countDocuments(query);
-
-    const drivers = await driver.find(query, {
-      user_type: 0,
-      device_token: 0,
-      device_type: 0,
-      refresh_tokens: 0,
-      authTokens: 0,
-      deleted_at: 0,
-      __v: 0,
-      _id: 0,
-    })
-      .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-
-      return res.status(constants.WEB_STATUS_CODE.OK).send({
-        status: constants.STATUS_CODE.SUCCESS,
-        msg: "SUCCESSFULLY SEARCHED DRIVERS",
-        totalCustomers,
-        drivers,
-    })
-
-
-  } catch (err) {
-    console.log("Error(get_all_drivers)", err);
-    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
-
-
 exports.update_driver_detalis = async (req, res) => {
 
   try {
 
-    const findFDriver = req.drivers._id;
+    const driverId = req.drivers._id;
+    let reqBody = req.body;
+    const existMobileNumber = await driver.findOne({ _id: driverId })
 
-    if (!findDriver) return sendResponse(res,
+    if(existMobileNumber.driver_mobile_number === reqBody.driver_mobile_number){
+
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_same_mobile_number', {}, req.headers.lang);
+    }
+
+    if (!driverId) return sendResponse(res,
       constants.WEB_STATUS_CODE.BAD_REQUEST,
       constants.STATUS_CODE.FAIL,
       "DRIVER NOT FOUND "
     );
 
-    let driverdata = await driver.findOneAndUpdate({ _id: findDriver }, req.body, {
+    let driverdata = await driver.findOneAndUpdate({ _id: driverId }, req.body, {
       new: true,
     });
 
@@ -269,7 +187,6 @@ exports.update_driver_detalis = async (req, res) => {
         constants.STATUS_CODE.FAIL,
         "DRIVER DATA NOT FOUND"
       );
-
     driverdata.updated_at = await dateFormat.set_current_timestamp();
     return res.status(constants.WEB_STATUS_CODE.OK).send({ status: constants.STATUS_CODE.SUCCESS, msg: "DRIVER UPDATE SUCESSFULLY", driverdata })
 
@@ -280,7 +197,7 @@ exports.update_driver_detalis = async (req, res) => {
 };
 
 
-exports.delete_driver_detalis = async (req, res) => {
+exports.delete_driver = async (req, res) => {
 
   try {
 
@@ -344,81 +261,6 @@ exports.driver_account_actived = async (req, res) => {
 };
 
 
-
-exports.export_driver_data_into_excel_file = async (req, res) => {
-
-  try {
-
-    const users = await driver.find({ user_type: 1 });
-    const workbook = new ExcelJs.Workbook();
-    const worksheet = workbook.addWorksheet("My Users");
-    worksheet.columns = [
-      { header: "driver_img", key: "driver_img", width: 30 },
-      { header: "driver_name", key: "driver_name", width: 20 },
-      { header: "driver_email", key: "driver_email", width: 20 },
-      { header: "driver_mobile_number", key: "driver_mobile_number", width: 20 },
-      { header: "status", key: "status", width: 20 },
-      { header: "truck_type", key: "truck_type", width: 20 },
-      { header: "brand", key: "brand", width: 20 },
-      { header: "vehical_number", key: "vehical_number", width: 20 },
-      { header: "Aadhar_card_number", key: "Aadhar_card_number", width: 15 },
-      { header: "pan_card_number", key: "pan_card_number", width: 15 },
-      { header: "driving_licence", key: "driving_licence", width: 20 },
-      { header: "account_number", key: "account_number", width: 15 },
-      { header: "ifsc_code", key: "ifsc_code", width: 20 },
-      { header: "created_at", key: "created_at", width: 30 },
-      { header: "updated_at", key: "updated_at", width: 30 },
-    ];
-    let count = 1;
-    users.forEach((user) => {
-      user.s_no = count;
-      worksheet.addRow(user);
-      count += 1;
-    });
-    worksheet.getRow(1).eachCell((cell) => {
-      cell.font = { bold: true };
-    });
-    await workbook.xlsx.writeFile("driver.xlsx");
-
-    return res.status(constants.WEB_STATUS_CODE.OK).send({
-      status: constants.STATUS_CODE.SUCCESS,
-      msg: "CREATE NEW EXCEL FILE"
-    })
-
-  } catch (err) {
-    console.log("Error( export_driver_data_into_excel_file)", err);
-    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
-
-
-
-exports.driver_file_export_into_csv_file = async (req, res) => {
-
-  try {
-
-    const users = await driver.find({ user_type: 1 });
-    const csvData = users.map(
-      (user) =>
-        `${user.driver_img},${user.driver_name},${user.driver_email},${user.driver_mobile_number}, ${user.status},${user.Aadhar_card_number},${user.pan_card_number}${user.ifsc_code},${user.account_number},${user.created_at},${user.updated_at}`
-    );
-    const csvContent = `driver_img,email,driver_name,driver_email,driver_mobile_number,status,Aadhar_card_number,pan_card_number,ifsc_code,account_number,created_at,updated_at\n${csvData.join(
-      "\n"
-    )}`;
-
-    fs.writeFile("DriverData.csv", csvContent, (error) => {
-      if (error) {
-        console.error("Error creating CSV file:", error);
-      } else {
-        return res.status(constants.WEB_STATUS_CODE.CREATED).send({ status: constants.STATUS_CODE.SUCCESS, msg: "CREATE NEW CSV FILE" })
-      }
-    });
-
-  } catch (err) {
-    console.log("Error(driver_file_export_into_csv_file)", err);
-    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
 
 
 

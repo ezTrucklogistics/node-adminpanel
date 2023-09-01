@@ -8,6 +8,7 @@ const constants = require('../config/constants');
 const Schema = mongoose.Schema;
 
 
+
 //Define user schema
 const userSchema = new Schema({
 
@@ -59,10 +60,6 @@ const userSchema = new Schema({
     verifyToken:{
         type:Boolean,
         default:false
-    },
-    tokens: {
-        type: String,
-        default:null
     },
     created_at: {
         type: String,

@@ -1,14 +1,11 @@
 const jwt = require("jsonwebtoken");
 const dateFormat = require("../../helper/dateformat.helper");
 const User = require("../../models/user.model");
-const ExcelJs = require("exceljs");
-const fs = require("fs");
 const { isValid } = require("../../services/blackListMail");
 const constants = require("../../config/constants");
 const { JWT_SECRET } = require("../../keys/keys");
 const driver = require("../../models/driver.model");
 const { sendResponse } = require("../../services/common.service")
-const { createUser } = require('../../middleware/earning.system')
 
 
 
@@ -18,6 +15,7 @@ exports.signUp = async (req, res) => {
   try {
 
     const reqBody = req.body;
+
     const checkMail = await isValid(reqBody.email);
     if (checkMail == false)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'GENERAL.blackList_mail', {}, req.headers.lang);
@@ -26,23 +24,13 @@ exports.signUp = async (req, res) => {
     if (existMobile) {
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.check_mobile_number', {}, req.headers.lang);
     }
-
-    reqBody.tokens = await jwt.sign(
-      {
-        data: reqBody.email,
-      },
-      JWT_SECRET,
-      {
-        expiresIn: constants.URL_EXPIRE_TIME,
-      }
-    );
-
+   
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
-   
+
     reqBody.device_type = reqBody.device_type ? reqBody.device_type : null;
     reqBody.device_token = reqBody.device_token ? reqBody.device_token : null;
-    createUser(reqBody.mobile_number);
+  
     const user = await User.create(reqBody);
     if(user.user_type !== 2)
     return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.check_customer_or_driver', {} , req.headers.lang);
@@ -89,30 +77,6 @@ exports.logout = async (req, res) => {
 };
 
 
-exports.accountVerify = async (req , res ) => {
-
-  try {
-    
-    const { email } = req.query
-    const user = await User.findOneAndUpdate({ email } , {$set:{ verifyToken: true }} , {new:true})
-    console.log(user)
-
-    if (!user)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang)
-
-    // if (user == 1) {
-    //     res.redirect(Keys.BASEURL + `v1/users/email-verify/verify?user_id=${userId}`)
-    // } else {
-    //     res.redirect(Keys.BASEURL + `v1/users/email-verify/unverify?user_id=${userId}`)
-    // }
-
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.verify_account', {}, req.headers.lang)
- } catch (err) {
-    console.log(err)
-    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-}
-
 
 
 exports.login = async (req, res) => {
@@ -125,9 +89,6 @@ exports.login = async (req, res) => {
     if (!user)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang)
 
-      // if(user.verifyToken == false)
-      // return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.account_verify', {}, req.headers.lang)
-      
       if (user.status === constants.STATUS.ACCOUNT_DEACTIVE ) return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_in_active', {}, req.headers.lang);
       if (user.deleted_at != null) return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_in_active', {}, req.headers.lang);
 
@@ -190,7 +151,6 @@ exports.update_Role = async (req, res) => {
     await users.save();
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.role_changed', {}, req.headers.lang)
 
-
   } catch (err) {
     console.log("Error(update_Role)", err);
     sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
@@ -198,95 +158,25 @@ exports.update_Role = async (req, res) => {
 };
 
 
-exports.generate_auth_tokens = async (req, res) => {
-  try {
-    const { refresh_tokens } = req.params;
-
-    const verified = jwt.verify(refresh_tokens, JWT_SECRET);
-    console.log(verified);
-
-    let user = await User.findById(verified._id);
-    user.authTokens = await jwt.sign(
-      {
-        data: user.email,
-      },
-      JWT_SECRET,
-      {
-        expiresIn: constants.URL_EXPIRE_TIME,
-      }
-    );
-
-    let token = await user.save();
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.new_token_generated', token, req.headers.lang)
-  } catch (err) {
-    console.log("Error(generate_auth_tokens)", err);
-    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
-
-
-
-exports.get_all_customer = async (req, res) => {
-
-  try {
-    const {
-      email,
-      customer_name,
-      mobile_number,
-      page = 1,
-      limit = 10,
-      offset = 0,
-      sortBy = "created_at",
-      sortOrder = "email",
-    } = req.query;
-
-    const query = {};
-
-    if (email) {
-      query.email = { $regex: email, $options: "i" }; // Case-insensitive search by email
-    }
-    if (mobile_number) {
-      query.mobile_number = { $regex: mobile_number, $options: "i" }; // Case-insensitive search by email
-    }
-
-    if (customer_name) {
-      query.customer_name = { $regex: customer_name, $options: "i" }; // Case-insensitive search by customer name
-    }
-    // Calculate skip for pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
-
-    const customers = await User.find(query, {
-      user_type: 0,
-      device_token: 0,
-      device_type: 0,
-      refresh_tokens: 0,
-      authTokens: 0,
-      deleted_at: 0,
-      __v: 0,
-      _id: 0,
-    })
-      .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.get_all_customers_searched', customers, req.headers.lang)
-
-  } catch (err) {
-    console.log("Error(get_all_customer)", err);
-    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
 
 exports.update_customer = async (req, res) => {
 
   try {
 
     const findUser = req.user._id;
+    let reqBody = req.body;
+
+    const existMobileNumber = await User.findOne({ _id: findUser})
+
+    if(existMobileNumber.mobile_number === reqBody.mobile_number){
+
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_same_mobile_number', {}, req.headers.lang);
+    }
 
     if (!findUser)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'customer id not found', {}, req.headers.lang)
 
-    let user = await User.findOneAndUpdate({ _id: findUser }, req.body, {
+    let user = await User.findOneAndUpdate({ _id: findUser }, reqBody, {
       new: true,
     });
 
@@ -302,85 +192,4 @@ exports.update_customer = async (req, res) => {
 };
 
 
-exports.delete_customer = async (req, res) => {
 
-  try {
-    const userId = req.user._id;
-
-    if (!userId)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'customer id not found', {}, req.headers.lang)
-    let customers = await User.findByIdAndDelete(userId);
-
-    if (!customers)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'customer data not found', {}, req.headers.lang)
-
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.customer_data_deleted', customers, req.headers.lang)
-  } catch (err) {
-    console.log("Error(delete_customer_detalis)", err);
-    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
-
-
-exports.export_customer_data_into_excel_file = async (req, res) => {
-
-  try {
-
-    const users = await User.find({ user_type: 2 });
-    const workbook = new ExcelJs.Workbook();
-    const worksheet = workbook.addWorksheet("My Users");
-    worksheet.columns = [
-      { header: "customer_Id", key: "customer_Id", width: 15 },
-      { header: "profile_img", key: "profile_img", width: 20 },
-      { header: "customer_name", key: "customer_name", width: 30 },
-      { header: "mobile_number", key: "mobile_number", width: 30 },
-      { header: "status", key: "status", width: 30 },
-      { header: "email", key: "email", width: 30 },
-      { header: "created_at", key: "created_at", width: 30 },
-      { header: "updated_at", key: "updated_at", width: 30 },
-    ];
-    let count = 1;
-    users.forEach((user) => {
-      user.s_no = count;
-      worksheet.addRow(user);
-      count += 1;
-    });
-    worksheet.getRow(1).eachCell((cell) => {
-      cell.font = { bold: true };
-    });
-    await workbook.xlsx.writeFile("customer.xlsx");
-
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.create_new_excel_file', {}, req.headers.lang)
-
-  } catch (err) {
-    console.log("Error( export_customer_data_into_excel_file)", err);
-    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
-
-
-exports.customer_file_export_into_csv_file = async (req, res) => {
-
-  try {
-    const users = await User.find({ user_type: 2 });
-    const csvData = users.map(
-      (user) =>
-        `${user.customer_Id},${user.email},${user.customer_name},${user.mobile_number}, ${user.status},${user.profile_img},${user.created_at},${user.updated_at}`
-    );
-    const csvContent = `customer_Id,email,customer_name,mobile_number,status,profile_img,created_at,updated_at\n${csvData.join(
-      "\n"
-    )}`;
-
-    fs.writeFile("customerData.csv", csvContent, (error) => {
-      if (error) {
-        console.error("Error creating CSV file:", error);
-      } else {
-        return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.create_new_csv_file', {}, req.headers.lang)
-      }
-    });
-
-  } catch (err) {
-    console.log("Error(customer_file_export_into_csv_file)", err);
-    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};

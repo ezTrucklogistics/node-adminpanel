@@ -227,7 +227,7 @@ router.post("/booking_otp_verify" , Booking_otp_verify)
  *       400:
  *         description: Bad Request
  */
-router.post("/distance_by_driver_customer" , authenticate, customer_to_driver_distance)
+
 router.get('/List_booking_by_customer' , List_of_Booking_by_customers)
 router.get('/List_booking_by_drivers' , List_of_Booking_by_drivers)
 

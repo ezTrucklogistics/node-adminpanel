@@ -8,10 +8,10 @@ const dateFormat = require("../../helper/dateformat.helper");
 const constants = require("../../config/constants");
 const booking = require("../../models/booking.model");
 const { calculateTotalPrice } = require("../../middleware/earning.system");
-const distances = require("../../models/driver_distance_calculate.model");
-const { sendFCMNotificationToDriver } = require('../../middleware/check_available_drivers')
+const { sendFCMNotificationToCustomer , sendNotificationsToAllDrivers } = require('../../middleware/check_available_drivers')
 const driver = require("../../models/driver.model");
 const User = require("../../models/user.model");
+
 
 
 
@@ -47,16 +47,16 @@ exports.create_Booking = async (req, res) => {
       reqBody.truck_type
     );
 
-    reqBody.userId = user._id;
+    reqBody.User = user._id;
     reqBody.customer_mobile_number = user.mobile_number;
     reqBody.OTP = generateOtp();
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
     const bookings = await booking.create(reqBody);
 
-    const findUsers = await User.findOne({_id : reqBody.userId})
+    const findUsers = await User.findOne({_id : user._id})
 
-    let objects = {
+    let bookingData = {
 
         pickupLocations_Lat:bookings.pickup_location_lat,
         pickupLocation_Long:bookings.pickup_location_long,
@@ -66,14 +66,8 @@ exports.create_Booking = async (req, res) => {
         mobile_number:findUsers.mobile_number
     }
 
-       sendFCMNotificationToDriver(objects)
-      .then(() => {
-        console.log('Notification send successfully')
-      })
-      .catch((error) => {
-        console.error('Error sending notifications:', error);
-      });
-
+    sendNotificationsToAllDrivers(bookingData)
+    
     bookings.deleted_at = undefined;``
     bookings.driverId = undefined;
     bookings.pickup_location_lat = undefined;
@@ -360,15 +354,8 @@ exports.booking_confirm = async (req, res) => {
       driver_name: drivers.driver_name,
       mobile_number: drivers.driver_mobile_number,
       truck: drivers.truck_type,
-      vehical_number: drivers.vehical_number
     }
     sendFCMNotificationToCustomer(users.device_token, driverData)
-      .then(() => {
-        console.log('Notification send successfully to the customer')
-      })
-      .catch((error) => {
-        console.error('Error sending notifications:', error);
-      });
 
     bookings.deleted_at = undefined;
     bookings.driverId = undefined;
@@ -388,30 +375,3 @@ exports.booking_confirm = async (req, res) => {
 
 
 
-exports.customer_to_driver_distance = async (req, res) => {
-
-  try {
-
-    const reqBody = req.body;
-    const userId = req.user._id;
-
-    const locations = await booking.findOne({ User: userId });
-
-    const { distance, duration } = await getDistanceAndTime(
-      reqBody.driver_current_location,
-      locations.pickup_location
-    );
-
-    reqBody.distance = distance;
-    reqBody.duration = duration;
-    parseFloat(distance);
-    const distance_by_driver_customer = await distances.create(reqBody);
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.customer_to_driver_distance', distance_by_driver_customer, req.headers.lang);
-
-
-  } catch (err) {
-
-    console.log("Error(customer_to_driver_distance)", err);
-    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  };
-}

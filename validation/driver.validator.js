@@ -155,22 +155,6 @@ const login_validator = [
     return true;
   })
   .trim(),
-
-  body("token")
-    .not()
-    .isEmpty()
-    .withMessage('token is required')
-    .isString()
-    .withMessage('token should be string')
-    .trim(),
-
-    body("device_type")
-    .not()
-    .isEmpty()
-    .withMessage('device_type is required')
-    .isNumeric()
-    .withMessage('device_type should be number')
-    .trim(),
   
 ];
 
@@ -186,46 +170,7 @@ const update_current_location_validator = [
      .isMongoId()
      .withMessage('please enter a valid driverId')
      .trim(),
-
-     body('driver_lat')
-     .not()
-     .isEmpty()
-     .withMessage('driver_lat is required')
-     .isNumeric()
-     .withMessage('driver_lat mus be a number')
-     .trim() ,
-
-     body('driver_long')
-     .not()
-     .isEmpty()
-     .withMessage('driver_long is required')
-     .isNumeric()
-     .withMessage('driver_long mus be a number')
-     .trim()
 ]
-
-const new_token_generated = [
-
-     body('refresh_tokens')
-     .not()
-     .notEmpty()
-     .withMessage('refresh_tokens is required')
-     .isString()
-     .withMessage('refresh_tokens must be a string')
-     .matches(/^[A-Za-z0-9_-]+$/)
-     .withMessage('please enter a valid refresh_tokens')
-     .trim(),
-]
-
-
-
-
-
-
-
-
-
-
 
 
 const validation_result = (req, res, next) => {
@@ -245,5 +190,4 @@ module.exports = {
     driver_validator,
     validation_result,login_validator,
     update_current_location_validator,
-    new_token_generated
 }

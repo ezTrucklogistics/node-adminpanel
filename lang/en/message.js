@@ -17,7 +17,9 @@ module.exports = {
         check_mobile_number : 'mobile number already exist',
         account_verify : 'customer account not verified',
         customer_in_active : 'customer account in active',
-        verify_account:'customer acccount verify sucessfully'
+        verify_account:'customer acccount verify sucessfully',
+        customer_account_locked: 'Account locked due to too many failed signup attempts',
+        customer_same_mobile_number:'customer mobile number is same you can not updated'
     },
     
     'GENERAL': {
@@ -59,7 +61,8 @@ module.exports = {
         check_driver_and_customer : 'your are not driver',
         mobile_number_check :'mobile number already exist',
         driver_current_location_update :'driver current location updated sucessfully',
-        driver_current_location_not_found : 'driver current location updated sucessfully'
+        driver_current_location_not_found : 'driver current location updated sucessfully',
+        driver_same_mobile_number:'driver mobile number is same you can not updated'
     },
 
     'WALLET':{

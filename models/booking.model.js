@@ -38,11 +38,13 @@ const bookingSchema = new Schema({
     },
     User: {
         type: mongoose.Schema.Types.ObjectId,
-        ref:'users'
+        ref:'users',
+        default:null
     },
     driver: {
         type: mongoose.Schema.Types.ObjectId,
         ref:'driver',
+        default:null
     },
     truck_type: {
         type: String,
