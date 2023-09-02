@@ -1,6 +1,7 @@
 const NodeGeocoder = require('node-geocoder');
 const axios = require('axios');
 const {GOOGLE_APIKEY} = require("../keys/development.keys")
+const User = require('../models/user.model')
 
 const options = {
   provider: 'mapquest',
@@ -40,15 +41,6 @@ try {
 }
 
 
-exports.isArrayofObjectsJSON = (arr) => {
-  try {
-    const jsonString = JSON.stringify(arr); // Convert array to JSON string
-    JSON.parse(jsonString); // Attempt to parse the JSON string
-    return true; // The array of objects is valid JSON
-  } catch (error) {
-    return console.log("It's not a valid type json")// The array of objects is not valid JSON
-  }
-}
 
 
 

@@ -355,8 +355,8 @@ exports.booking_confirm = async (req, res) => {
       mobile_number: drivers.driver_mobile_number,
       truck: drivers.truck_type,
     }
+    
     sendFCMNotificationToCustomer(users.device_token, driverData)
-
     bookings.deleted_at = undefined;
     bookings.driverId = undefined;
     bookings.pickup_location_lat = undefined;

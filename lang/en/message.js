@@ -1,4 +1,5 @@
 
+
 module.exports = {
 
     'CUSTOMER': {
@@ -19,7 +20,10 @@ module.exports = {
         customer_in_active : 'customer account in active',
         verify_account:'customer acccount verify sucessfully',
         customer_account_locked: 'Account locked due to too many failed signup attempts',
-        customer_same_mobile_number:'customer mobile number is same you can not updated'
+        customer_same_mobile_number:'customer mobile number is same you can not updated',
+        customer_account_lock : 'Account is locked. Please try again later.',
+        unauthenticated_failed : 'Authentication failed'
+
     },
     
     'GENERAL': {
@@ -62,7 +66,7 @@ module.exports = {
         mobile_number_check :'mobile number already exist',
         driver_current_location_update :'driver current location updated sucessfully',
         driver_current_location_not_found : 'driver current location updated sucessfully',
-        driver_same_mobile_number:'driver mobile number is same you can not updated'
+        driver_same_mobile_number:'driver mobile number is same you can not updated',
     },
 
     'WALLET':{

@@ -16,13 +16,9 @@ const {
   signUp,
   login,
   logout,
-  update_Role,
   update_customer,
-
   
 } = require("../controllers/user.controller");
-
-
 
 
 router.post(
@@ -39,9 +35,6 @@ router.put(
   authenticate,
   update_customer
 );
-
-router.put('/update_roles', update_Roles_validator , validation_result ,  update_Role)
-// router.get('/account_verify' , account_verify_validator , validation_result, accountVerify)
 
 
 

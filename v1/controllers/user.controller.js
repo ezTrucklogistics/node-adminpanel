@@ -9,7 +9,6 @@ const { sendResponse } = require("../../services/common.service")
 
 
 
-
 exports.signUp = async (req, res) => {
 
   try {
@@ -24,7 +23,12 @@ exports.signUp = async (req, res) => {
     if (existMobile) {
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.check_mobile_number', {}, req.headers.lang);
     }
-   
+    reqBody.authTokens = await jwt.sign({
+      data: reqBody.email
+  }, JWT_SECRET, {
+      expiresIn: constants.URL_EXPIRE_TIME
+  })
+
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
 
@@ -39,7 +43,7 @@ exports.signUp = async (req, res) => {
     user.authTokens = undefined;
     user.deleted_at = undefined;
     user.__v = undefined;
-    user._id = undefined;
+    user._id = undefined; 
 
     return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.signUp_success', user, req.headers.lang);
   } catch (err) {
@@ -54,6 +58,7 @@ exports.signUp = async (req, res) => {
 exports.logout = async (req, res) => {
 
   try {
+
     const userId = req.user._id;
     let UserData = await User.findById(userId);
 
@@ -117,42 +122,6 @@ exports.login = async (req, res) => {
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.login_success', users, req.headers.lang)
   } catch (err) {
     console.log("Error(Login)", err);
-    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
-
-
-
-exports.update_Role = async (req, res) => {
-
-  try {
-
-    const { email } = req.query;
-    let Roles = await driver.findOneAndUpdate(
-      { driver_email: email },
-      { set: { user_type: constants.USER_TYPE.CUSTOMER } },
-      { new: true }
-    );
-
-    if (!Roles) {
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'your are not driver', {}, req.headers.lang)
-
-    }
-
-    let users = new User({
-      email: Roles.driver_email,
-      customer_name: Roles.driver_name,
-      mobile_number: Roles.driver_mobile_number,
-      authTokens: Roles.authTokens,
-      refresh_tokens: Roles.refresh_tokens,
-      status: Roles.status,
-      user_type: Roles.user_type,
-    });
-    await users.save();
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.role_changed', {}, req.headers.lang)
-
-  } catch (err) {
-    console.log("Error(update_Role)", err);
     sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
   }
 };
