@@ -22,7 +22,10 @@ module.exports = {
         customer_account_locked: 'Account locked due to too many failed signup attempts',
         customer_same_mobile_number:'customer mobile number is same you can not updated',
         customer_account_lock : 'Account is locked. Please try again later.',
-        unauthenticated_failed : 'Authentication failed'
+        unauthenticated_failed : 'Authentication failed',
+        add_contact : 'successfully created contact',
+        update_contact : 'successfully updated contact',
+        customer_id_not_found : 'customer id not found'
 
     },
     
@@ -49,7 +52,9 @@ module.exports = {
         booking_cancel_by_driver:'booking cancel by driver',
         driver_booking_confirm : 'successfully driver booking confirmed',
         customer_to_driver_distance:'successfully calculate driver to customer distance',
-        booking_data_not_found:'booking data not found'
+        booking_data_not_found:'booking data not found',
+        not_match_customerId : 'customer id not match',
+        ride_completed : 'customer booking successfully completed'
     },
 
     'DRIVER': {
@@ -67,6 +72,8 @@ module.exports = {
         driver_current_location_update :'driver current location updated sucessfully',
         driver_current_location_not_found : 'driver current location updated sucessfully',
         driver_same_mobile_number:'driver mobile number is same you can not updated',
+        add_review:'review submitted successfully',
+        get_review : 'sucessfully get reviews'
     },
 
     'WALLET':{

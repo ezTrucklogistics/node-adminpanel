@@ -83,6 +83,15 @@ const driverSchema = new Schema({
         type: Number,
         default: null  // 'ANDROID' : 1,	'IOS' : 2,
     },
+    rating: {
+        type:Number,
+        default:0
+    },
+    total_reviews: { 
+        type:Number,
+        default:0
+    },
+    reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'review' }],
     refresh_tokens: {
         type: String,
         default:null

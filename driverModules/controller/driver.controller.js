@@ -5,12 +5,9 @@ const { sendResponse } = require("../../services/common.service");
 const { geocoder } = require("../../middleware/common.function")
 const { JWT_SECRET } = require("../../keys/development.keys")
 const jwt = require("jsonwebtoken")
-const ExcelJs = require("exceljs");
-const fs = require("fs");
 const driver = require("../../models/driver.model");
 const booking = require("../../models/booking.model")
-const cron = require('node-cron');
-
+const review = require('../../models/review.model')
 
 
 
@@ -260,6 +257,45 @@ exports.driver_account_actived = async (req, res) => {
   }
 };
 
+exports.add_review = async (req , res) => {
+
+  try {
+    const { customer_id, driver_id, rating, comment } = req.body;
+
+    // Create a new review
+    const newReview = new review({ customer_id, driver_id, rating, comment});
+    await newReview.save();
+
+    // Update the driver's rating and total reviews
+    const drivers = await driver.findById(driver_id);
+    drivers.reviews.push(newReview._id);
+    drivers.total_reviews++;
+    drivers.rating = (drivers.rating * (drivers.total_reviews - 1) + rating) / drivers.total_reviews;
+    await drivers.save();
+    return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'DRIVER.add_review', {} , req.headers.lang);
+  } catch (error) {
+    console.log("Error(add_review)", err);
+    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+  }
+}
+
+exports.get_review = async (req , res) => {
+     
+  try {
+
+    const driverId = req.params.driverId;
+    // Retrieve driver information including their reviews
+    const drivers = await driver.findById(driverId).populate('reviews');
+    if (!drivers)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
+
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DRIVER.get_review', drivers , req.headers.lang);
+  } catch (error) {
+    console.log("Error(get_review)", err);
+    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+  }
+   
+}
 
 
 

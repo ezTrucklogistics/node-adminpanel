@@ -8,9 +8,11 @@ const dateFormat = require("../../helper/dateformat.helper");
 const constants = require("../../config/constants");
 const booking = require("../../models/booking.model");
 const { calculateTotalPrice } = require("../../middleware/earning.system");
-const { sendFCMNotificationToCustomer , sendNotificationsToAllDrivers } = require('../../middleware/check_available_drivers')
+const { sendFCMNotificationToCustomer, sendNotificationsToAllDrivers } = require('../../middleware/check_available_drivers')
 const driver = require("../../models/driver.model");
 const User = require("../../models/user.model");
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
 
 
 
@@ -54,21 +56,21 @@ exports.create_Booking = async (req, res) => {
     reqBody.updated_at = await dateFormat.set_current_timestamp();
     const bookings = await booking.create(reqBody);
 
-    const findUsers = await User.findOne({_id : user._id})
+    const findUsers = await User.findOne({ _id: user._id })
 
     let bookingData = {
 
-        pickupLocations_Lat:bookings.pickup_location_lat,
-        pickupLocation_Long:bookings.pickup_location_long,
-        dropupLocations_Lat:bookings.drop_location_lat,
-        dropupLocations_Long:bookings.drop_location_long,
-        name:findUsers.customer_name,
-        mobile_number:findUsers.mobile_number
+      pickupLocations_Lat: bookings.pickup_location_lat,
+      pickupLocation_Long: bookings.pickup_location_long,
+      dropupLocations_Lat: bookings.drop_location_lat,
+      dropupLocations_Long: bookings.drop_location_long,
+      name: findUsers.customer_name,
+      mobile_number: findUsers.mobile_number
     }
 
     sendNotificationsToAllDrivers(bookingData)
-    
-    bookings.deleted_at = undefined;``
+
+    bookings.deleted_at = undefined; ``
     bookings.driverId = undefined;
     bookings.pickup_location_lat = undefined;
     bookings.pickup_location_long = undefined;
@@ -76,7 +78,7 @@ exports.create_Booking = async (req, res) => {
     bookings.drop_location_long = undefined;
     bookings.userId = undefined;
 
-    return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking_created', bookings , req.headers.lang);
+    return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'BOOKING.booking_created', bookings, req.headers.lang);
   } catch (err) {
     console.log("Error(create_Booking)", err);
     return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
@@ -204,7 +206,6 @@ exports.List_of_Booking = async (req, res) => {
     if (!bookings)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
 
-
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.get_all_bookings', bookings, req.headers.lang);
 
   } catch (err) {
@@ -225,7 +226,6 @@ exports.booking_By_Id = async (req, res) => {
 
     if (!booking_data)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
-
 
     booking_data.deleted_at = undefined;
     booking_data.driverId = undefined;
@@ -334,7 +334,7 @@ exports.booking_confirm = async (req, res) => {
 
     const { bookingId, driverId } = req.params;
 
-    let bookings = await booking.findOneAndUpdate({ _id: bookingId } , {$set:{booking_status: constants.BOOKING_STATUS.STATUS_CONFIRM}});
+    let bookings = await booking.findOneAndUpdate({ _id: bookingId }, { $set: { booking_status: constants.BOOKING_STATUS.STATUS_CONFIRM } });
 
     if (!bookings)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
@@ -355,15 +355,15 @@ exports.booking_confirm = async (req, res) => {
       mobile_number: drivers.driver_mobile_number,
       truck: drivers.truck_type,
     }
-    
+
     sendFCMNotificationToCustomer(users.device_token, driverData)
     bookings.deleted_at = undefined;
-    bookings.driverId = undefined;
+    bookings.driver = undefined;
     bookings.pickup_location_lat = undefined;
     bookings.pickup_location_long = undefined;
     bookings.drop_location_lat = undefined;
     bookings.drop_location_long = undefined;
-    bookings.userId = undefined;
+    bookings.User = undefined;
 
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.driver_booking_confirm', {}, req.headers.lang);
 
@@ -373,5 +373,34 @@ exports.booking_confirm = async (req, res) => {
   }
 };
 
+exports.Booking_completed = async (req, res) => {
+
+  try {
+
+    const { bookingId } = req.params;
+
+    let bookings = await booking.findOneAndUpdate({ _id: bookingId }, { $set: { booking_status: constants.BOOKING_STATUS.STATUS_COMPLETED } });
+    if (!bookings)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
+    const customers = await User.findOne({_id: bookings.User})
+    const doc = new PDFDocument();
+    const stream = fs.createWriteStream('Invoice.pdf');
+    doc.pipe(stream);
+    doc.fontSize(16);
+    doc
+      .text('Trip Details', { align: 'center' })
+      .text(`customer name : ${customers.customer_name}`)
+      .text(`Pick-up Location: ${bookings.pickup_location}`)
+      .text(`Drop Location: ${bookings.drop_location}`)
+      .text(`Name of the Vehical: ${truck_type}`)
+      .text(`Trip Cost: ${bookings.trip_cost}`)
+
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.ride_completed', {}, req.headers.lang);
+
+  } catch (err) {
+    console.log("Error(booking_completed)", err);
+    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+  }
+}
 
 

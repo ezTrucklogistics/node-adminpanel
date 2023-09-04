@@ -114,19 +114,6 @@ const  update_Roles_validator = [
 
 
 
-const account_verify_validator = [
-
-  query("email")
-  .not()
-  .isEmpty()
-  .withMessage('email is required')
-  .isString()
-  .withMessage('email should be string')
-  .isEmail()
-  .withMessage('Enter a valid emai')
-  .trim(),
-]
-
 
 const validation_result = (req, res, next) => {
   const result = validationResult(req);

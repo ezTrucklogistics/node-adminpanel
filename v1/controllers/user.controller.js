@@ -6,7 +6,7 @@ const constants = require("../../config/constants");
 const { JWT_SECRET } = require("../../keys/keys");
 const driver = require("../../models/driver.model");
 const { sendResponse } = require("../../services/common.service")
-
+const Address = require("../../models/contacts.model")
 
 
 exports.signUp = async (req, res) => {
@@ -160,5 +160,43 @@ exports.update_customer = async (req, res) => {
   }
 };
 
+
+exports.create_contacts = async (req, res) => {
+
+  try {
+    const findUser = req.user._id;
+    let reqBody = req.body;
+    if (!findUser)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_id_not_found', {}, req.headers.lang)
+    reqBody.User = findUser;
+    const contacts = await Address.create(reqBody)
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.add_contact', contacts, req.headers.lang)
+  } catch (err) {
+    console.log("Error(create_contact)", err);
+    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+  }
+};
+
+
+exports.update_contact = async (req, res) => {
+
+  try {
+
+    const { contactId } = req.query;
+    let reqBody = req.body;
+
+    let user = await Address.findOneAndUpdate({ _id: contactId }, reqBody, {
+      new: true,
+    });
+
+    if (!user)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang)
+
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.update_contact', user, req.headers.lang)
+  } catch (err) {
+    console.log("Error(update_contact)", err);
+    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+  }
+};
 
 
