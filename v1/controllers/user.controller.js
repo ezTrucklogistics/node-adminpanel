@@ -129,6 +129,25 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.get_customer = async (req, res) => {
+
+  try {
+
+    const findUser = req.user._id;
+    const data = await User.findOne({ _id: findUser});
+
+    if (!findUser)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'customer id not found', {}, req.headers.lang)
+
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.customer_data_updated', data , req.headers.lang)
+  } catch (err) {
+    console.log("Error(get_customer)", err);
+    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+  }
+};
+
+
+
 
 
 exports.update_customer = async (req, res) => {

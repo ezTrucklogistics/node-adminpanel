@@ -88,6 +88,7 @@ exports.create_Booking = async (req, res) => {
 };
 
 
+
 exports.Booking_otp_verify = async (req, res) => {
 
   try {
@@ -109,6 +110,7 @@ exports.Booking_otp_verify = async (req, res) => {
     return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
   }
 };
+
 
 
 exports.List_of_Booking_by_customers = async (req, res) => {
@@ -137,7 +139,7 @@ exports.List_of_Booking_by_customers = async (req, res) => {
       deleted_at: 0,
       __v: 0,
       _id: 0,
-    }).populate('User', 'mobile_number email customer_name')
+    }).populate('User', 'mobile_number email customer_name').populate('driver', 'driver_mobile_number driver_name driver_email')
       .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -181,7 +183,7 @@ exports.List_of_Booking_by_drivers = async (req, res) => {
       deleted_at: 0,
       __v: 0,
       _id: 0,
-    }).populate('driver', 'driver_mobile_number driver_name driver_email')
+    }).populate('driver', 'driver_mobile_number driver_name driver_email').populate('User', 'mobile_number email customer_name')
       .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
       .skip(skip)
       .limit(parseInt(limit));

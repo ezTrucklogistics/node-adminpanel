@@ -14,7 +14,6 @@ const { authenticate, driver_authenticate } = require("../../middleware/authenti
 const {
   booking_validator,
   booking_validation_result,
-  get_booking_by_id,
 } = require("../../validation/booking.validation");
 
 

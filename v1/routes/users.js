@@ -19,6 +19,7 @@ const {
   update_customer,
   create_contacts,
   update_contact,
+  get_customer,
   
 } = require("../controllers/user.controller");
 
@@ -29,8 +30,10 @@ router.post(
   user_validator , validation_result,
   signUp
 );
+
 router.post("/login", login_validator, validation_result, login);
 router.get("/logout", authenticate, logout);
+router.get('/get_customer' ,authenticate, get_customer);
 router.put(
   "/update_customer_detalis",
    update_customer_validator,

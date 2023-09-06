@@ -22,7 +22,6 @@ router.post("/login",login_validator, validation_result, login);
 router.get("/logout", driver_authenticate, logout);
 router.put("/driver_status_actived", driver_authenticate , driver_account_actived );
 router.put("/update_driver_detalis" ,driver_authenticate, update_driver_detalis)
-router.delete("/driver_account_deleted" , driver_authenticate, delete_driver)
 router.put('/driver_current_location_update' , update_current_location_validator, validation_result , update_current_location)
 router.post('/add_review' ,review_validator , validation_result , add_review )
 router.get('/get_review/:driverId' , get_review , validation_result, get_reviews)
