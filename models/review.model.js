@@ -14,7 +14,7 @@ const reviewSchema = new Schema({
     ref: "users",
     required: true,
   },
-  rating: Number,
+  rating: {type:String},
   comment: String,
   date: {
      type:String,

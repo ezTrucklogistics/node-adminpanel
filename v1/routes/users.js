@@ -7,9 +7,9 @@ const {
   validation_result,
   update_customer_validator,
   user_validator, 
-  update_Roles_validator,
 
 } = require("../../validation/user.validator");
+const {contact_validator , update_contact_validator} = require("../../validation/contact.validator")
 
 
 const {
@@ -17,8 +17,11 @@ const {
   login,
   logout,
   update_customer,
+  create_contacts,
+  update_contact,
   
 } = require("../controllers/user.controller");
+
 
 
 router.post(
@@ -35,8 +38,8 @@ router.put(
   authenticate,
   update_customer
 );
-
-
+router.post('/create_contact' , contact_validator, validation_result, authenticate, create_contacts)
+router.put('/update_contact' , update_contact_validator , validation_result , update_contact)
 
 
 module.exports = router;

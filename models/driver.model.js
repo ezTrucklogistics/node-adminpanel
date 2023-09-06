@@ -7,9 +7,13 @@ const jwt = require("jsonwebtoken")
 const dateFormat = require("../helper/dateformat.helper")
 
 
+
 //Define Booing schema
 const driverSchema = new Schema({
-    
+
+    driver_mobile_number: {
+        type: String, 
+    },
     driver_img :{
         type:String,
     },
@@ -31,9 +35,6 @@ const driverSchema = new Schema({
     driver_img: {
         type:String,
     },
-    driver_mobile_number: {
-        type: String, 
-    },
     user_type: {
         type: Number, //1-admin 2-user
         default: 1
@@ -51,10 +52,10 @@ const driverSchema = new Schema({
         type:String,
         default:constants.STATUS.ACCOUNT_DEACTIVE
     },
-    earning:{
+    earning:[{
         type:Number,
         default:0
-    },
+    }],
     driver_status:{
         type:String,
         default:constants.DRIVER_STATUS.STATUS_2
@@ -83,10 +84,6 @@ const driverSchema = new Schema({
         type: Number,
         default: null  // 'ANDROID' : 1,	'IOS' : 2,
     },
-    rating: {
-        type:Number,
-        default:0
-    },
     total_reviews: { 
         type:Number,
         default:0
@@ -114,7 +111,7 @@ const driverSchema = new Schema({
 
 
 driverSchema.index({
-    "email": 1
+    "driver_mobile_number": 1
 });
 
 //Output data to JSON

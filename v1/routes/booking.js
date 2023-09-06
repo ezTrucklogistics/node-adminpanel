@@ -1,13 +1,10 @@
 var express = require("express");
 
 const {
-  List_of_Booking,
-  booking_By_Id,
   booking_confirm,
   booking_cancel_by_customer,
   booking_cancel_by_driver,
   Booking_otp_verify,
-  customer_to_driver_distance,
   create_Booking,
   List_of_Booking_by_customers,
   List_of_Booking_by_drivers,
@@ -58,33 +55,6 @@ router.post(
   booking_validation_result,
   authenticate,
   create_Booking
-);
-
-
-/**
- * @swagger
- * /v1/book/List_of_booking:
- *   get:
- *     summary: Returns the list of all the books
- *     tags: [Booking]
- *     responses:
- *       200:
- *         description: The list of the books
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- * */
-
-router.get("/List_of_booking", List_of_Booking);
-
-
-router.get(
-  "/Booking_By_Id",
-  get_booking_by_id,
-  booking_validation_result,
-  booking_By_Id
 );
 
 
@@ -230,6 +200,7 @@ router.post("/booking_otp_verify" , Booking_otp_verify)
 
 router.get('/List_booking_by_customer' , List_of_Booking_by_customers)
 router.get('/List_booking_by_drivers' , List_of_Booking_by_drivers)
+router.put('/booking_confirmed/:bookingId/:driverId' , booking_confirm)
 
 
 

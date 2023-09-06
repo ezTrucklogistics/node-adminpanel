@@ -9,6 +9,8 @@ const { sendResponse } = require("../../services/common.service")
 const Address = require("../../models/contacts.model")
 
 
+
+
 exports.signUp = async (req, res) => {
 
   try {
@@ -34,7 +36,8 @@ exports.signUp = async (req, res) => {
 
     reqBody.device_type = reqBody.device_type ? reqBody.device_type : null;
     reqBody.device_token = reqBody.device_token ? reqBody.device_token : null;
-  
+
+    
     const user = await User.create(reqBody);
     if(user.user_type !== 2)
     return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.check_customer_or_driver', {} , req.headers.lang);
@@ -161,6 +164,7 @@ exports.update_customer = async (req, res) => {
 };
 
 
+
 exports.create_contacts = async (req, res) => {
 
   try {
@@ -176,6 +180,7 @@ exports.create_contacts = async (req, res) => {
     sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
   }
 };
+
 
 
 exports.update_contact = async (req, res) => {

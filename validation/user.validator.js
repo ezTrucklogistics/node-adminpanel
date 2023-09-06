@@ -132,6 +132,5 @@ module.exports = {
   login_validator,
   update_customer_validator,
   validation_result,
-  update_Roles_validator,
-  account_verify_validator
+  update_Roles_validator
 };

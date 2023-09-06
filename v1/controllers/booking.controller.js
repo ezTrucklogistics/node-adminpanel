@@ -7,12 +7,14 @@ const {
 const dateFormat = require("../../helper/dateformat.helper");
 const constants = require("../../config/constants");
 const booking = require("../../models/booking.model");
-const { calculateTotalPrice } = require("../../middleware/earning.system");
+const { calculateTotalPrice , totalEarningbyDriver } = require("../../middleware/earning.system");
 const { sendFCMNotificationToCustomer, sendNotificationsToAllDrivers } = require('../../middleware/check_available_drivers')
 const driver = require("../../models/driver.model");
 const User = require("../../models/user.model");
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
+
+
 
 
 
@@ -55,7 +57,6 @@ exports.create_Booking = async (req, res) => {
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
     const bookings = await booking.create(reqBody);
-
     const findUsers = await User.findOne({ _id: user._id })
 
     let bookingData = {
@@ -65,7 +66,8 @@ exports.create_Booking = async (req, res) => {
       dropupLocations_Lat: bookings.drop_location_lat,
       dropupLocations_Long: bookings.drop_location_long,
       name: findUsers.customer_name,
-      mobile_number: findUsers.mobile_number
+      mobile_number: findUsers.mobile_number,
+      BookingId: bookings._id
     }
 
     sendNotificationsToAllDrivers(bookingData)
@@ -197,54 +199,6 @@ exports.List_of_Booking_by_drivers = async (req, res) => {
 };
 
 
-exports.List_of_Booking = async (req, res) => {
-
-  try {
-
-    const bookings = await booking.find({}, { pickup_location: 1, drop_location: 1, truck_type: 1, distance: 1, duration: 1, trip_cost: 1, booking_status: 1 })
-
-    if (!bookings)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
-
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.get_all_bookings', bookings, req.headers.lang);
-
-  } catch (err) {
-    console.log("Error(List_of_Booking)", err);
-    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
-
-
-
-exports.booking_By_Id = async (req, res) => {
-
-  try {
-
-    const { bookingId } = req.query;
-    const booking_data = await booking
-      .findOne({ _id: bookingId })
-
-    if (!booking_data)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
-
-    booking_data.deleted_at = undefined;
-    booking_data.driverId = undefined;
-    booking_data.pickup_location_lat = undefined;
-    booking_data.pickup_location_long = undefined;
-    booking_data.drop_location_lat = undefined;
-    booking_data.drop_location_long = undefined;
-    booking_data.userId = undefined;
-    booking_data.created_at = undefined;
-    booking_data.updated_at = undefined;
-    booking_data.OTP = undefined;
-
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.get_bookings', booking_data, req.headers.lang);
-
-  } catch (err) {
-    console.log("Error(booking_By_Id)", err);
-    return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
-};
 
 
 exports.booking_cancel_by_customer = async (req, res) => {
@@ -341,15 +295,20 @@ exports.booking_confirm = async (req, res) => {
 
     bookings.driver = driverId;
     await bookings.save();
+    
     const users = await User.findOne({ _id: bookings.User });
     if (!users)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang);
-
+  
     const drivers = await driver.findOne({ _id: bookings.driver })
 
     if (!drivers)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
-
+    
+      let driverEarn = totalEarningbyDriver(parseInt(bookings.trip_cost));
+      drivers.earning.push(driverEarn);
+      await drivers.save();
+  
     let driverData = {
       driver_name: drivers.driver_name,
       mobile_number: drivers.driver_mobile_number,
@@ -357,6 +316,15 @@ exports.booking_confirm = async (req, res) => {
     }
 
     sendFCMNotificationToCustomer(users.device_token, driverData)
+    .then(() => {
+
+         console.log("Notification sent successfully")
+
+    }).catch((err) => {
+
+        console.log("ERROR in send this notification" , err.message)
+    });
+    
     bookings.deleted_at = undefined;
     bookings.driver = undefined;
     bookings.pickup_location_lat = undefined;
@@ -373,6 +341,8 @@ exports.booking_confirm = async (req, res) => {
   }
 };
 
+
+
 exports.Booking_completed = async (req, res) => {
 
   try {
@@ -386,21 +356,22 @@ exports.Booking_completed = async (req, res) => {
     const doc = new PDFDocument();
     const stream = fs.createWriteStream('Invoice.pdf');
     doc.pipe(stream);
-    doc.fontSize(16);
+    doc.fontSize(16);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
     doc
       .text('Trip Details', { align: 'center' })
       .text(`customer name : ${customers.customer_name}`)
       .text(`Pick-up Location: ${bookings.pickup_location}`)
       .text(`Drop Location: ${bookings.drop_location}`)
-      .text(`Name of the Vehical: ${truck_type}`)
+      .text(`Name of the Vehical: ${bookings.truck_type}`)
       .text(`Trip Cost: ${bookings.trip_cost}`)
-
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.ride_completed', {}, req.headers.lang);
-
-  } catch (err) {
-    console.log("Error(booking_completed)", err);
+      .text(`distance : ${bookings.distance}`)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.ride_completed', {}, req.headers.lang);                             
+        
+  } catch (err) {                    
+    console.log("Error(booking_completed)", err);                                
     return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }
+  }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
 }
 
 

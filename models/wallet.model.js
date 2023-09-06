@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const dateFormate = require('../helper/dateformat.helper');
 const Schema = mongoose.Schema;
 
 
@@ -18,6 +19,10 @@ const walletSchema = new Schema({
         type: Number,
         default: 0
     },
+    date: {
+        type:String,
+        default:dateFormate.set_current_timestamp()
+    }
 });
 
 

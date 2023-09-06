@@ -1,8 +1,4 @@
 
-const User = require('../models/user.model');
-const mongoose = require('mongoose')
-
-
 
 function calculateTotalPrice(distanceInKm, truckType) {
   
@@ -89,6 +85,8 @@ function totalEarningbyDriver(totalPrice) {
 //     throw error;
 //   }
 // }
+
+
 
 
 

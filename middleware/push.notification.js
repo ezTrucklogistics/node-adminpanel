@@ -7,6 +7,8 @@ const cron = require('node-cron');
 
 
 
+
+
 // Function to send FCM notifications to multiple recipients
 async function sendFCMNotificationsToRecipients(tokens, notificationDetails) {
 
@@ -48,11 +50,8 @@ const scheduledJob = cron.schedule('0 10 * * *', async () => {
 
 
     const notificationDetails = {
-      title: 'Your Minute Notification',
-      body: 'This is your notification sent every minute.',
-      data: {
-        // Include additional data as needed
-      },
+      title: 'Good Morning , Welcome to EzTruck logistices Services',
+      body: 'Good morning! Your ride is just a tap away with EzTruck!',
     };
 
     // Send notifications to both customers and drivers

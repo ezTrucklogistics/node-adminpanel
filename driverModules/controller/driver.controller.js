@@ -154,7 +154,6 @@ exports.update_current_location = async () => {
 
 
 
-
 exports.update_driver_detalis = async (req, res) => {
 
   try {
@@ -257,29 +256,30 @@ exports.driver_account_actived = async (req, res) => {
   }
 };
 
+
 exports.add_review = async (req , res) => {
 
   try {
-    const { customer_id, driver_id, rating, comment } = req.body;
+    const { customerId, driverId, rating, comment } = req.body;
 
     // Create a new review
-    const newReview = new review({ customer_id, driver_id, rating, comment});
+    const newReview = new review({ customerId, driverId, rating, comment});
     await newReview.save();
 
     // Update the driver's rating and total reviews
-    const drivers = await driver.findById(driver_id);
+    const drivers = await driver.findById(driverId);
     drivers.reviews.push(newReview._id);
     drivers.total_reviews++;
-    drivers.rating = (drivers.rating * (drivers.total_reviews - 1) + rating) / drivers.total_reviews;
     await drivers.save();
     return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'DRIVER.add_review', {} , req.headers.lang);
-  } catch (error) {
+  } catch (err) {
     console.log("Error(add_review)", err);
     return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
   }
 }
 
-exports.get_review = async (req , res) => {
+
+exports.get_reviews = async (req , res) => {
      
   try {
 
@@ -288,6 +288,22 @@ exports.get_review = async (req , res) => {
     const drivers = await driver.findById(driverId).populate('reviews');
     if (!drivers)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
+     
+     drivers.user_type = undefined;
+     drivers.device_token = undefined;
+     drivers.device_type = undefined;
+     drivers.refresh_tokens = undefined;
+     drivers.deleted_at = undefined;
+     drivers.status = undefined;
+     drivers.__v = undefined;
+     drivers._id = undefined;
+     drivers.created_at = undefined;
+     drivers.updated_at = undefined;
+     drivers.driver_lat = undefined;
+     drivers.driver_long = undefined;
+     drivers.account_number = undefined;
+     drivers.ifsc_code = undefined;
+     drivers.authTokens = undefined;
 
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DRIVER.get_review', drivers , req.headers.lang);
   } catch (error) {

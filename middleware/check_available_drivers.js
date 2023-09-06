@@ -1,9 +1,4 @@
 const driver = require('../models/driver.model');
-// const FCM = require("fcm-node");
-// const { SERVICE_KEY } = require("../keys/development.keys");
-// const fcm = new FCM(SERVICE_KEY);
-
-
 const admin = require('firebase-admin');
 const serviceAccount = {
   "type": "service_account",
@@ -36,6 +31,7 @@ async function sendNotificationsToAllDrivers(bookingData) {
             bookingData: JSON.stringify(bookingData),
         },
      };
+     console.log(message.data.bookingData)
      
      // Send the message to each device token
      driverTokens.forEach((token) => {
@@ -54,7 +50,7 @@ async function sendNotificationsToAllDrivers(bookingData) {
   }
 
 
-  async function sendFCMNotificationToCustomer(registrationToken, driverData) {
+  async function sendFCMNotificationToCustomer(Token, driverData) {
 
       const message = {
 
@@ -63,7 +59,7 @@ async function sendNotificationsToAllDrivers(bookingData) {
             body: 'Booking confirmation by driver',
             driverData: JSON.stringify(driverData),
         },
-        token: registrationToken
+        token: Token
      };
      
         admin.messaging().send(message)
