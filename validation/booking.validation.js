@@ -1,5 +1,6 @@
 
 const {body ,validationResult, param , query} = require('express-validator')
+const { constant } = require('lodash')
 
 let fixed_truck_type = ["dalaauto" , "tataace", "small_pickup" , "large_pickup" , "eicher"]
 
@@ -32,17 +33,59 @@ const booking_validator = [
      .trim()
 ]
 
-const get_booking_by_id = [
 
-  query('bookingId')
+const booking_otp_verify_validator = [
+
+    body('OTP')
+    .not()
+    .isEmpty()
+    .withMessage('otp is required')
+    .isString()
+    .withMessage('otp should be a string')
+    .isLength({max:6})
+    .withMessage('otp length is 6')
+    .trim()
+]
+
+const List_of_Booking_by_customers_validator = [
+
+  query('userId')
+  .not()
+  .isEmpty()
+  .withMessage('userId is required')
+  .isMongoId()
+  .withMessage('please Enter valid userId')
+]
+
+const List_of_Booking_by_drivers_validator = [
+
+  query('driverId')
+  .not()
+  .isEmpty()
+  .withMessage('driverId is required')
+  .isMongoId()
+  .withMessage('please Enter valid driverId')
+]
+
+const booking_confirm_validator = [
+
+  param('bookingId')
   .not()
   .isEmpty()
   .withMessage('bookingId is required')
   .isMongoId()
   .withMessage('Enter valid BookingId')
+  .trim(),
+
+  param('driverId')
+  .not()
+  .isEmpty()
+  .withMessage('driverId is required')
+  .isMongoId()
+  .withMessage('please Enter valid driverId')
+  .trim()
+
 ]
-
-
 
 
 
@@ -60,4 +103,4 @@ const booking_validation_result = (req, res, next) => {
   };
 
   
-module.exports = {booking_validator, booking_validation_result  , get_booking_by_id}
+module.exports = {booking_validator, booking_validation_result,booking_confirm_validator , booking_otp_verify_validator , List_of_Booking_by_customers_validator , List_of_Booking_by_drivers_validator}

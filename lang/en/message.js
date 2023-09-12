@@ -1,5 +1,4 @@
 
-
 module.exports = {
 
     'CUSTOMER': {
@@ -25,8 +24,9 @@ module.exports = {
         unauthenticated_failed : 'Authentication failed',
         add_contact : 'successfully created contact',
         update_contact : 'successfully updated contact',
-        customer_id_not_found : 'customer id not found'
-
+        customer_id_not_found : 'customer id not found',
+        valid_mobile_number : 'Invalid phone number',
+        update_mobile_number : 'successfully updated customer mobile number'
     },
     
     'GENERAL': {
@@ -54,7 +54,8 @@ module.exports = {
         customer_to_driver_distance:'successfully calculate driver to customer distance',
         booking_data_not_found:'booking data not found',
         not_match_customerId : 'customer id not match',
-        ride_completed : 'customer booking successfully completed'
+        ride_completed : 'customer booking successfully completed',
+        otp_not_match : 'otp not matched'
     },
 
     'DRIVER': {

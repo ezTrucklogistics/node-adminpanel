@@ -112,6 +112,10 @@ const  update_Roles_validator = [
     .trim(),
 ]
 
+function validatePhoneNumber(phoneNumber) {
+ 
+  return /^(?:(?:\+|00)\d{1,4}[\s\-]*)?(?:(?:(?:\()\d{1,4}(?:\)))|[\d\s\-]){1,17}$/.test(phoneNumber);
+}
 
 
 
@@ -132,5 +136,6 @@ module.exports = {
   login_validator,
   update_customer_validator,
   validation_result,
-  update_Roles_validator
+  update_Roles_validator,
+  validatePhoneNumber
 };

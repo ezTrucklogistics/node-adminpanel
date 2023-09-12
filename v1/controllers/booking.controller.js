@@ -8,14 +8,11 @@ const dateFormat = require("../../helper/dateformat.helper");
 const constants = require("../../config/constants");
 const booking = require("../../models/booking.model");
 const { calculateTotalPrice , totalEarningbyDriver } = require("../../middleware/earning.system");
-const { sendFCMNotificationToCustomer, sendNotificationsToAllDrivers } = require('../../middleware/check_available_drivers')
+const { sendFCMNotificationToCustomer, sendNotificationsToAllDrivers , findDriversWithinRadius} = require('../../middleware/check_available_drivers')
 const driver = require("../../models/driver.model");
 const User = require("../../models/user.model");
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
-
-
-
 
 
 
@@ -57,22 +54,27 @@ exports.create_Booking = async (req, res) => {
     reqBody.created_at = await dateFormat.set_current_timestamp();
     reqBody.updated_at = await dateFormat.set_current_timestamp();
     const bookings = await booking.create(reqBody);
-    const findUsers = await User.findOne({ _id: user._id })
+    const findUsers = await User.findOne({ _id: user._id });
 
     let bookingData = {
-
       pickupLocations_Lat: bookings.pickup_location_lat,
       pickupLocation_Long: bookings.pickup_location_long,
       dropupLocations_Lat: bookings.drop_location_lat,
       dropupLocations_Long: bookings.drop_location_long,
       name: findUsers.customer_name,
       mobile_number: findUsers.mobile_number,
-      BookingId: bookings._id
+      BookingId: bookings._id,
+      otp: bookings.OTP
     }
 
-    sendNotificationsToAllDrivers(bookingData)
+    let customerLocation = {
+       latitude:bookings.pickup_location_lat,
+       longitude:bookings.pickup_location_long
+    }
 
-    bookings.deleted_at = undefined; ``
+    sendNotificationsToAllDrivers(customerLocation , bookingData)
+
+    bookings.deleted_at = undefined;
     bookings.driverId = undefined;
     bookings.pickup_location_lat = undefined;
     bookings.pickup_location_long = undefined;
@@ -94,16 +96,43 @@ exports.Booking_otp_verify = async (req, res) => {
   try {
 
     const { OTP } = req.body;
-    const bookings = await booking.findOne({ OTP: OTP });
-    if (!bookings)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'booking data not found', {}, req.headers.lang);
+    const bookings = await booking.find({ OTP: OTP });
 
-    if (bookings.OTP !== OTP)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'otp not match', {}, req.headers.lang);
+    if (!bookings || bookings.length === 0) {
+      return sendResponse(
+        res,
+        constants.WEB_STATUS_CODE.BAD_REQUEST,
+        constants.STATUS_CODE.FAIL,
+        'BOOKING.booking_data_not_found',
+        {},
+        req.headers.lang
+      );
+    }
 
-    bookings.OTP = null;
-    await bookings.save();
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.otp_verify', {}, req.headers.lang);
+    const matchingBooking = bookings.find((bookingItem) => bookingItem.OTP === OTP);
+
+    if (!matchingBooking) {
+      return sendResponse(
+        res,
+        constants.WEB_STATUS_CODE.BAD_REQUEST,
+        constants.STATUS_CODE.FAIL,
+        'BOOKING.otp_not_match',
+        {},
+        req.headers.lang
+      );
+    }
+
+    matchingBooking.OTP = null;
+    await matchingBooking.save();
+
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.OK,
+      constants.STATUS_CODE.SUCCESS,
+      'BOOKING.otp_verify',
+      {},
+      req.headers.lang
+    );
 
   } catch (err) {
     console.log("Error(Booking_otp_verify)", err);
@@ -125,7 +154,6 @@ exports.List_of_Booking_by_customers = async (req, res) => {
       sortBy = "created_at",
       sortOrder = "truck_type",
     } = req.query;
-
 
     // Calculate skip for pagination
     const skip = (parseInt(page) - 1) * parseInt(limit) + parseInt(offset);
@@ -284,6 +312,7 @@ exports.booking_cancel_by_driver = async (req, res) => {
 };
 
 
+
 exports.booking_confirm = async (req, res) => {
 
   try {
@@ -318,6 +347,7 @@ exports.booking_confirm = async (req, res) => {
     }
 
     sendFCMNotificationToCustomer(users.device_token, driverData)
+
     .then(() => {
 
          console.log("Notification sent successfully")

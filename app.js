@@ -52,7 +52,7 @@ app.use(
 );
 app.use(cookieParser());
 app.use(cors())
-app.use("/v1/users",limiter, usersRouter);
+app.use("/v1/users", limiter,  usersRouter);
 app.use("/v1/book", bookRouter);
 app.use("/v1/driver", driverRouter);
 app.use("/v1/payment" , paymentRouter);
