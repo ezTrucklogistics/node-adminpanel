@@ -31,5 +31,4 @@ router.post('/create_contact', contact_validator, validation_result, authenticat
 router.put('/update_contact', update_contact_validator, validation_result, update_contact)
 
 
-
 module.exports = router;

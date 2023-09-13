@@ -9,7 +9,6 @@ const Address = require("../../models/contacts.model")
 const { validatePhoneNumber } = require("../../validation/user.validator")
 
 
-
 exports.signUp = async (req, res) => {
 
   try {
@@ -193,21 +192,18 @@ exports.update_customer = async (req, res) => {
     let reqBody = req.body;
     const existMobileNumber = await User.findOne({ _id: findUser })
 
-    if (data.user_type == 1)
-    return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.check_customer_or_driver', {}, req.headers.lang);
-
     if (existMobileNumber.mobile_number === reqBody.mobile_number) 
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_same_mobile_number', {}, req.headers.lang);
     
     if (!findUser)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'customer id not found', {}, req.headers.lang)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_id_not_found', {}, req.headers.lang)
 
     let user = await User.findOneAndUpdate({ _id: findUser }, reqBody, {
       new: true,
     });
 
     if (!user)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'customer data not found', {}, req.headers.lang)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_data_not_found', {}, req.headers.lang)
      user.updated_at = await dateFormat.set_current_timestamp();
 
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.customer_data_updated', user, req.headers.lang)
