@@ -69,7 +69,7 @@ exports.change_mobile_number = async (req, res) => {
 
     if (customer.mobile_number !== reqBody.mobile_number)
       await User.findOneAndUpdate({ _id: userId }, { $set: { mobile_number: reqBody.mobile_number } }, { new: true });
-    return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.update_mobile_number', {}, req.headers.lang);
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.update_mobile_number', {}, req.headers.lang);
 
   } catch (err) {
     console.log("Error(change_mobile_number)", err);
