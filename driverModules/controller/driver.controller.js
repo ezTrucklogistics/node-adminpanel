@@ -11,6 +11,7 @@ const review = require('../../models/review.model')
 
 
 
+
 exports.signup = async (req, res) => {
 
   try {
@@ -97,9 +98,8 @@ exports.login = async (req, res) => {
   try {
 
     let reqBody = req.body;
-    const { driver_mobile_number, token, device_type } = reqBody;
-
-    let driverdata = await driver.findOne({ driver_mobile_number });
+    const { token, device_type } = reqBody;
+    let driverdata = await driver.findOne({ driver_mobile_number : reqBody.driver_mobile_number });
 
     if (!driverdata)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
@@ -113,6 +113,7 @@ exports.login = async (req, res) => {
     let refreshToken = await driverdata.generateRefreshToken();
     driverdata.authTokens = newToken;
     let driverId = driverdata._id
+    console.log(driverId);
     await driver.findOneAndUpdate({ _id: driverId }, { $set: { driver_status: constants.DRIVER_STATUS.STATUS_1 } })
     driverdata.device_token = token;
     driverdata.device_type = device_type;
@@ -124,7 +125,7 @@ exports.login = async (req, res) => {
     driverdata.deleted_at = undefined;
     driverdata.status = undefined;
     driverdata.__v = undefined;
-    driverdata._id = undefined;
+
 
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DRIVER.driver_login', driverdata , req.headers.lang);
   } catch (err) {

@@ -9,6 +9,8 @@ const Address = require("../../models/contacts.model")
 const { validatePhoneNumber } = require("../../validation/user.validator")
 
 
+
+
 exports.signUp = async (req, res) => {
 
   try {
@@ -18,7 +20,8 @@ exports.signUp = async (req, res) => {
     if (checkMail == false)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'GENERAL.blackList_mail', {}, req.headers.lang);
 
-    const existMobile = await User.findOne({ mobile_number: reqBody.mobile_number });
+    const existMobile = await User.findOne({ mobile_number : reqBody.mobile_number });
+
     if (existMobile)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.check_mobile_number', {}, req.headers.lang);
 
@@ -113,8 +116,9 @@ exports.login = async (req, res) => {
 
   try {
 
-    const { mobile_number, token, device_type } = req.body;
-    let user = await User.findOne({ mobile_number });
+    const { token, device_type } = req.body;
+    let user = await User.findOne({ mobile_number: req.body.mobile_number });
+    console.log(user._id)
 
     if (!user)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang)
@@ -148,7 +152,7 @@ exports.login = async (req, res) => {
     users.refresh_tokens = undefined;
     users.deleted_at = undefined;
     users.__v = undefined;
-    users._id = undefined;
+
 
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.login_success', users, req.headers.lang)
   } catch (err) {

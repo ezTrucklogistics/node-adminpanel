@@ -327,11 +327,13 @@ exports.booking_confirm = async (req, res) => {
     bookings.driver = driverId;
     await bookings.save();
     
+    console.log(bookings)
     const users = await User.findOne({ _id: bookings.User });
     if (!users)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang);
   
-    const drivers = await driver.findOne({ _id: bookings.driver })
+    const drivers = await driver.findOne({ _id: bookings.driver });
+    console.log(drivers)
 
     if (!drivers)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
