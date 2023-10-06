@@ -1,4 +1,3 @@
-
 const  constants = require('../config/constants');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
@@ -80,6 +79,10 @@ const bookingSchema = new Schema({
     deleted_at: {
         type: String,
         default: null,
+    },
+    total_discount: {
+        type: Number,
+        default: 0, 
     },
 });
 

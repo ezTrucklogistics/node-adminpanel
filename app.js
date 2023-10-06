@@ -15,7 +15,7 @@ const paymentRouter = require("./driverModules/routes/payment")
 const rateLimit = require('express-rate-limit');
 const walletRouter = require('./driverModules/routes/wallet');
 const adminRouter = require('./admin/routes/index')
-const adminRouters = require('./admin/routes/admin');
+const adminRouters = require('./Admin/routes/admin');
 const indexRouter = require('./v1/routes/index')
 
 

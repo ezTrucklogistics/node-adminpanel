@@ -88,7 +88,27 @@ module.exports = {
     'WALLET':{
         get_wallet : 'successfully get earning money',
 
-    }
+    },
+    'ADMIN': {
+        admin_created: 'Admin created successfully.',
+        admin_updated: 'Admin updated successfully.',
+        admin_deleted: 'Admin deleted successfully.',
+        invalid_role: 'Invalid role specified.',
+        username_taken: 'Username is already taken. Please choose a different username.',
+        email_taken: 'Email is already in use. Please use a different email address.',
+        admin_not_found: 'Admin not found.',
+        admin_already_exists: 'Admin with the same username or email already exists.',
+        password_reset_success: 'Admin password reset successfully.',
+        password_reset_fail: 'Failed to reset admin password.',
+        invalid_credentials: 'Invalid admin credentials. Please check your username and password.',
+        role_updated: 'Admin role updated successfully.',
+        role_update_fail: 'Failed to update admin role.',
+        admin_activated: 'Admin account activated successfully.',
+        admin_deactivated: 'Admin account deactivated successfully.',
+        admin_activation_fail: 'Failed to activate admin account.',
+        admin_deactivation_fail: 'Failed to deactivate admin account.',
+      },
+      
 
 
 }
