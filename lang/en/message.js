@@ -24,13 +24,17 @@ module.exports = {
         unauthenticated_failed : 'Authentication failed',
         add_contact : 'successfully created contact',
         update_contact : 'successfully updated contact',
+        get_contact:'successfully get customer contact',
         customer_id_not_found : 'customer id not found',
         valid_mobile_number : 'Invalid phone number',
         update_mobile_number : 'successfully updated customer mobile number',
         admin_signup:'admin signup successfully',
         admin_login:'admin login successfully',
         admin_logout:'admin logout successfully',
-        get_all_customers:'successfully get all the customers'
+        get_all_customers:'successfully get all the customers',
+        created_excel_file:'successfully created an excel file',
+        userData_csv_file:'successfully created an csv file',
+        userData_pdf_file:'successfully created an pdf file'
     },
     
     'GENERAL': {

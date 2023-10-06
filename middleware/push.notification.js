@@ -1,17 +1,17 @@
-const FCM = require("fcm-node");
-const { SERVICE_KEY } = require("../keys/development.keys");
-const fcm = new FCM(SERVICE_KEY);
-const driver = require("../models/driver.model"); // Replace with the correct path to your Driver model
+const admin = require('firebase-admin');
+const { serviceAccount } = require('../keys/development.keys');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+const retry = require('retry')
+const driver = require("../models/driver.model");
 const User = require("../models/user.model");
 const cron = require('node-cron');
 
 
 
-
-
-// Function to send FCM notifications to multiple recipients
 async function sendFCMNotificationsToRecipients(tokens, notificationDetails) {
-
+  
   const message = {
     notification: {
       title: notificationDetails.title,
@@ -22,24 +22,27 @@ async function sendFCMNotificationsToRecipients(tokens, notificationDetails) {
     },
   };
 
-  const promises = tokens.map((token) => {
-    return new Promise((resolve, reject) => {
-      message.to = token;
+  const operation = retry.operation({ retries: 3 , minTimeout: 5000 }); // Configure retry options
 
-      fcm.send(message, function (err, response) {
-        if (err) {
-          console.error(`Error sending notification to token ${token}: ${err}`);
-          reject(err); // Reject the promise if there's an error
+  return new Promise((resolve, reject) => {
+    operation.attempt(async (currentAttempt) => {
+      try {
+        const response = await admin.messaging().sendAll(tokens.map((token) => ({ ...message, token })));
+        console.log('Notifications sent successfully:', response);
+        resolve(response);
+      } catch (error) {
+        console.error(`Error sending notifications (Attempt ${currentAttempt}):`, error);
+        if (operation.retry(error)) {
+          console.log('Retrying...');
         } else {
-          console.log(`Notification sent to token ${token}.`);
-          resolve(response); // Resolve the promise if successful
+          reject(error);
         }
-      });
+      }
     });
   });
-
-  return Promise.all(promises);
 }
+
+
 
 // Define the schedule for sending notifications every day 10:00 AM 
 const scheduledJob = cron.schedule('0 10 * * *', async () => {

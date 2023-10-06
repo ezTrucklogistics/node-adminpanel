@@ -1,4 +1,4 @@
-const { body,param, query  } = require("express-validator");
+const { body, param, query} = require("express-validator");
 
 
 
@@ -45,6 +45,19 @@ exports.contact_validator = [
     .withMessage('pinCode should be string')
     .trim(),
 ];
+
+exports.get_contacts_validator = [
+
+  param('contactId')
+  .not()
+  .isEmpty()
+  .withMessage('contactId is required')
+  .isString()
+  .withMessage('contactId should be string')
+  .isMongoId()
+  .withMessage('Enter a valid contactId')
+  .trim(),
+]
 
 exports.update_contact_validator = [
 
