@@ -6,6 +6,7 @@ const {
   booking_cancel_by_driver,
   Booking_otp_verify,
   create_Booking,
+  create_Booking_offline,
   List_of_Booking_by_customers,
   List_of_Booking_by_drivers,
 } = require("../controllers/booking.controller");
@@ -19,7 +20,9 @@ const {
   List_of_Booking_by_customers_validator,
   booking_confirm_validator
 } = require("../../validation/booking.validation");
-
+const{
+  adminAuthenticate
+}=require("../../middleware/admin.middleware")
 
 
 router.post(
@@ -29,6 +32,15 @@ router.post(
   authenticate,
   create_Booking
 );
+
+router.post(
+  "/create_offline_booking",
+  booking_validator,
+  booking_validation_result,
+  create_Booking_offline
+  
+);
+
 router.put(
   "/booking_cancel_by_customer",
   authenticate,
