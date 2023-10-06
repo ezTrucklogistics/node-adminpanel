@@ -135,20 +135,32 @@ exports.login = async (req, res) => {
 }
 
 
-exports.update_current_location = async () => {
+exports.update_current_location = async (req , res) => {
 
   try {
 
-    const { driverId, driver_lat, driver_long } = req.body;
-    let update_location = await driver.findOneAndUpdate({ driverId }, { driver_lat, driver_long });
-    if (!update_location)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_current_location_not_found', {}, req.headers.lang);
+    const { driver_lat, driver_long, status , device_token} = req.body;
 
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DRIVER.driver_current_location_update', {}, req.headers.lang);
+    const drivers = await driver.find({ device_token : {  $ne: null } , status: "ACTIVE"});
+
+    if (!drivers || drivers.length === 0) {
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.not_found', {}, req.headers.lang);
+    }
+
+    // Update locations and activity status for each driver individually
+    for (const driver of drivers) {
+      driver.driver_lat = driver_lat;
+      driver.driver_long = driver_long;
+      driver.status = status;
+      driver.lastUpdated = new Date();
+      await driver.save();
+    }
+
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'DRIVER.driver_current_location_update', {} , req.headers.lang);
 
   } catch (err) {
 
-    console.log("Error (driver_current_location_update)", err);
+    console.log("Error(driver_current_location_update)", err);
     return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
   }
 }
@@ -266,7 +278,7 @@ exports.get_reviews = async (req , res) => {
 
     const driverId = req.params.driverId;
     // Retrieve driver information including their reviews
-    const drivers = await driver.findById(driverId).populate('reviews');
+    const drivers = await driver.findById(driverId).populate('reviews' , 'rating comment');
     if (!drivers)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
      

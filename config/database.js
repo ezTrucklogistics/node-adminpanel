@@ -6,14 +6,14 @@ const {MONGODB_URI} = require('../keys/keys')
 
 console.log('MONGODB_URI.........',MONGODB_URI)
 
-mongoose.connect(MONGODB_URI, {useNewUrlParser: true, useCreateIndex: true, useFindAndModify: false, useUnifiedTopology: true});
+mongoose.connect(MONGODB_URI, {useNewUrlParser: true,useCreateIndex: true, useFindAndModify: false, useUnifiedTopology: true});
 
 mongoose.connection.on('connected', function(){
     console.log('Database Connection Established.');
 });
 
 mongoose.connection.on('error', function(err){
-    console.log('Mongodb connection failed. '+ err);
+    console.log('Mongodb connection failed. '+err);
     mongoose.disconnect();
 });
 

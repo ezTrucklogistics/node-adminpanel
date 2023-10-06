@@ -13,7 +13,10 @@ const bookRouter = require("./v1/routes/booking");
 const driverRouter = require("./driverModules/routes/driver");
 const paymentRouter = require("./driverModules/routes/payment")
 const rateLimit = require('express-rate-limit');
-const walletRouter = require('./driverModules/routes/wallet')
+const walletRouter = require('./driverModules/routes/wallet');
+const adminRouter = require('./admin/routes/index')
+const adminRouters = require('./admin/routes/admin');
+const indexRouter = require('./v1/routes/index')
 
 
 const app = express();
@@ -50,8 +53,13 @@ app.use(
     extended: false,
   })
 );
+
 app.use(cookieParser());
 app.use(cors())
+
+app.use('/', adminRouter);
+app.use('/v1/', indexRouter);
+app.use('/admin', adminRouters);
 app.use("/v1/users", limiter,  usersRouter);
 app.use("/v1/book", bookRouter);
 app.use("/v1/driver", driverRouter);

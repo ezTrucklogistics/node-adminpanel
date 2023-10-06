@@ -27,7 +27,7 @@ const userSchema = new Schema({
     },
     user_type: {
         type: Number, 
-        default:2 //1-driver 2-customer
+        default:constants.USER_TYPE.CUSTOMER //1-ADMIN 2-customer
     },
     status: {
         type: String,
@@ -36,10 +36,6 @@ const userSchema = new Schema({
     termConditions:{
        type:Boolean,
        default:false
-    },
-    accountActivitions:{
-        type:Boolean,
-        default:false
     },
     device_token: {
         type: String,
@@ -56,10 +52,6 @@ const userSchema = new Schema({
     authTokens: {
         type: String,
         default:null
-    },
-    verifyToken:{
-        type:Boolean,
-        default:false
     },
     created_at: {
         type: String,

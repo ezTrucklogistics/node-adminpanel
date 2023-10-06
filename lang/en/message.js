@@ -26,7 +26,11 @@ module.exports = {
         update_contact : 'successfully updated contact',
         customer_id_not_found : 'customer id not found',
         valid_mobile_number : 'Invalid phone number',
-        update_mobile_number : 'successfully updated customer mobile number'
+        update_mobile_number : 'successfully updated customer mobile number',
+        admin_signup:'admin signup successfully',
+        admin_login:'admin login successfully',
+        admin_logout:'admin logout successfully',
+        get_all_customers:'successfully get all the customers'
     },
     
     'GENERAL': {
@@ -71,16 +75,14 @@ module.exports = {
         check_driver_and_customer : 'your are not driver',
         mobile_number_check :'mobile number already exist',
         driver_current_location_update :'driver current location updated sucessfully',
-        driver_current_location_not_found : 'driver current location updated sucessfully',
+        not_found : 'No drivers found with the specified device token',
         driver_same_mobile_number:'driver mobile number is same you can not updated',
         add_review:'review submitted successfully',
         get_review : 'sucessfully get reviews'
     },
 
     'WALLET':{
-
-        wallet_created : 'sucessfully create wallet',
-        get_wallet : 'successfully seached driver wallet',
+        get_wallet : 'successfully get earning money',
 
     }
 
