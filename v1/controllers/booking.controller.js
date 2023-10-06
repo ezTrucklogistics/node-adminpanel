@@ -7,8 +7,8 @@ const {
 const dateFormat = require("../../helper/dateformat.helper");
 const constants = require("../../config/constants");
 const booking = require("../../models/booking.model");
-const { calculateTotalPrice , totalEarningbyDriver } = require("../../middleware/earning.system");
-const { sendFCMNotificationToCustomer, sendNotificationsToAllDrivers , findDriversWithinRadius} = require('../../middleware/check_available_drivers')
+const { calculateTotalPrice, totalEarningbyDriver } = require("../../middleware/earning.system");
+const { sendFCMNotificationToCustomer, sendNotificationsToAllDrivers, findDriversWithinRadius } = require('../../middleware/check_available_drivers')
 const driver = require("../../models/driver.model");
 const User = require("../../models/user.model");
 const PDFDocument = require('pdfkit');
@@ -68,11 +68,11 @@ exports.create_Booking = async (req, res) => {
     }
 
     let customerLocation = {
-       latitude:bookings.pickup_location_lat,
-       longitude:bookings.pickup_location_long
+      latitude: bookings.pickup_location_lat,
+      longitude: bookings.pickup_location_long
     }
 
-    sendNotificationsToAllDrivers(customerLocation , bookingData)
+    sendNotificationsToAllDrivers(customerLocation, bookingData)
 
     bookings.deleted_at = undefined;
     bookings.driverId = undefined;
@@ -172,7 +172,7 @@ exports.List_of_Booking_by_customers = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit));
 
-    if (!customers)
+    if (!customers || customers.length == 0)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang);
 
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.get_booking_by_customer', customers, req.headers.lang);
@@ -216,9 +216,9 @@ exports.List_of_Booking_by_drivers = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit));
 
-    if (!drivers)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
-
+      if (!drivers || drivers.length === 0) {
+        return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.not_found', {} , req.headers.lang);
+      }
 
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.get_booking_by_driver', drivers, req.headers.lang);
 
@@ -312,7 +312,6 @@ exports.booking_cancel_by_driver = async (req, res) => {
 };
 
 
-
 exports.booking_confirm = async (req, res) => {
 
   try {
@@ -326,22 +325,22 @@ exports.booking_confirm = async (req, res) => {
 
     bookings.driver = driverId;
     await bookings.save();
-    
+
     console.log(bookings)
     const users = await User.findOne({ _id: bookings.User });
     if (!users)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_not_found', {}, req.headers.lang);
-  
+
     const drivers = await driver.findOne({ _id: bookings.driver });
     console.log(drivers)
 
     if (!drivers)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'DRIVER.driver_not_found', {}, req.headers.lang);
-    
-      let driverEarn = totalEarningbyDriver(parseInt(bookings.trip_cost));
-      drivers.earning.push(driverEarn);
-      await drivers.save();
-  
+
+    let driverEarn = totalEarningbyDriver(parseInt(bookings.trip_cost));
+    drivers.earning.push(driverEarn);
+    await drivers.save();
+
     let driverData = {
       driver_name: drivers.driver_name,
       mobile_number: drivers.driver_mobile_number,
@@ -350,15 +349,15 @@ exports.booking_confirm = async (req, res) => {
 
     sendFCMNotificationToCustomer(users.device_token, driverData)
 
-    .then(() => {
+      .then(() => {
 
-         console.log("Notification sent successfully")
+        console.log("Notification sent successfully")
 
-    }).catch((err) => {
+      }).catch((err) => {
 
-        console.log("ERROR in send this notification" , err.message)
-    });
-    
+        console.log("ERROR in send this notification", err.message)
+      });
+
     bookings.deleted_at = undefined;
     bookings.driver = undefined;
     bookings.pickup_location_lat = undefined;
@@ -376,21 +375,19 @@ exports.booking_confirm = async (req, res) => {
 };
 
 
-
 exports.Booking_completed = async (req, res) => {
 
   try {
 
     const { bookingId } = req.params;
-
     let bookings = await booking.findOneAndUpdate({ _id: bookingId }, { $set: { booking_status: constants.BOOKING_STATUS.STATUS_COMPLETED } });
     if (!bookings)
       return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'BOOKING.booking_data_not_found', {}, req.headers.lang);
-    const customers = await User.findOne({_id: bookings.User})
+    const customers = await User.findOne({ _id: bookings.User })
     const doc = new PDFDocument();
     const stream = fs.createWriteStream('Invoice.pdf');
     doc.pipe(stream);
-    doc.fontSize(16);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+    doc.fontSize(16);
     doc
       .text('Trip Details', { align: 'center' })
       .text(`customer name : ${customers.customer_name}`)
@@ -399,13 +396,13 @@ exports.Booking_completed = async (req, res) => {
       .text(`Name of the Vehical: ${bookings.truck_type}`)
       .text(`Trip Cost: ${bookings.trip_cost}`)
       .text(`distance : ${bookings.distance}`)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.ride_completed', {}, req.headers.lang);                             
-        
-  } catch (err) {                    
-    console.log("Error(booking_completed)", err);                                
+
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'BOOKING.ride_completed', {}, req.headers.lang);
+
+  } catch (err) {
+    console.log("Error(booking_completed)", err);
     return sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
-  }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+  }
 }
 
 

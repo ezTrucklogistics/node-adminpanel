@@ -92,14 +92,6 @@ exports.logout = async (req, res) => {
 
      UserData.authTokens = null;
      UserData.refresh_tokens = null;
-
-    await User.findByIdAndUpdate(
-      userId,
-      {
-        $set: { accountActivitions: false },
-      },
-      { new: true }
-    );
     await UserData.save();
     return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.logout_success', {}, req.headers.lang)
 
@@ -135,14 +127,6 @@ exports.login = async (req, res) => {
     let newToken = await user.generateAuthToken();
     let refreshToken = await user.generateRefreshToken();
 
-    await User.findByIdAndUpdate(
-      user._id,
-      {
-        $set: { accountActivitions: true },
-      },
-      { new: true }
-    );
-
     user.authTokens = newToken;
     user.refresh_tokens = refreshToken;
     user.device_token = token;
@@ -161,30 +145,22 @@ exports.login = async (req, res) => {
   }
 };
 
-
-
-exports.get_customer = async (req, res) => {
+exports.get_all_customer = async (req, res) => {
 
   try {
 
-    const findUser = req.user._id;
-    const data = await User.findOne({ _id: findUser });
+    let user = await User.find({});
 
-    if (!findUser)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'customer id not found', {}, req.headers.lang)
-    if (data.user_type == 1)
-      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.check_customer_or_driver', {}, req.headers.lang);
-
-    data.authTokens = undefined;
-    data.refresh_tokens = undefined;
-    data.device_type = undefined;
-    data.device_token = undefined;
-    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.customer_data_updated', data, req.headers.lang)
+    if (!user)
+      return sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'CUSTOMER.customer_data_not_found', {}, req.headers.lang)
+  
+    return sendResponse(res, constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.customer_data_updated', user, req.headers.lang)
   } catch (err) {
-    console.log("Error(get_customer)", err);
+    console.log("Error(update_customer_detalis)", err);
     sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
   }
 };
+
 
 
                                                   

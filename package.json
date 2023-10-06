@@ -32,6 +32,7 @@
     "firebase-admin": "^9.12.0",
     "fs": "^0.0.1-security",
     "fs-extra": "^9.0.1",
+    "geolib": "^3.3.4",
     "google-distance-matrix": "^1.1.1",
     "google-play-billing-validator": "^2.1.1",
     "http-errors": "~1.6.3",

@@ -6,30 +6,36 @@ const { JWT_SECRET } = require('../keys/keys');
 const driver = require("../models/driver.model")
 
 
+
 //authenticate user
 let authenticate = async (req, res, next) => {
 
     try {
-        
-        if (!req.header('Authorization')) return res.status(constants.WEB_STATUS_CODE.UNAUTHORIZED).send({status:constants.STATUS_CODE.FAIL , message:lang.GENERAL.unauthorized_user})
+
+        if (!req.header('Authorization')) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'GENERAL.unauthorized_user', {}, req.headers.lang);
 
         const token = req.header('Authorization').replace('Bearer ', '');
-        if (!token) return res.status(constants.WEB_STATUS_CODE.BAD_REQUEST).send({status:constants.STATUS_CODE.FAIL , message:lang.GENERAL.invalid_token})
+        if (!token) sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'GENERAL.not_token', {}, req.headers.lang)
 
         const decoded = await jwt.verify(token, JWT_SECRET);
-        const user = await User.findOne({ _id: decoded._id })
-        if (!user) return res.status(constants.WEB_STATUS_CODE.UNAUTHORIZED).send({status:constants.STATUS_CODE.FAIL , message:lang.GENERAL.unauthorized_user})
-    
+        const user = await User.findOne({ _id: decoded._id, 'tokens': token , user_type: 2 }).lean();
+
+        if (!user) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'GENERAL.unauthorized_user', {}, req.headers.lang)
+        if (user.status == 0) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'USER.inactive_account', {}, req.headers.lang);
+        if (user.status == 2) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'USER.deactive_account', {}, req.headers.lang);
+        if (user.deleted_at != null) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'USER.delete_account', {}, req.headers.lang);
+      
         req.token = token;
         req.user = user;
 
         next();
-
     } catch (err) {
         console.log(err)
-        return res.status(constants.WEB_STATUS_CODE.SERVER_ERROR).send({status:constants.STATUS_CODE.FAIL , message:lang.GENERAL.general_error_content})
+        sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
     }
 }
+
+
 
 
 //authenticate user
