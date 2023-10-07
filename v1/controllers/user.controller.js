@@ -303,6 +303,7 @@ exports.update_contact = async (req, res) => {
 };
 
 
+//excel
 exports.userData_excel = async (req , res) => {
 
   try {
@@ -379,7 +380,7 @@ exports.userData_excel = async (req , res) => {
     
 }
 
-
+//csv
 exports.userData_csv = async (req , res) => {
 
   try {
@@ -425,8 +426,18 @@ exports.userData_csv = async (req , res) => {
 
     const csvContent = fs.readFileSync(csvFilePath, 'utf8');
     const lines = csvContent.split('\n');
-    // Add row height to the first data row (index 1) and column width to each column (index 0)
-    lines[1] = `${lines[1]},\n,100,100,100,100,100,100`; // Example: Set row height to 100 and column width to 100 for each column
+
+
+  for (let i = 1; i < lines.length; i++) {
+   
+      if (i === 1) {
+        lines[i] += ',\n,100,100,100,100,100,100'; 
+      } else {
+       
+        lines[i] = lines[i].replace(/Customer Name/g, '=Center("Customer Name")');
+      }
+    }
+  
     const updatedCsvContent = lines.join('\n');
     fs.writeFileSync(csvFilePath, updatedCsvContent);
    
