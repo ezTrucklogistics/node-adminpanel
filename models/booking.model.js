@@ -2,9 +2,6 @@ const  constants = require('../config/constants');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-
-
-
 //Define Booing schema
 const bookingSchema = new Schema({
     
@@ -45,6 +42,11 @@ const bookingSchema = new Schema({
         ref:'driver',
         default:null
     },
+    driver_share: {
+        type: Number,
+        default: 0
+    },
+
     truck_type: {
         type: String,
         lowercase:true,
