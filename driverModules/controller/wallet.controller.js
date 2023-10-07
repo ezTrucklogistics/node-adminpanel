@@ -3,6 +3,8 @@ const { sendResponse } = require("../../services/common.service");;
 const driver = require("../../models/driver.model");
 const cron = require('node-cron');
 
+
+
 function calculateMoneySum(moneyArray) {
   // Implement your sum calculation logic here
   return moneyArray.reduce((total, amount) => total + amount, 0);

@@ -4,6 +4,7 @@ const User = require('../models/user.model');
 const constants = require('../config/constants')
 const { JWT_SECRET } = require('../keys/keys');
 const driver = require("../models/driver.model")
+const {sendResponse} = require('../services/common.service')
 
 
 
@@ -15,10 +16,13 @@ let authenticate = async (req, res, next) => {
         if (!req.header('Authorization')) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'GENERAL.unauthorized_user', {}, req.headers.lang);
 
         const token = req.header('Authorization').replace('Bearer ', '');
+        console.log(token)
         if (!token) sendResponse(res, constants.WEB_STATUS_CODE.BAD_REQUEST, constants.STATUS_CODE.FAIL, 'GENERAL.not_token', {}, req.headers.lang)
 
         const decoded = await jwt.verify(token, JWT_SECRET);
-        const user = await User.findOne({ _id: decoded._id, 'tokens': token , user_type: 2 }).lean();
+        
+        const user = await User.findOne({ _id: decoded._id}).lean();
+        console.log(user)
 
         if (!user) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'GENERAL.unauthorized_user', {}, req.headers.lang)
         if (user.status == 0) return sendResponse(res, constants.WEB_STATUS_CODE.UNAUTHORIZED, constants.STATUS_CODE.UNAUTHENTICATED, 'USER.inactive_account', {}, req.headers.lang);

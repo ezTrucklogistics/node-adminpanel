@@ -63,32 +63,6 @@ function totalEarningbyDriver(totalPrice) {
 }
 
 
-// async function createUser(mobileNumber) {
-
-//   const session = await mongoose.startSession();
-//   session.startTransaction();
-
-//   try {
-
-//     const user = new User({ mobileNumber });
-//    await user.save({ session });
-
-//     // Other related operations
-//     await session.commitTransaction();
-//     session.endSession();
-//     console.log(user)
-//     return user;
-
-//   } catch (error) {
-//     await session.abortTransaction();
-//     session.endSession();
-//     throw error;
-//   }
-// }
-
-
-
-
 
 
 module.exports = {calculateTotalPrice , totalEarningbyDriver }; 

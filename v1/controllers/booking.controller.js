@@ -25,6 +25,7 @@ exports.create_Booking = async (req, res) => {
   try {
     const reqBody = req.body;
     const user = req.user;
+    console.log(user);
     const pickup_location = await geocoder.geocode(reqBody.pickup_location);
 
     pickup_location.map((item) => {
