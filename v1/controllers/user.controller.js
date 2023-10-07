@@ -338,7 +338,7 @@ exports.userData_excel = async (req , res) => {
       alignment: {
         vertical: 'center',
         horizontal: 'center',
-        wrapText: true,
+        wrapText: true, // for styling
       },
     });
    

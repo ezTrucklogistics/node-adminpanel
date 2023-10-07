@@ -107,105 +107,69 @@ exports.create_Booking = async (req, res) => {
 };
 
 //BOOKIN OFLINE//
-exports.create_Booking_offline = async (req, res,) => {
-  try {
-    const reqBody = req.body;
-    const user = req.user;
+exports.createbooking_offline = async (req, res) => {
+    try {
+        const {
+            pickup_location,
+            drop_location,
+            trip_cost,
+            duration,
+            distance,
+            User,
+            driver,
+            truck_type,
+            booking_status
+        } = req.body;
+        const total_discount = 0.1 * trip_cost; 
 
-    if (!user.isAdmin) 
-     return sendResponse(
-      res,
-      constants.WEB_STATUS_CODE.CREATED,
-      constants.STATUS_CODE.SUCCESS,
-      "ADMIN.admin_not_found",
-      bookings,
-      req.headers.lang
-    );
-
-    const pickup_location = await geocoder.geocode(reqBody.pickup_location);
-
-    pickup_location.map((item) => {
-      reqBody.pickup_location_lat = item.latitude;
-      reqBody.pickup_location_long = item.longitude;
-    });
-
-    const drop_location = await geocoder.geocode(reqBody.drop_location);
-
-    drop_location.map((item) => {
-      reqBody.drop_location_lat = item.latitude;
-      reqBody.drop_location_long = item.longitude;
-    });
-
-    const { distance, duration } = await getDistanceAndTime(
-      reqBody.pickup_location,
-      reqBody.drop_location
-    );
-    reqBody.distance = distance;
-    reqBody.duration = duration;
-    const distanceNumber = parseFloat(distance);
-    reqBody.trip_cost = calculateTotalPrice(
-      distanceNumber.toFixed(2),
-      reqBody.truck_type
-    );
-
-    reqBody.User = user._id;
-    reqBody.customer_mobile_number = user.mobile_number;
-
-    // Remove OTP generation
-    // reqBody.OTP = generateOtp();
-
-    reqBody.created_at = await dateFormat.set_current_timestamp();
-    reqBody.updated_at = await dateFormat.set_current_timestamp();
-
-    // Create the booking
-    const bookings = await booking.create(reqBody);
-    const findUsers = await User.findOne({ _id: user._id });
-
-    let bookingData = {
-      pickupLocations_Lat: bookings.pickup_location_lat,
-      pickupLocation_Long: bookings.pickup_location_long,
-      dropupLocations_Lat: bookings.drop_location_lat,
-      dropupLocations_Long: bookings.drop_location_long,
-      name: findUsers.customer_name,
-      mobile_number: findUsers.mobile_number,
-      BookingId: bookings._id,
-    };
-
-    let customerLocation = {
-      latitude: bookings.pickup_location_lat,
-      longitude: bookings.pickup_location_long,
-    };
-
-    // Send notifications to drivers
-    sendNotificationsToAllDrivers(customerLocation, bookingData);
-
-    bookings.deleted_at = undefined;
-    bookings.driverId = undefined;
-    bookings.pickup_location_lat = undefined;
-    bookings.pickup_location_long = undefined;
-    bookings.drop_location_lat = undefined;
-    bookings.drop_location_long = undefined;
-    bookings.userId = undefined;
-
-    return sendResponse(
-      res,
-      constants.WEB_STATUS_CODE.CREATED,
-      constants.STATUS_CODE.SUCCESS,
-      "BOOKING.booking_created",
-      bookings,
-      req.headers.lang
-    );
-  } catch (err) {
-    console.log("Error(create_Booking)", err);
-    return sendResponse(
-      res,
-      constants.WEB_STATUS_CODE.SERVER_ERROR,
-      constants.STATUS_CODE.FAIL,
-      "GENERAL.general_error_content",
-      err.message,
-      req.headers.lang
-    );
-  }
+        const { driverShare, finalPrice } = calculateTotalPrice(Number(distance), truck_type);
+        const newBooking = new booking({
+            pickup_location,
+            drop_location,
+            trip_cost,
+            duration,
+            distance,
+            User,
+            driver,
+            truck_type,
+            booking_status,
+            total_discount,
+            driver_share: driverShare, 
+            final_Price : finalPrice 
+        });
+        await newBooking.save();
+        return sendResponse(
+            res,
+            constants.WEB_STATUS_CODE.CREATED,
+            constants.STATUS_CODE.SUCCESS,
+            "BOOKING.booking_created",
+            {
+                pickup_location,
+                drop_location,
+                trip_cost,
+                duration,
+                distance,
+                User,
+                driver,
+                truck_type,
+                booking_status,
+                total_discount,
+                driver_share: driverShare, 
+                final_price: finalPrice 
+            },
+            req.headers.lang
+        );
+    } catch (err) {
+        console.log("Error(createOrder)", err);
+        return sendResponse(
+            res,
+            constants.WEB_STATUS_CODE.SERVER_ERROR,
+            constants.STATUS_CODE.FAIL,
+            "GENERAL.general_error_content",
+            err.message,
+            req.headers.lang
+        );
+    }
 };
 //
 exports.Booking_otp_verify = async (req, res) => {
