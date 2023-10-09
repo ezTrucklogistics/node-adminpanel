@@ -11,6 +11,7 @@
     "adm-zip": "^0.5.1",
     "api": "^6.1.0",
     "archiver": "^5.1.0",
+    "async-retry": "^1.3.3",
     "aws-sdk": "^2.754.0",
     "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
@@ -60,7 +61,6 @@
     "pm2": "^5.3.0",
     "qrcode-terminal": "^0.12.0",
     "request": "^2.88.2",
-    "retry": "^0.13.1",
     "sendotp": "^1.2.9",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^4.1.4"

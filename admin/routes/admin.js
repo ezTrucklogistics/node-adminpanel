@@ -5,7 +5,7 @@ const {
   login,
   logout,
   signUp
-} = require('../controllers/admin.controller')
+} = require('../controller/admin.controller')
 
 
 router.post('/signup' , signUp)

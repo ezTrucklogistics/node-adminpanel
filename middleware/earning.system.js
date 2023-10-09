@@ -63,6 +63,11 @@ function totalEarningbyDriver(totalPrice) {
 }
 
 
+function companyShareAmount(totalPrice) {
+  const commissionAmount = (totalPrice * 22) / 100;
+  return commissionAmount;
+}
 
 
-module.exports = {calculateTotalPrice , totalEarningbyDriver }; 
+
+module.exports = {calculateTotalPrice , totalEarningbyDriver , companyShareAmount}; 

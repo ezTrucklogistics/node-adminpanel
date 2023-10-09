@@ -13,9 +13,8 @@ const bookRouter = require("./v1/routes/booking");
 const driverRouter = require("./driverModules/routes/driver");
 const paymentRouter = require("./driverModules/routes/payment")
 const rateLimit = require('express-rate-limit');
-const walletRouter = require('./driverModules/routes/wallet');
 const adminRouter = require('./admin/routes/index')
-const adminRouters = require('./Admin/routes/admin');
+const adminRouters = require('./admin/routes/admin');
 const indexRouter = require('./v1/routes/index')
 
 
@@ -64,7 +63,6 @@ app.use("/v1/users", limiter,  usersRouter);
 app.use("/v1/book", bookRouter);
 app.use("/v1/driver", driverRouter);
 app.use("/v1/payment" , paymentRouter);
-app.use('/wallet' , walletRouter)
 
 
 
