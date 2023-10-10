@@ -11,6 +11,8 @@ const excel = require('excel4node');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
+//const PdfPrinter = require('pdfmake');
+
 
 
 
@@ -381,8 +383,7 @@ exports.userData_excel = async (req , res) => {
 }
 
 //csv
-exports.userData_csv = async (req , res) => {
-
+exports.userData_csv = async (req, res) => {
   try {
     const data = await User.find(
       {},
@@ -395,9 +396,18 @@ exports.userData_csv = async (req , res) => {
         updated_at: 1,
       }
     );
-
-    // Define the CSV file path
     const csvFilePath = 'user_data.csv';
+
+   
+    const formattedData = data.map((user) => ({
+      customer_name: user.customer_name,
+      email: user.email,
+      mobile_number: user.mobile_number,
+      status: user.status,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+      row_height: 30, 
+    }));
 
     // Create a CSV writer
     const csvWriter = createCsvWriter({
@@ -412,50 +422,34 @@ exports.userData_csv = async (req , res) => {
       ],
     });
 
-    // Manually format the data and add height and width properties
-    const formattedData = data.map((user) => ({
-      customer_name: user.customer_name,
-      email: user.email,
-      mobile_number: user.mobile_number,
-      status: user.status,
-      created_at: user.created_at,
-      updated_at: user.updated_at,
-    }));
-
     await csvWriter.writeRecords(formattedData);
 
-    const csvContent = fs.readFileSync(csvFilePath, 'utf8');
-    const lines = csvContent.split('\n');
-
-
-  for (let i = 1; i < lines.length; i++) {
-   
-      if (i === 1) {
-        lines[i] += ',\n,100,100,100,100,100,100'; 
-      } else {
-       
-        lines[i] = lines[i].replace(/Customer Name/g, '=Center("Customer Name")');
-      }
-    }
-  
-    const updatedCsvContent = lines.join('\n');
-    fs.writeFileSync(csvFilePath, updatedCsvContent);
-   
-   return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.userData_csv_file', {} , req.headers.lang)
-      
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.CREATED,
+      constants.STATUS_CODE.SUCCESS,
+      'CUSTOMER.userData_csv_file',
+      {},
+      req.headers.lang
+    );
   } catch (err) {
-    console.log("Error(userData_csv)", err);
-    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+    console.log('Error(userData_csv)', err);
+    sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      'GENERAL.general_error_content',
+      err.message,
+      req.headers.lang
+    );
   }
-    
-}
+};
 
 
-exports.userData_pdf = async (req , res) => {
-
+//pdf
+exports.userData_pdf = async (req, res) => {
   try {
-
-     const data = await User.find(
+    const data = await User.find(
       {},
       {
         customer_name: 1,
@@ -463,61 +457,91 @@ exports.userData_pdf = async (req , res) => {
         mobile_number: 1,
         status: 1,
         created_at: 1,
-        updated_at: 1,
+        updated_at: 1, // Include the updated_at field if it exists in your data
       }
     );
 
-    // Create a PDF document
-    let doc = new PDFDocument();
-    let pdfFilePath = 'user_data.pdf';
+    const pdfFilePath = 'user_data.pdf';
 
-    // Pipe the PDF document to a writable stream (e.g., a file)
-    doc.pipe(fs.createWriteStream(pdfFilePath));
+    // Create a new PDF document
+    const pdfDoc = new PDFDocument();
+    const stream = fs.createWriteStream(pdfFilePath);
+    pdfDoc.pipe(stream);
 
-    // Set font size and text alignment
-    doc.fontSize(12).text('User Data', { align: 'center' });
+    // Set font size and color
+    pdfDoc.fontSize(12);
+    pdfDoc.fillColor('black');
 
-    // Define table headers
-    let headers = ['Customer Name', 'Email', 'Mobile Number', 'Status', 'Created At', 'Updated At'];
+    // Define table column positions and widths
+    const col1X = 50;
+    const col2X = 200;
+    const col3X = 350;
+    const col4X = 450;
+    const col5X = 550;
+    const col6X = 650; // Adjust the X position for "Updated At" column
 
-    // Calculate the position and size of each cell
-   let cellWidth = 100;
-   let cellHeight = 15;
-   let tableTop = doc.y + 20;
-   let tableLeft = doc.x;
-   let tableBottom = tableTop + cellHeight;
-   let tableRight = tableLeft + cellWidth;
-
-    // Add table headers
-    doc.font('Helvetica-Bold');
-    headers.forEach((header) => {
-      doc.rect(tableLeft, tableTop, cellWidth, cellHeight).fillAndStroke('lightgray', 'black');
-      doc.text(header, tableLeft, tableTop, { width: cellWidth, height: cellHeight, align: 'center', valign: 'center' });
-      tableLeft += cellWidth;
-      tableRight += cellWidth;
-    });
-    doc.moveDown();
+    // Define header row
+    pdfDoc.font('Helvetica-Bold').text('Customer Name', col1X, 40);
+    pdfDoc.text('Email', col2X, 40);
+    pdfDoc.text('Mobile Number', col3X, 40);
+    pdfDoc.text('Status', col4X, 40);
+    pdfDoc.text('Created At', col5X, 40);
+    pdfDoc.text('Updated At', col6X, 40); // Add "Updated At" column
 
     // Add data rows
-    doc.font('Helvetica');
+    let yPosition = 80; // Initial Y position for data rows
+
     data.forEach((user) => {
-      doc.text(user.customer_name, tableLeft, tableTop, { width: cellWidth, height: cellHeight, align: 'center', valign: 'center' });
-      doc.text(user.email, tableLeft, tableTop + cellHeight, { width: cellWidth, height: cellHeight, align: 'center', valign: 'center' });
-      doc.text(user.mobile_number, tableLeft, tableTop + 2 * cellHeight, { width: cellWidth, height: cellHeight, align: 'center', valign: 'center' });
-      doc.text(user.status, tableLeft, tableTop + 3 * cellHeight, { width: cellWidth, height: cellHeight, align: 'center', valign: 'center' });
-      doc.text(user.created_at, tableLeft, tableTop + 4 * cellHeight, { width: cellWidth, height: cellHeight, align: 'center', valign: 'center' });
-      doc.text(user.updated_at, tableLeft, tableTop + 5 * cellHeight, { width: cellWidth, height: cellHeight, align: 'center', valign: 'center' });
-      tableLeft += cellWidth;
-      tableRight += cellWidth;
+      pdfDoc.font('Helvetica').text(user.customer_name, col1X, yPosition);
+      pdfDoc.text(user.email, col2X, yPosition);
+      pdfDoc.text(user.mobile_number, col3X, yPosition);
+      pdfDoc.text(user.status, col4X, yPosition);
+      pdfDoc.text(user.created_at, col5X, yPosition);
+
+      if (user.updated_at) {
+        // Check if "updated_at" field exists in data
+        pdfDoc.text(user.updated_at, col6X, yPosition); // Add "Updated At" data
+      } else {
+        pdfDoc.text('', col6X, yPosition); // Add an empty cell if "updated_at" is not present
+      }
+
+      // Add borderlines to the table cell
+      pdfDoc
+        .moveTo(col1X, yPosition)
+        .lineTo(col2X, yPosition)
+        .lineTo(col3X, yPosition)
+        .lineTo(col4X, yPosition)
+        .lineTo(col5X, yPosition)
+        .lineTo(col6X, yPosition) // Add line for "Updated At" column
+        .stroke();
+
+      // Increase Y position for the next row
+      yPosition += 20; // Adjust as needed for row height
     });
 
     // Finalize the PDF
-    doc.end();
-   return sendResponse(res, constants.WEB_STATUS_CODE.CREATED, constants.STATUS_CODE.SUCCESS, 'CUSTOMER.userData_pdf_file', {} , req.headers.lang)
-      
+    pdfDoc.end();
+
+    // Send the PDF as an attachment
+    res.attachment(pdfFilePath);
+
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.CREATED,
+      constants.STATUS_CODE.SUCCESS,
+      'CUSTOMER.userData_pdf_file',
+      {},
+      req.headers.lang
+    );
   } catch (err) {
-    console.log("Error(userData_pdf)", err);
-    sendResponse(res, constants.WEB_STATUS_CODE.SERVER_ERROR, constants.STATUS_CODE.FAIL, 'GENERAL.general_error_content', err.message, req.headers.lang)
+    console.log('Error(userData_pdf)', err);
+    sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      'GENERAL.general_error_content',
+      err.message,
+      req.headers.lang
+    );
   }
-    
-}
+};

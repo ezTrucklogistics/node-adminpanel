@@ -20,7 +20,7 @@ const {
   get_contacts,
   userData_excel,
   userData_csv,
-  userData_pdf
+  userData_pdf 
 } = require("../controllers/user.controller");
 
 
@@ -38,7 +38,7 @@ router.get('/get_contacts/:contactId' , get_contacts_validator , validation_resu
 router.get('/get_all_customers' , get_all_customer)
 router.post('/create_excel_file' , userData_excel);
 router.post('/user_export_into_csv_file' , userData_csv)
-router.post('/user_export_into_pdf_file' , userData_pdf)
+router.post('/user_export_into_pdf_file' , userData_pdf )
 
 
 
