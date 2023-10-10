@@ -2,6 +2,8 @@ const  constants = require('../config/constants');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+
+
 //Define Booing schema
 const bookingSchema = new Schema({
     
@@ -46,7 +48,10 @@ const bookingSchema = new Schema({
         type: Number,
         default: 0
     },
-
+    company_share:{
+      type:Number,
+      default:0
+    },
     truck_type: {
         type: String,
         lowercase:true,
@@ -63,6 +68,14 @@ const bookingSchema = new Schema({
     booking_cancel_reason_for_driver:{
         type:String,
         default:""
+    },
+    total_company_share:{
+        type:Number,
+        default:0
+    },
+    total_earning_by_driver:{
+        type:Number,
+        default:0
     },
     payment_type:{
         type:String,

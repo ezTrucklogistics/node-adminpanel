@@ -10,21 +10,27 @@ const booking = require("../../models/booking.model");
 const {
   calculateTotalPrice,
   totalEarningbyDriver,
+  companyShareAmount
 } = require("../../middleware/earning.system");
 const {
   sendFCMNotificationToCustomer,
   sendNotificationsToAllDrivers,
-  findDriversWithinRadius,
 } = require("../../middleware/check_available_drivers");
 const driver = require("../../models/driver.model");
 const User = require("../../models/user.model");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 
+
+
+
+
+
 exports.create_Booking = async (req, res) => {
   try {
     const reqBody = req.body;
     const user = req.user;
+    console.log(user);
     const pickup_location = await geocoder.geocode(reqBody.pickup_location);
 
     pickup_location.map((item) => {
@@ -171,7 +177,9 @@ exports.createbooking_offline = async (req, res) => {
         );
     }
 };
-//
+
+
+
 exports.Booking_otp_verify = async (req, res) => {
   try {
     const { OTP } = req.body;
@@ -226,6 +234,7 @@ exports.Booking_otp_verify = async (req, res) => {
     );
   }
 };
+
 
 exports.List_of_Booking_by_customers = async (req, res) => {
   try {
@@ -498,7 +507,7 @@ exports.booking_confirm = async (req, res) => {
       { _id: bookingId },
       { $set: { booking_status: constants.BOOKING_STATUS.STATUS_CONFIRM } }
     );
-
+    console.log(bookings)
     if (!bookings)
       return sendResponse(
         res,
@@ -508,11 +517,8 @@ exports.booking_confirm = async (req, res) => {
         {},
         req.headers.lang
       );
+      bookings.driver = driverId;
 
-    bookings.driver = driverId;
-    await bookings.save();
-
-    console.log(bookings);
     const users = await User.findOne({ _id: bookings.User });
     if (!users)
       return sendResponse(
@@ -525,7 +531,6 @@ exports.booking_confirm = async (req, res) => {
       );
 
     const drivers = await driver.findOne({ _id: bookings.driver });
-    console.log(drivers);
 
     if (!drivers)
       return sendResponse(
@@ -537,9 +542,9 @@ exports.booking_confirm = async (req, res) => {
         req.headers.lang
       );
 
-    let driverEarn = totalEarningbyDriver(parseInt(bookings.trip_cost));
-    drivers.earning.push(driverEarn);
-    await drivers.save();
+    bookings.driver_share = totalEarningbyDriver(parseInt(bookings.trip_cost))
+    bookings.company_share = companyShareAmount(parseInt(bookings.trip_cost))
+    await bookings.save();
 
     let driverData = {
       driver_name: drivers.driver_name,
@@ -571,6 +576,7 @@ exports.booking_confirm = async (req, res) => {
       {},
       req.headers.lang
     );
+
   } catch (err) {
     console.log("Error(booking_confirm)", err);
     return sendResponse(
@@ -634,3 +640,153 @@ exports.Booking_completed = async (req, res) => {
     );
   }
 };
+
+
+exports.total_amount_by_company_share = async (req , res) => {
+
+  try {
+
+    const bookings = await booking.find({} , {company_share: 1});
+    console.log(bookings)
+
+    if(bookings.length == 0 && !bookings)
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.BAD_REQUEST,
+      constants.STATUS_CODE.FAIL,
+      "BOOKING.booking_data_not_found",
+      {},
+      req.headers.lang
+    );
+    
+
+    let sum = 0;
+    for (const company of bookings) {
+         sum += company.company_share;
+    }
+    
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.OK,
+      constants.STATUS_CODE.SUCCESS,
+      "BOOKING.company_share",
+      sum,
+      req.headers.lang
+    );
+
+
+  } catch (err) {
+    console.log("Error(total_amount_by_company_share)", err);
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
+  }
+}
+
+exports.total_earning_by_driver = async (req , res) => {
+
+  try {
+
+    const { driverId } = req.params;
+    const bookings = await booking.find({driver: driverId})
+
+    if(bookings.length == 0 && !bookings)
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.BAD_REQUEST,
+      constants.STATUS_CODE.FAIL,
+      "BOOKING.booking_data_not_found",
+      {},
+      req.headers.lang
+    );
+    
+    let sum = 0;
+    for (const driverEarn of bookings) {
+         sum += driverEarn.driver_share;
+    }
+
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.OK,
+      constants.STATUS_CODE.SUCCESS,
+      "BOOKING.total_earning_by_driver",
+      sum,
+      req.headers.lang
+    );
+
+
+  } catch (err) {
+    console.log("Error(total_earning_by_driver)", err);
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
+  }
+}
+
+
+exports.search_all_the_earning_by_driver = async (req , res) => {
+
+  try {
+
+    const {  startDate, endDate , year, month, driverName, pageSize = 10, pageNumber = 1 } = req.query;
+  
+    const filter = {};
+
+    if (year) {
+      filter['created_at'] = { $gte: new Date(`${year}-01-01`), $lt: new Date(`${year + 1}-01-01`) };
+    }
+
+    if (startDate && endDate) {
+      filter['created_at'] = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    } else if (startDate) {
+      filter['created_at'] = { $gte: new Date(startDate) };
+    } else if (endDate) {
+      filter['created_at'] = { $lte: new Date(endDate) };
+    }
+
+
+    if (month) {
+      filter['created_at'] = {
+        ...filter['created_at'],
+        $gte: new Date(`${year}-${month}-01`),
+        $lt: new Date(`${year}-${parseInt(month) + 1}-01`),
+      }; 
+    }
+
+    if (driverName) {
+      filter['driver'] = { $in: driverName };
+    }
+   
+  
+    const skip = (pageNumber - 1) * pageSize;
+    const limit = parseInt(pageSize);
+
+    const driverEarnings = await booking.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .populate('driver', 'driver_name');
+
+      return sendResponse(res,constants.WEB_STATUS_CODE.OK, constants.STATUS_CODE.SUCCESS, "BOOKING.total_earning_by_driver", driverEarnings , req.headers.lang);
+   
+  } catch (err) {
+    console.log("Error(search_all_the_earning_by_driver)", err);
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
+  }
+}

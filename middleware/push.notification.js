@@ -3,15 +3,16 @@ const { serviceAccount } = require('../keys/development.keys');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
-const retry = require('retry')
+const retry = require('async-retry');
 const driver = require("../models/driver.model");
 const User = require("../models/user.model");
 const cron = require('node-cron');
 
 
 
+
+
 async function sendFCMNotificationsToRecipients(tokens, notificationDetails) {
-  
   const message = {
     notification: {
       title: notificationDetails.title,
@@ -22,24 +23,27 @@ async function sendFCMNotificationsToRecipients(tokens, notificationDetails) {
     },
   };
 
-  const operation = retry.operation({ retries: 3 , minTimeout: 5000 }); // Configure retry options
+  const retryOptions = {
+    retries: 3, 
+    minTimeout: 5000,
+  };
 
-  return new Promise((resolve, reject) => {
-    operation.attempt(async (currentAttempt) => {
-      try {
-        const response = await admin.messaging().sendAll(tokens.map((token) => ({ ...message, token })));
-        console.log('Notifications sent successfully:', response);
-        resolve(response);
-      } catch (error) {
-        console.error(`Error sending notifications (Attempt ${currentAttempt}):`, error);
-        if (operation.retry(error)) {
-          console.log('Retrying...');
-        } else {
-          reject(error);
-        }
-      }
-    });
-  });
+  try {
+    const response = await retry(async () => {
+      const individualMessages = tokens.map((token) => ({
+        ...message,
+        token,
+      }));
+      const sendResponse = await admin.messaging().sendAll(individualMessages);
+      console.log('Notifications sent successfully:', sendResponse);
+      return sendResponse;
+    }, retryOptions);
+
+    return response;
+  } catch (error) {
+    console.error('Error sending notifications:', error);
+    throw error;
+  }
 }
 
 

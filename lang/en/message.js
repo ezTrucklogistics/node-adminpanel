@@ -63,7 +63,10 @@ module.exports = {
         booking_data_not_found:'booking data not found',
         not_match_customerId : 'customer id not match',
         ride_completed : 'customer booking successfully completed',
-        otp_not_match : 'otp not matched'
+        otp_not_match : 'otp not matched',
+        company_share:'successfully get return all the company share amount',
+        total_earning_by_driver:'successfully get all the drivers earning money'
+
     },
 
     'DRIVER': {
