@@ -790,3 +790,130 @@ exports.search_all_the_earning_by_driver = async (req , res) => {
     );
   }
 }
+//====
+exports.earningsLast24HoursByDriver = async (req, res) => {
+  try {
+    const { driverId } = req.params;
+    const currentTime = new Date();
+    const twentyFourHoursAgo = new Date(currentTime - 24 * 60 * 60 * 1000);
+
+    // Find bookings within the last 24 hours for the specified driver
+    const bookings = await booking.find({
+      driver: driverId,
+      createdAt: {
+        $gte: twentyFourHoursAgo,
+        $lte: currentTime,
+      },
+    });
+
+    let totalEarnings = 0;
+    for (const booking of bookings) {
+      totalEarnings += booking.driver_share;
+    }
+
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.OK,
+      constants.STATUS_CODE.SUCCESS,
+      "DRIVER. Day_earning",
+      totalEarnings,
+      req.headers.lang
+    );
+  } catch (err) {
+    console.error("Error(earningsLast24HoursByDriver)", err);
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
+  }
+};
+
+
+//
+exports.earningsLastMonthByDriver = async (req, res) => {
+  try {
+    const { driverId } = req.params;
+    const currentTime = new Date();
+    const thirtyDaysAgo = new Date(currentTime - 30 * 24 * 60 * 60 * 1000); // 30 days ago
+
+    // Find bookings within the last month for the specified driver
+    const bookings = await booking.find({
+      driver: driverId,
+      createdAt: {
+        $gte: thirtyDaysAgo,
+        $lte: currentTime,
+      },
+    });
+
+    let totalEarnings = 0;
+    for (const booking of bookings) {
+      totalEarnings += booking.driver_share;
+    }
+
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.OK,
+      constants.STATUS_CODE.SUCCESS,
+      "DRIVER.Monthly_earning",
+      totalEarnings,
+      req.headers.lang
+    );
+  } catch (err) {
+    console.error("Error(earningsLastMonthByDriver)", err);
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
+  }
+};
+
+//year
+exports.earningsLastYearByDriver = async (req, res) => {
+  try {
+    const { driverId } = req.params;
+    const currentTime = new Date();
+    const oneYearAgo = new Date(currentTime - 365 * 24 * 60 * 60 * 1000); // 365 days ago
+
+    // Find bookings within the last year for the specified driver
+    const bookings = await booking.find({
+      driver: driverId,
+      createdAt: {
+        $gte: oneYearAgo,
+        $lte: currentTime,
+      },
+    });
+
+    let totalEarnings = 0;
+    for (const booking of bookings) {
+      totalEarnings += booking.driver_share;
+    }
+
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.OK,
+      constants.STATUS_CODE.SUCCESS,
+      "DRIVER.Yearly_earning",
+      totalEarnings,
+      req.headers.lang
+    );
+  } catch (err) {
+    console.error("Error(earningsLastYearByDriver)", err);
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      "GENERAL.general_error_content",
+      err.message,
+      req.headers.lang
+    );
+  }
+};
+

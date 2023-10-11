@@ -85,7 +85,10 @@ module.exports = {
         not_found : 'No drivers found with the specified device token',
         driver_same_mobile_number:'driver mobile number is same you can not updated',
         add_review:'review submitted successfully',
-        get_review : 'sucessfully get reviews'
+        get_review : 'sucessfully get reviews',
+        Day_earning:'sucessfully get the earning of 24hr',
+        Monthly_earning:'sucessfully get the earning of one month',
+        year_earning:'sucessfully get the earning ofyear'
     },
 
     'WALLET':{

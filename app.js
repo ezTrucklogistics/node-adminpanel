@@ -13,7 +13,7 @@ const bookRouter = require("./v1/routes/booking");
 const driverRouter = require("./driverModules/routes/driver");
 const paymentRouter = require("./driverModules/routes/payment")
 const rateLimit = require('express-rate-limit');
-const adminRouter = require('./admin/routes/index')
+const adminRouter = require('./admin/routes/admin')
 const adminRouters = require('./admin/routes/admin');
 const indexRouter = require('./v1/routes/index')
 

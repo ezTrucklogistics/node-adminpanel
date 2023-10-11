@@ -11,7 +11,10 @@ const {
   List_of_Booking_by_drivers,
   total_amount_by_company_share,
   total_earning_by_driver ,
-  search_all_the_earning_by_driver
+  search_all_the_earning_by_driver,
+  earningsLast24HoursByDriver,
+  earningsLastMonthByDriver ,
+  earningsLastYearByDriver 
 } = require("../controllers/booking.controller");
 
 var router = express.Router();
@@ -37,9 +40,11 @@ router.get('/List_booking_by_customer' , List_of_Booking_by_customers_validator,
 router.get('/List_booking_by_drivers' , List_of_Booking_by_drivers_validator, booking_validation_result, List_of_Booking_by_drivers)
 router.put('/booking_confirmed/:bookingId/:driverId' , booking_confirm_validator, booking_validation_result, booking_confirm)
 router.get('/total_company_share', total_amount_by_company_share);
-router.get('/total_earning_by_driver/:driverId' , total_earning_by_driver )
-router.get('/search_all_the_driver_earning_money' , search_all_the_earning_by_driver)
-
+router.get('/total_earning_by_driver/:driverId',total_earning_by_driver )
+router.get('/search_all_the_driver_earning_money',search_all_the_earning_by_driver)
+router.get('/day_earning',earningsLast24HoursByDriver)
+router.get('/month_earning',earningsLastMonthByDriver)
+router.get('/year_earning',earningsLastYearByDriver)
 
 
 module.exports = router;
