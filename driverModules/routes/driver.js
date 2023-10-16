@@ -1,5 +1,6 @@
 const express = require("express");
-const {signup,
+const {
+  signup,
   login,
   logout,
   update_driver_detalis,
@@ -7,24 +8,41 @@ const {signup,
   update_current_location,
   delete_driver,
   add_review,
-  get_reviews
+  get_reviews,
+  driverData_excel,
+  driverData_csv,
+  driverData_pdf
 } = require("../controller/driver.controller");
- const {login_validator , update_current_location_validator, validation_result } = require("../../validation/driver.validator")
+const {
+  login_validator,
+  update_current_location_validator,
+  validation_result,
+} = require("../../validation/driver.validator");
 var router = express.Router();
-const { driver_authenticate  } = require("../../middleware/authenticate");
-const {review_validator , get_review} = require('../../validation/review.validator')
-
-
-
+const { driver_authenticate } = require("../../middleware/authenticate");
+const {
+  review_validator,
+  get_review,
+} = require("../../validation/review.validator");
 
 router.post("/signup", signup);
-router.post("/login",login_validator, validation_result, login);
+router.post("/login", login_validator, validation_result, login);
 router.get("/logout", driver_authenticate, logout);
-router.put("/driver_status_actived", driver_authenticate , driver_account_actived );
-router.put("/update_driver_detalis" ,driver_authenticate, update_driver_detalis)
-router.put('/driver_current_location_update' ,  update_current_location)
-router.post('/add_review' ,review_validator , validation_result , add_review )
-router.get('/get_review/:driverId' , get_review , validation_result, get_reviews)
-
+router.put(
+  "/driver_status_actived",
+  driver_authenticate,
+  driver_account_actived
+);
+router.put(
+  "/update_driver_detalis",
+  driver_authenticate,
+  update_driver_detalis
+);
+router.put("/driver_current_location_update", update_current_location);
+router.post("/add_review", review_validator, validation_result, add_review);
+router.get("/get_review/:driverId", get_review, validation_result, get_reviews);
+router.post("/driver_excelsheet", driverData_excel);
+router.post("/driver_export_into_csv_file", driverData_csv);
+router.post("/driver_pdf",driverData_pdf );
 
 module.exports = router;

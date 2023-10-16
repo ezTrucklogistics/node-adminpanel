@@ -62,7 +62,7 @@ app.use('/admin', adminRouters);
 app.use("/v1/users", limiter,  usersRouter);
 app.use("/v1/book", bookRouter);
 app.use("/v1/driver", driverRouter);
-app.use("/v1/payment" , paymentRouter);
+app.use("/v1/paymet" , paymentRouter);
 
 
 

@@ -65,7 +65,10 @@ module.exports = {
         ride_completed : 'customer booking successfully completed',
         otp_not_match : 'otp not matched',
         company_share:'successfully get return all the company share amount',
-        total_earning_by_driver:'successfully get all the drivers earning money'
+        total_earning_by_driver:'successfully get all the drivers earning money',
+        driever_excel_sheet:'created successfully ',
+        failed_to_create_the_Excel_file:'Failed to create the Excel file.'
+
 
     },
 
@@ -88,7 +91,9 @@ module.exports = {
         get_review : 'sucessfully get reviews',
         Day_earning:'sucessfully get the earning of 24hr',
         Monthly_earning:'sucessfully get the earning of one month',
-        year_earning:'sucessfully get the earning ofyear'
+        year_earning:'sucessfully get the earning ofyear',
+        driever_excel_sheet:'created successfully ',
+        failed_to_create_the_Excel_file:'Failed to create the Excel file.'
     },
 
     'WALLET':{

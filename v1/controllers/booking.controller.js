@@ -18,13 +18,10 @@ const {
 } = require("../../middleware/check_available_drivers");
 const driver = require("../../models/driver.model");
 const User = require("../../models/user.model");
-const PDFDocument = require("pdfkit");
-const fs = require("fs");
-
-
-
-
-
+const excel = require('excel4node');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const PDFDocument = require('pdfkit');
+const fs=require('fs');
 
 exports.create_Booking = async (req, res) => {
   try {
@@ -917,3 +914,285 @@ exports.earningsLastYearByDriver = async (req, res) => {
   }
 };
 
+//excel
+exports.bookingData_excel = async (req, res) => {
+  try {
+    const data = await booking.find({}).populate('User driver').exec();
+
+    const wb = new excel.Workbook();
+    const ws = wb.addWorksheet('Booking Data');
+
+    const headerStyle = wb.createStyle({
+      font: {
+        bold: true,
+        color: 'white',
+      },
+      fill: {
+        type: 'pattern',
+        patternType: 'solid',
+        fgColor: 'blue',
+      },
+      alignment: {
+        vertical: 'center',
+        horizontal: 'center',
+        wrapText: true,
+      },
+    });
+
+    const cellStyle = wb.createStyle({
+      alignment: {
+        vertical: 'center',
+        horizontal: 'center',
+        wrapText: true,
+      },
+    });
+
+    // Define column widths
+    ws.column(1).setWidth(25);
+    ws.column(2).setWidth(25);
+    ws.column(3).setWidth(25);
+    ws.column(4).setWidth(25);
+    ws.column(5).setWidth(25);
+    ws.column(6).setWidth(25);
+    ws.column(7).setWidth(25);
+    ws.column(8).setWidth(25);
+    ws.column(9).setWidth(25);
+    ws.column(10).setWidth(25);
+    ws.column(11).setWidth(25);
+    ws.column(12).setWidth(25);
+    ws.column(13).setWidth(25);
+    ws.column(14).setWidth(25);
+    ws.column(15).setWidth(25);
+    ws.column(16).setWidth(25);
+    ws.column(17).setWidth(25);
+    ws.column(18).setWidth(25);
+
+    // Define header row
+    ws.cell(1, 1).string('Pickup Location').style(headerStyle);
+    ws.cell(1, 2).string('Drop Location').style(headerStyle);
+    ws.cell(1, 3).string('Trip Cost').style(headerStyle);
+    ws.cell(1, 4).string('Duration').style(headerStyle);
+    ws.cell(1, 5).string('Distance').style(headerStyle);
+    ws.cell(1, 6).string('Truck Type').style(headerStyle);
+    ws.cell(1, 7).string('Booking Status').style(headerStyle);
+    ws.cell(1, 8).string('Booking Cancel Reason (Customer)').style(headerStyle);
+    ws.cell(1, 9).string('Booking Cancel Reason (Driver)').style(headerStyle);
+    ws.cell(1, 10).string('Total Company Share').style(headerStyle);
+    ws.cell(1, 11).string('Total Earning by Driver').style(headerStyle);
+    ws.cell(1, 12).string('Payment Type').style(headerStyle);
+    ws.cell(1, 13).string('OTP').style(headerStyle);
+    ws.cell(1, 14).string('Created At').style(headerStyle);
+    ws.cell(1, 15).string('Updated At').style(headerStyle);
+    ws.cell(1, 16).string('Total Discount').style(headerStyle);
+    ws.cell(1, 17).string('User Name').style(headerStyle); // User name
+    ws.cell(1, 18).string('Driver Name').style(headerStyle); // Driver name
+
+    // Add data rows
+    data.forEach((booking, index) => {
+      const rowIndex = index + 2;
+      ws.cell(rowIndex, 1).string(booking.pickup_location || '').style(cellStyle);
+      ws.cell(rowIndex, 2).string(booking.drop_location || '').style(cellStyle);
+      ws.cell(rowIndex, 3).number(booking.trip_cost).style(cellStyle);
+      ws.cell(rowIndex, 4).string(booking.duration || '').style(cellStyle);
+      ws.cell(rowIndex, 5).string(booking.distance || '').style(cellStyle);
+      ws.cell(rowIndex, 6).string(booking.truck_type || '').style(cellStyle);
+      ws.cell(rowIndex, 7).string(booking.booking_status || '').style(cellStyle);
+      ws.cell(rowIndex, 8).string(booking.booking_cancel_reason_for_customer || '').style(cellStyle);
+      ws.cell(rowIndex, 9).string(booking.booking_cancel_reason_for_driver || '').style(cellStyle);
+      ws.cell(rowIndex, 10).number(booking.total_company_share).style(cellStyle);
+      ws.cell(rowIndex, 11).number(booking.total_earning_by_driver).style(cellStyle);
+      ws.cell(rowIndex, 12).string(booking.payment_type || '').style(cellStyle);
+      ws.cell(rowIndex, 13).string(booking.OTP || '').style(cellStyle);
+      ws.cell(rowIndex, 14).string(booking.created_at || '').style(cellStyle);
+      ws.cell(rowIndex, 15).string(booking.updated_at || '').style(cellStyle);
+      ws.cell(rowIndex, 16).number(booking.total_discount).style(cellStyle);
+
+      // Add user and driver names
+      ws.cell(rowIndex, 17).string((booking.User && booking.User.customer_name) || '').style(cellStyle);
+      ws.cell(rowIndex, 18).string((booking.driver && booking.driver.driver_name) || '').style(cellStyle);
+    });
+
+    const excelFilePath = 'booking_data.xlsx';
+    wb.write(excelFilePath);
+
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.CREATED,
+      constants.STATUS_CODE.SUCCESS,
+      'BOOKING.created_excel_file',
+      {},
+      req.headers.lang
+    );
+  } catch (err) {
+    console.log('Error(bookingData_excel)', err);
+    sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      'GENERAL.general_error_content',
+      err.message,
+      req.headers.lang
+    );
+  }
+};
+
+// csv
+exports.bookingData_csv = async (req, res) => {
+  try {
+    const data = await booking.find({}).populate('user driver').exec();
+    const csvFilePath = 'booking_data.csv';
+
+    const formattedData = data.map((booking) => ({
+      pickup_location: booking.pickup_location || '',
+      drop_location: booking.drop_location || '',
+      trip_cost: booking.trip_cost,
+      duration: booking.duration || '',
+      distance: booking.distance || '',
+      truck_type: booking.truck_type || '',
+      booking_status: booking.booking_status || '',
+      booking_cancel_reason_customer: booking.booking_cancel_reason_for_customer || '',
+      booking_cancel_reason_driver: booking.booking_cancel_reason_for_driver || '',
+      total_company_share: booking.total_company_share,
+      total_earning_by_driver: booking.total_earning_by_driver,
+      payment_type: booking.payment_type || '',
+      OTP: booking.OTP || '',
+      created_at: booking.created_at || '',
+      updated_at: booking.updated_at || '',
+      total_discount: booking.total_discount,
+      user_name: (booking.user && booking.user.customer_name) || '', 
+      driver_name: (booking.driver && booking.driver.driver_name) || '', 
+      
+    }));
+
+    // Create a CSV writer
+    const csvWriter = createCsvWriter({
+      path: csvFilePath,
+      header: [
+        { id: 'pickup_location', title: 'Pickup Location' },
+        { id: 'drop_location', title: 'Drop Location' },
+        { id: 'trip_cost', title: 'Trip Cost' },
+        { id: 'duration', title: 'Duration' },
+        { id: 'distance', title: 'Distance' },
+        { id: 'truck_type', title: 'Truck Type' },
+        { id: 'booking_status', title: 'Booking Status' },
+        { id: 'booking_cancel_reason_customer', title: 'Booking Cancel Reason (Customer)' },
+        { id: 'booking_cancel_reason_driver', title: 'Booking Cancel Reason (Driver)' },
+        { id: 'total_company_share', title: 'Total Company Share' },
+        { id: 'total_earning_by_driver', title: 'Total Earning by Driver' },
+        { id: 'payment_type', title: 'Payment Type' },
+        { id: 'OTP', title: 'OTP' },
+        { id: 'created_at', title: 'Created At' },
+        { id: 'updated_at', title: 'Updated At' },
+        { id: 'total_discount', title: 'Total Discount' },
+        { id: 'user_name', title: 'User Name' }, // User name
+        { id: 'driver_name', title: 'Driver Name' }, // Driver name
+      ],
+    });
+
+    await csvWriter.writeRecords(formattedData);
+
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.CREATED,
+      constants.STATUS_CODE.SUCCESS,
+      'BOOKING.created_csv_file',
+      {},
+      req.headers.lang
+    );
+  } catch (err) {
+    console.log('Error(bookingData_csv)', err);
+    sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      'GENERAL.general_error_content',
+      err.message,
+      req.headers.lang
+    );
+  }
+};
+
+//pdf
+exports.bookingData_pdf = async (req, res) => {
+  try {
+    const data = await booking.find({}).populate('user driver').exec();
+
+    const pdfFilePath = 'booking_data.pdf';
+
+    const pdfDoc = new PDFDocument();
+    const stream = fs.createWriteStream(pdfFilePath);
+    pdfDoc.pipe(stream);
+
+    pdfDoc.fontSize(12);
+    pdfDoc.fillColor('black');
+
+    data.forEach((booking) => {
+      pdfDoc.fillColor('black');
+      pdfDoc.font('Helvetica-Bold').text('Pickup Location: ').font('Helvetica').text(booking.pickup_location);
+      pdfDoc.font('Helvetica-Bold').text('Drop Location: ').font('Helvetica').text(booking.drop_location);
+      pdfDoc.font('Helvetica-Bold').text('Trip Cost: ').font('Helvetica').text(booking.trip_cost.toString());
+      pdfDoc.font('Helvetica-Bold').text('Duration: ').font('Helvetica').text(booking.duration);
+      pdfDoc.font('Helvetica-Bold').text('Distance: ').font('Helvetica').text(booking.distance);
+      pdfDoc.font('Helvetica-Bold').text('Truck Type: ').font('Helvetica').text(booking.truck_type);
+      pdfDoc.font('Helvetica-Bold').text('Booking Status: ').font('Helvetica').text(booking.booking_status);
+      pdfDoc.font('Helvetica-Bold').text('Booking Cancel Reason (Customer): ').font('Helvetica').text(booking.booking_cancel_reason_for_customer);
+      pdfDoc.font('Helvetica-Bold').text('Booking Cancel Reason (Driver): ').font('Helvetica').text(booking.booking_cancel_reason_for_driver);
+      pdfDoc.font('Helvetica-Bold').text('Total Company Share: ').font('Helvetica').text(booking.total_company_share.toString());
+      pdfDoc.font('Helvetica-Bold').text('Total Earning by Driver: ').font('Helvetica').text(booking.total_earning_by_driver.toString());
+      pdfDoc.font('Helvetica-Bold').text('Payment Type: ').font('Helvetica').text(booking.payment_type);
+      pdfDoc.font('Helvetica-Bold').text('OTP: ').font('Helvetica').text(booking.OTP);
+      pdfDoc.font('Helvetica-Bold').text('Created At: ').font('Helvetica').text(booking.created_at);
+
+      if (booking.updated_at) {
+        pdfDoc.font('Helvetica-Bold').text('Updated At: ').font('Helvetica').text(booking.updated_at);
+      } else {
+        pdfDoc.font('Helvetica-Bold').text('Updated At: N/A');
+      }
+
+      pdfDoc.font('Helvetica-Bold').text('Total Discount: ').font('Helvetica').text(booking.total_discount.toString());
+
+      if (booking.user) {
+        pdfDoc.font('Helvetica-Bold').text('User Name: ').font('Helvetica').text(booking.user.customer_name || 'N/A');
+      } else {
+        pdfDoc.font('Helvetica-Bold').text('User Name: N/A');
+      }
+
+      if (booking.driver) {
+        pdfDoc.font('Helvetica-Bold').text('Driver Name: ').font('Helvetica').text(booking.driver.driver_name || 'N/A');
+      } else {
+        pdfDoc.font('Helvetica-Bold').text('Driver Name: N/A');
+      }
+
+      pdfDoc.moveDown(0.7);
+      pdfDoc
+        .strokeColor('red')
+        .lineWidth(1)
+        .moveTo(50, pdfDoc.y)
+        .lineTo(550, pdfDoc.y)
+        .stroke();
+    });
+
+    pdfDoc.end();
+
+    res.attachment(pdfFilePath);
+
+    return sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.CREATED,
+      constants.STATUS_CODE.SUCCESS,
+      'BOOKING.booking_data_pdf_file',
+      {},
+      req.headers.lang
+    );
+  } catch (err) {
+    console.log('Error(bookingData_pdf)', err);
+    sendResponse(
+      res,
+      constants.WEB_STATUS_CODE.SERVER_ERROR,
+      constants.STATUS_CODE.FAIL,
+      'GENERAL.general_error_content',
+      err.message,
+      req.headers.lang
+    );
+  }
+};

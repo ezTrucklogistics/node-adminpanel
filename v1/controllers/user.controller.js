@@ -13,10 +13,6 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 //const PdfPrinter = require('pdfmake');
 
-
-
-
-
 exports.signUp = async (req, res) => {
 
   try {
@@ -341,16 +337,16 @@ exports.userData_excel = async (req , res) => {
       alignment: {
         vertical: 'center',
         horizontal: 'center',
-        wrapText: true, // for styling
+        wrapText: true,
       },
     });
    
-    ws.column(1).setWidth(25); // Customer Name
-    ws.column(2).setWidth(25); // Email
-    ws.column(3).setWidth(25); // Mobile Number
-    ws.column(4).setWidth(25); // Status
-    ws.column(5).setWidth(25); // Created At
-    ws.column(6).setWidth(25);// updated_at
+    ws.column(1).setWidth(25); 
+    ws.column(2).setWidth(25); 
+    ws.column(3).setWidth(25); 
+    ws.column(4).setWidth(25); 
+    ws.column(5).setWidth(25); 
+    ws.column(6).setWidth(25);
     
     ws.cell(1, 1).string('Customer Name').style(headerStyle)
     ws.cell(1, 2).string('Email').style(headerStyle)
@@ -457,39 +453,32 @@ exports.userData_pdf = async (req, res) => {
         mobile_number: 1,
         status: 1,
         created_at: 1,
-        updated_at: 1, // Include the updated_at field if it exists in your data
+        updated_at: 1, 
       }
     );
 
     const pdfFilePath = 'user_data.pdf';
 
-    // Create a new PDF document
     const pdfDoc = new PDFDocument();
     const stream = fs.createWriteStream(pdfFilePath);
     pdfDoc.pipe(stream);
 
-    // Set font size and color
     pdfDoc.fontSize(12);
     pdfDoc.fillColor('black');
 
-    // Define table column positions and widths
     const col1X = 50;
     const col2X = 200;
     const col3X = 350;
     const col4X = 450;
     const col5X = 550;
-    const col6X = 650; // Adjust the X position for "Updated At" column
-
-    // Define header row
+    const col6X = 650; 
     pdfDoc.font('Helvetica-Bold').text('Customer Name', col1X, 40);
     pdfDoc.text('Email', col2X, 40);
     pdfDoc.text('Mobile Number', col3X, 40);
     pdfDoc.text('Status', col4X, 40);
     pdfDoc.text('Created At', col5X, 40);
-    pdfDoc.text('Updated At', col6X, 40); // Add "Updated At" column
-
-    // Add data rows
-    let yPosition = 80; // Initial Y position for data rows
+    pdfDoc.text('Updated At', col6X, 40);
+    let yPosition = 80; 
 
     data.forEach((user) => {
       pdfDoc.font('Helvetica').text(user.customer_name, col1X, yPosition);
@@ -499,30 +488,23 @@ exports.userData_pdf = async (req, res) => {
       pdfDoc.text(user.created_at, col5X, yPosition);
 
       if (user.updated_at) {
-        // Check if "updated_at" field exists in data
-        pdfDoc.text(user.updated_at, col6X, yPosition); // Add "Updated At" data
+       
+        pdfDoc.text(user.updated_at, col6X, yPosition); 
       } else {
-        pdfDoc.text('', col6X, yPosition); // Add an empty cell if "updated_at" is not present
+        pdfDoc.text('', col6X, yPosition); 
       }
-
-      // Add borderlines to the table cell
       pdfDoc
         .moveTo(col1X, yPosition)
         .lineTo(col2X, yPosition)
         .lineTo(col3X, yPosition)
         .lineTo(col4X, yPosition)
         .lineTo(col5X, yPosition)
-        .lineTo(col6X, yPosition) // Add line for "Updated At" column
-        .stroke();
-
-      // Increase Y position for the next row
-      yPosition += 20; // Adjust as needed for row height
+        .lineTo(col6X, yPosition) 
+      yPosition += 20; 
     });
 
-    // Finalize the PDF
     pdfDoc.end();
 
-    // Send the PDF as an attachment
     res.attachment(pdfFilePath);
 
     return sendResponse(

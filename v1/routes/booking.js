@@ -14,7 +14,10 @@ const {
   search_all_the_earning_by_driver,
   earningsLast24HoursByDriver,
   earningsLastMonthByDriver ,
-  earningsLastYearByDriver 
+  earningsLastYearByDriver ,
+  bookingData_excel,
+  bookingData_csv,
+  bookingData_pdf 
 } = require("../controllers/booking.controller");
 
 var router = express.Router();
@@ -45,6 +48,11 @@ router.get('/search_all_the_driver_earning_money',search_all_the_earning_by_driv
 router.get('/day_earning',earningsLast24HoursByDriver)
 router.get('/month_earning',earningsLastMonthByDriver)
 router.get('/year_earning',earningsLastYearByDriver)
+
+//
+router.post('/excel_booking',bookingData_excel)
+router.post('/csv_booking',bookingData_csv)
+router.post('/pdf_booking',bookingData_pdf )
 
 
 module.exports = router;
